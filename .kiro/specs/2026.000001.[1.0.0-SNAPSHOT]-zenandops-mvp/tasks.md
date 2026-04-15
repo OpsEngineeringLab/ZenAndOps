@@ -1,23 +1,23 @@
 # Tasks
 
-- [-] 1. Project scaffolding and monorepo structure
-  - [-] 1.1 Create root project directory structure with `auth-service/`, `dashboard-service/`, and `frontend-app/` directories
-  - [~] 1.2 Scaffold Auth_Service as a Quarkus Maven project (Java 25) with hexagonal architecture package layout: `domain`, `application`, `infrastructure`
-  - [~] 1.3 Scaffold Dashboard_Service as a Quarkus Maven project (Java 25) with hexagonal architecture package layout: `domain`, `application`, `infrastructure`
-  - [~] 1.4 Scaffold Frontend_App by copying `.frontend-template` into `frontend-app/` and adapting package.json (rename, update version to `1.0.0-SNAPSHOT`)
-  - [~] 1.5 Add Quarkus dependencies to Auth_Service: `quarkus-rest-jackson`, `quarkus-mongodb-panache`, `quarkus-smallrye-jwt`, `quarkus-smallrye-reactive-messaging-kafka`, `quarkus-elytron-security-common`
-  - [~] 1.6 Add Quarkus dependencies to Dashboard_Service: `quarkus-rest-jackson`, `quarkus-smallrye-jwt`
-  - [~] 1.7 Add frontend dependencies: `axios`, `jwt-decode`, `react-router`, `workbox-webpack-plugin` (or vite-plugin-pwa)
-  - [~] 1.8 Create `.gitignore` and `.dockerignore` at root level following the ignore files policy
+- [x] 1. Project scaffolding and monorepo structure
+  - [x] 1.1 Create root project directory structure with `auth-service/`, `dashboard-service/`, and `frontend-app/` directories
+  - [x] 1.2 Scaffold Auth_Service as a Quarkus Maven project (Java 25) with hexagonal architecture package layout: `domain`, `application`, `infrastructure`
+  - [x] 1.3 Scaffold Dashboard_Service as a Quarkus Maven project (Java 25) with hexagonal architecture package layout: `domain`, `application`, `infrastructure`
+  - [x] 1.4 Scaffold Frontend_App by copying `.frontend-template` into `frontend-app/` and adapting package.json (rename, update version to `1.0.0-SNAPSHOT`)
+  - [x] 1.5 Add Quarkus dependencies to Auth_Service: `quarkus-rest-jackson`, `quarkus-mongodb-panache`, `quarkus-smallrye-jwt`, `quarkus-smallrye-reactive-messaging-kafka`, `quarkus-elytron-security-common`
+  - [x] 1.6 Add Quarkus dependencies to Dashboard_Service: `quarkus-rest-jackson`, `quarkus-smallrye-jwt`
+  - [x] 1.7 Add frontend dependencies: `axios`, `jwt-decode`, `react-router`, `workbox-webpack-plugin` (or vite-plugin-pwa)
+  - [x] 1.8 Create `.gitignore` and `.dockerignore` at root level following the ignore files policy
 
-- [ ] 2. Auth_Service domain layer
-  - [~] 2.1 Create `User` entity with fields: id, login, name, email, passwordHash, roles, attributes, active, createdAt, updatedAt
-  - [~] 2.2 Create `RefreshToken` entity with fields: id, token, userId, expiresAt, revoked, createdAt
-  - [~] 2.3 Create `AuthEvent` value object with fields: eventId, eventType (LOGIN, LOGOFF, TOKEN_REFRESH), userId, userLogin, timestamp
-  - [~] 2.4 Create `RbacPolicy` and `AbacPolicy` value objects for authorization rules
-  - [~] 2.5 Create domain exceptions: `InvalidCredentialsException`, `TokenExpiredException`, `TokenRevokedException`, `AccessDeniedException`
+- [x] 2. Auth_Service domain layer
+  - [x] 2.1 Create `User` entity with fields: id, login, name, email, passwordHash, roles, attributes, active, createdAt, updatedAt
+  - [x] 2.2 Create `RefreshToken` entity with fields: id, token, userId, expiresAt, revoked, createdAt
+  - [x] 2.3 Create `AuthEvent` value object with fields: eventId, eventType (LOGIN, LOGOFF, TOKEN_REFRESH), userId, userLogin, timestamp
+  - [x] 2.4 Create `RbacPolicy` and `AbacPolicy` value objects for authorization rules
+  - [x] 2.5 Create domain exceptions: `InvalidCredentialsException`, `TokenExpiredException`, `TokenRevokedException`, `AccessDeniedException`
 
-- [ ] 3. Auth_Service application layer (ports and use cases)
+- [-] 3. Auth_Service application layer (ports and use cases)
   - [~] 3.1 Define outbound port interfaces: `UserRepository`, `RefreshTokenRepository`, `TokenProvider`, `PasswordEncoder`, `AuthEventPublisher`, `PolicyEngine`
   - [~] 3.2 Implement `LoginUseCase`: validate credentials, hash comparison, issue Access_Token (15 min) and Refresh_Token (8 hours), publish login event
   - [~] 3.3 Implement `RefreshTokenUseCase`: validate Refresh_Token, rotate tokens (invalidate old, issue new pair), publish refresh event
