@@ -2,9 +2,9 @@
 
 **Engineering resilience in a chaotic world**
 
-Organização focada em modernizar operações de TI, combinando práticas de ITSM (ITIL), princípios de SRE, automação e engenharia de plataforma.
+Organization focused on modernizing IT operations by combining ITSM (ITIL) practices, SRE principles, automation, and platform engineering.
 
-> A "tempestade" representa a realidade dos sistemas distribuídos modernos.
+> The "storm" represents the reality of modern distributed systems.
 
 ---
 
@@ -12,23 +12,23 @@ Organização focada em modernizar operações de TI, combinando práticas de IT
 
 **Simple operations. Powerful reliability.**
 
-Plataforma que transforma o caos operacional em fluxo controlado e previsível.
+A platform that transforms operational chaos into controlled, predictable flow.
 
 ---
 
-## 🎯 Proposta de Valor
+## 🎯 Value Proposition
 
 **Opsly helps teams move from reactive ITSM to proactive, reliable operations.**
 
 Opsly is a modern operations platform that unifies IT service management and site reliability practices, enabling teams to manage incidents, automate workflows, and improve system reliability — all in one place.
 
-### Visão técnica (SRE / DevOps)
+### Technical Vision (SRE / DevOps)
 
 Opsly bridges ITSM and SRE by combining incident management, workflow automation, and reliability insights — helping teams reduce toil, manage error budgets, and operate systems with confidence.
 
 ---
 
-## ⚖️ Narrativa
+## ⚖️ Narrative
 
 Modern systems are inherently stormy. Distributed architectures, microservices, and constant change create operational turbulence.
 
@@ -36,16 +36,16 @@ Modern systems are inherently stormy. Distributed architectures, microservices, 
 
 ---
 
-## 🧩 Pilares do Produto
+## 🧩 Product Pillars
 
 ### 🌊 From Chaos to Flow
-Transforma incidentes e tickets em fluxos estruturados.
+Transforms incidents and tickets into structured, manageable flows.
 
 ### ⚙️ Automation First
-Reduz toil com automação — runbooks, workflows e ações programáticas.
+Reduces toil through automation — runbooks, workflows, and programmatic actions.
 
 ### 🔎 Operational Visibility
-Clareza sobre o que está acontecendo nos seus sistemas, sem complexidade desnecessária.
+Clarity on what is happening across your systems, without unnecessary complexity.
 
 ### 🛡️ Built for Reliability
-Inspirado em SRE, sem ficar preso a jargão. Confiabilidade como prática, não como buzzword.
+Inspired by SRE, without being locked into jargon. Reliability as a practice, not a buzzword.
