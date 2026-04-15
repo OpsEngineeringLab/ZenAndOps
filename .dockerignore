@@ -1,0 +1,49 @@
+# Version control
+.git/
+.gitignore
+
+# Kiro
+.kiro/
+
+# Dependencies (rebuilt in container)
+node_modules/
+vendor/
+
+# Build output
+dist/
+target/
+build/
+out/
+
+# Tests and docs
+tests/
+docs/
+*.md
+!README.md
+
+# Logs
+*.log
+logs/
+
+# Environment and secrets
+.env
+.env.*
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Frontend template (reference only)
+.frontend-template/
+
+# Docker
+docker-compose*.yml
+Dockerfile*
+.dockerignore

@@ -1,1 +1,61 @@
-.vscode
+# Dependencies
+node_modules/
+vendor/
+
+# Build output
+target/
+dist/
+build/
+out/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+logs/
+
+# Cache
+.cache/
+tmp/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Java
+*.class
+*.jar
+*.war
+*.ear
+hs_err_pid*
+
+# Maven
+target/
+
+# Quarkus
+.quarkus/
+
+# Frontend
+frontend-app/node_modules/
+frontend-app/dist/
+
+# Docker
+docker-compose.override.yml
+
+# Package lock files are tracked
+# !package-lock.json
