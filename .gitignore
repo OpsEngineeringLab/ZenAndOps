@@ -1,0 +1,44 @@
+# Dependencies
+node_modules/
+vendor/
+.venv/
+venv/
+
+# Build
+dist/
+build/
+out/
+*.egg-info/
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# IDE
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+logs/
+
+# Coverage & Tests
+coverage/
+.nyc_output/
+htmlcov/
+
+# Docker
+docker-compose.override.yml
+
+# Temp
+tmp/
+temp/
+*.tmp
