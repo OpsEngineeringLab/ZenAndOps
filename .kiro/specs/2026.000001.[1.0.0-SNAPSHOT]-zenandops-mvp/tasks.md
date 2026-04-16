@@ -74,20 +74,20 @@
   - [x] 10.2 Register a service worker that caches static assets for offline access to the login page shell
   - [x] 10.3 Configure Vite PWA plugin (or workbox) for service worker generation and asset precaching
 
-- [-] 11. Docker and Docker Compose setup
-  - [-] 11.1 Create `Dockerfile` for Auth_Service (Java 25 runtime, multi-stage build with Maven)
-  - [-] 11.2 Create `Dockerfile` for Dashboard_Service (Java 25 runtime, multi-stage build with Maven)
-  - [-] 11.3 Create `Dockerfile` for Frontend_App (multi-stage: Node build + Nginx serve)
-  - [-] 11.4 Create `docker-compose.yml` defining services: auth-service, dashboard-service, frontend-app, mongodb, kafka (with zookeeper or KRaft)
-  - [-] 11.5 Configure network connectivity: frontend reaches backend services, backend services reach MongoDB and Kafka
-  - [-] 11.6 Add health checks for MongoDB and Kafka with `depends_on` conditions for dependent services
-  - [-] 11.7 Externalize all configuration via environment variables: database connection strings, Kafka broker addresses, JWT secret keys, service ports
-  - [-] 11.8 Create `.env.example` file documenting all required environment variables
+- [x] 11. Docker and Docker Compose setup
+  - [x] 11.1 Create `Dockerfile` for Auth_Service (Java 25 runtime, multi-stage build with Maven)
+  - [x] 11.2 Create `Dockerfile` for Dashboard_Service (Java 25 runtime, multi-stage build with Maven)
+  - [x] 11.3 Create `Dockerfile` for Frontend_App (multi-stage: Node build + Nginx serve)
+  - [x] 11.4 Create `docker-compose.yml` defining services: auth-service, dashboard-service, frontend-app, mongodb, kafka (with zookeeper or KRaft)
+  - [x] 11.5 Configure network connectivity: frontend reaches backend services, backend services reach MongoDB and Kafka
+  - [x] 11.6 Add health checks for MongoDB and Kafka with `depends_on` conditions for dependent services
+  - [x] 11.7 Externalize all configuration via environment variables: database connection strings, Kafka broker addresses, JWT secret keys, service ports
+  - [x] 11.8 Create `.env.example` file documenting all required environment variables
 
-- [ ] 12. Version control and release
-  - [~] 12.1 Ensure all previous tasks are complete and tests pass
-  - [~] 12.2 Remove SNAPSHOT suffix from all version references in the codebase
-  - [~] 12.3 Commit the version bump: "release: 1.0.0 - zenandops-mvp"
-  - [~] 12.4 Merge branch into main/master
-  - [~] 12.5 Apply Git tag: 1.0.0 (without SNAPSHOT)
-  - [~] 12.6 Push branch, merge, and tag to remote
+- [-] 12. Version control and release
+  - [-] 12.1 Ensure all previous tasks are complete and tests pass
+  - [-] 12.2 Remove SNAPSHOT suffix from all version references in the codebase
+  - [-] 12.3 Commit the version bump: "release: 1.0.0 - zenandops-mvp"
+  - [-] 12.4 Merge branch into main/master
+  - [-] 12.5 Apply Git tag: 1.0.0 (without SNAPSHOT)
+  - [-] 12.6 Push branch, merge, and tag to remote
