@@ -6,7 +6,7 @@
 
     <groupId>com.zenandops</groupId>
     <artifactId>dashboard-service</artifactId>
-    <version>1.0.0</version>
+    <version>1.1.0</version>
     <packaging>jar</packaging>
 
     <name>ZenAndOps Dashboard Service</name>
@@ -52,6 +52,12 @@
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-arc</artifactId>
+        </dependency>
+
+        <!-- OpenAPI and Swagger UI -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-smallrye-openapi</artifactId>
         </dependency>
 
         <!-- Test dependencies -->

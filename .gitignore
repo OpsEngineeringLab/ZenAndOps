@@ -54,6 +54,9 @@ target/
 frontend-app/node_modules/
 frontend-app/dist/
 
+# Gateway
+gateway-service/target/
+
 # Docker
 docker-compose.override.yml
 

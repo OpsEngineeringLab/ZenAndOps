@@ -14,10 +14,12 @@ import Calendar from "./pages/Calendar";
 import BasicTables from "./pages/Tables/BasicTables";
 import FormElements from "./pages/Forms/FormElements";
 import Blank from "./pages/Blank";
+import TagManagement from "./pages/TagManagement";
 import AppLayout from "./layout/AppLayout";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 import Home from "./pages/Dashboard/Home";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
+import Authorize from "./components/auth/Authorize";
 import { useAuth } from "./context/AuthContext";
 
 function LoginRoute() {
@@ -55,6 +57,14 @@ export default function App() {
           <Route path="/videos" element={<Videos />} />
           <Route path="/line-chart" element={<LineChart />} />
           <Route path="/bar-chart" element={<BarChart />} />
+          <Route
+            path="/tags"
+            element={
+              <Authorize roles={["ADMIN"]} fallback={<Navigate to="/" replace />}>
+                <TagManagement />
+              </Authorize>
+            }
+          />
         </Route>
 
         {/* Public: Login (redirects authenticated users to dashboard) */}

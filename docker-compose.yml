@@ -94,19 +94,51 @@ services:
     networks:
       - zenandops-net
 
+  gateway-service:
+    build:
+      context: ./gateway-service
+      dockerfile: Dockerfile
+    image: zenandops/gateway-service:${ZENANDOPS_VERSION}
+    container_name: zenandops-gateway-service
+    ports:
+      - "${GATEWAY_SERVICE_PORT}:8080"
+    environment:
+      QUARKUS_HTTP_PORT: 8080
+      GATEWAY_AUTH_SERVICE_URL: ${GATEWAY_AUTH_SERVICE_URL}
+      GATEWAY_DASHBOARD_SERVICE_URL: ${GATEWAY_DASHBOARD_SERVICE_URL}
+      GATEWAY_RATE_LIMIT_MAX_REQUESTS: ${GATEWAY_RATE_LIMIT_MAX_REQUESTS}
+      GATEWAY_RATE_LIMIT_WINDOW_SECONDS: ${GATEWAY_RATE_LIMIT_WINDOW_SECONDS}
+      MP_JWT_VERIFY_PUBLICKEY_LOCATION: ${JWT_PUBLIC_KEY_LOCATION}
+      MP_JWT_VERIFY_ISSUER: ${JWT_ISSUER}
+    depends_on:
+      auth-service:
+        condition: service_started
+      dashboard-service:
+        condition: service_started
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/q/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    networks:
+      - zenandops-net
+
   # --- Frontend ---
 
   frontend-app:
     build:
       context: ./frontend-app
       dockerfile: Dockerfile
+      args:
+        VITE_GATEWAY_URL: http://localhost:${GATEWAY_SERVICE_PORT}
     image: zenandops/frontend-app:${ZENANDOPS_VERSION}
     container_name: zenandops-frontend
     ports:
       - "${FRONTEND_PORT}:80"
     depends_on:
-      - auth-service
-      - dashboard-service
+      gateway-service:
+        condition: service_healthy
     networks:
       - zenandops-net
 

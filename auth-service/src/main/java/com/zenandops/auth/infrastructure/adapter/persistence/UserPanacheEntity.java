@@ -6,9 +6,7 @@ import org.bson.codecs.pojo.annotations.BsonProperty;
 
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * MongoDB Panache entity mapping for the User domain entity.
@@ -24,7 +22,7 @@ public class UserPanacheEntity extends PanacheMongoEntity {
     public String passwordHash;
 
     public List<String> roles = new ArrayList<>();
-    public Map<String, String> attributes = new HashMap<>();
+    public List<String> tagIds = new ArrayList<>();
     public boolean active = true;
 
     @BsonProperty("createdAt")

@@ -1,7 +1,9 @@
 package com.zenandops.auth.application.port;
 
+import com.zenandops.auth.domain.entity.Tag;
 import com.zenandops.auth.domain.entity.User;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -9,7 +11,7 @@ import java.util.Map;
  */
 public interface TokenProvider {
 
-    String generateAccessToken(User user);
+    String generateAccessToken(User user, List<Tag> resolvedTags);
 
     String generateRefreshToken();
 

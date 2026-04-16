@@ -15,6 +15,9 @@ target/
 build/
 out/
 
+# Gateway build artifacts
+gateway-service/target/
+
 # Tests and docs
 tests/
 docs/

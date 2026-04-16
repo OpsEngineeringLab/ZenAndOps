@@ -13,15 +13,18 @@ import {
   PieChartIcon,
   PlugInIcon,
   TableIcon,
+  TaskIcon,
   UserCircleIcon,
 } from "../icons";
 import { useSidebar } from "../context/SidebarContext";
 import { useAuth } from "../context/AuthContext";
+import { useHasRole } from "../hooks/useAuthorization";
 
 type NavItem = {
   name: string;
   icon: React.ReactNode;
   path?: string;
+  adminOnly?: boolean;
   subItems?: { name: string; path: string; pro?: boolean; new?: boolean }[];
 };
 
@@ -40,6 +43,12 @@ const navItems: NavItem[] = [
     icon: <UserCircleIcon />,
     name: "User Profile",
     path: "/profile",
+  },
+  {
+    icon: <TaskIcon />,
+    name: "Tag Management",
+    path: "/tags",
+    adminOnly: true,
   },
   {
     name: "Forms",
@@ -95,6 +104,7 @@ const othersItems: NavItem[] = [
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const location = useLocation();
+  const isAdmin = useHasRole("ADMIN");
 
   const [openSubmenu, setOpenSubmenu] = useState<{
     type: "main" | "others";
@@ -162,7 +172,9 @@ const AppSidebar: React.FC = () => {
 
   const renderMenuItems = (items: NavItem[], menuType: "main" | "others") => (
     <ul className="flex flex-col gap-4">
-      {items.map((nav, index) => (
+      {items
+        .filter((nav) => !nav.adminOnly || isAdmin)
+        .map((nav, index) => (
         <li key={nav.name}>
           {nav.subItems ? (
             <button

@@ -37,4 +37,12 @@ export default defineConfig({
       },
     }),
   ],
+  server: {
+    proxy: {
+      "/api": {
+        target: process.env.VITE_GATEWAY_URL || "http://localhost:8080",
+        changeOrigin: true,
+      },
+    },
+  },
 });

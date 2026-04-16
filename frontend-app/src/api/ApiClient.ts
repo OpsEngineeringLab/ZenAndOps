@@ -7,7 +7,7 @@ const STORAGE_KEY_ACCESS = "zenandops_access_token";
 const STORAGE_KEY_REFRESH = "zenandops_refresh_token";
 
 const apiClient = axios.create({
-  baseURL: "",
+  baseURL: import.meta.env.VITE_GATEWAY_URL || "",
   headers: {
     "Content-Type": "application/json",
   },
@@ -43,13 +43,25 @@ function processQueue(error: unknown, token: string | null = null) {
   failedQueue = [];
 }
 
-// Response interceptor: handle 401 by attempting token refresh and retry
+// Response interceptor: handle gateway errors and 401 token refresh
 apiClient.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
     const originalRequest = error.config as InternalAxiosRequestConfig & {
       _retry?: boolean;
     };
+
+    // Handle Gateway rate limit exceeded (429)
+    if (error.response?.status === 429) {
+      alert("Rate limit exceeded. Please wait a moment and try again.");
+      return Promise.reject(error);
+    }
+
+    // Handle Gateway service unavailable (503)
+    if (error.response?.status === 503) {
+      alert("Service is temporarily unavailable. Please try again later.");
+      return Promise.reject(error);
+    }
 
     // Only attempt refresh for 401 errors on non-auth endpoints
     if (

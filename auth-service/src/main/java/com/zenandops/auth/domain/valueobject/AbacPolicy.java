@@ -4,12 +4,12 @@ import java.util.Map;
 
 /**
  * Value object representing an ABAC authorization rule.
- * Access is granted when the user attributes, resource attributes, and
- * environment conditions all match the policy requirements.
+ * Access is granted when the user's resolved Tag key-value pairs, resource attributes,
+ * and environment conditions all match the policy requirements.
  *
  * @param resource                     the protected resource identifier
  * @param action                       the action being performed on the resource
- * @param requiredUserAttributes       attributes the user must possess
+ * @param requiredUserAttributes       Tag key-value pairs the user must possess (key = Tag_Key, value = Tag_Value)
  * @param requiredResourceAttributes   attributes the resource must possess
  * @param environmentConditions        environmental conditions that must be met
  */

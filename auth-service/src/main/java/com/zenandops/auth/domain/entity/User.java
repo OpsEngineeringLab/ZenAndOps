@@ -2,9 +2,7 @@ package com.zenandops.auth.domain.entity;
 
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * User entity representing an authenticated user in the system.
@@ -18,14 +16,14 @@ public class User {
     private String email;
     private String passwordHash;
     private List<String> roles;
-    private Map<String, String> attributes;
+    private List<String> tagIds;
     private boolean active;
     private Instant createdAt;
     private Instant updatedAt;
 
     public User() {
         this.roles = new ArrayList<>();
-        this.attributes = new HashMap<>();
+        this.tagIds = new ArrayList<>();
         this.active = true;
     }
 
@@ -77,12 +75,12 @@ public class User {
         this.roles = roles;
     }
 
-    public Map<String, String> getAttributes() {
-        return attributes;
+    public List<String> getTagIds() {
+        return tagIds;
     }
 
-    public void setAttributes(Map<String, String> attributes) {
-        this.attributes = attributes;
+    public void setTagIds(List<String> tagIds) {
+        this.tagIds = tagIds;
     }
 
     public boolean isActive() {

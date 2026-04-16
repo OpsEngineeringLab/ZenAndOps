@@ -3,9 +3,11 @@ package com.zenandops.auth.application.usecase;
 import com.zenandops.auth.application.port.AuthEventPublisher;
 import com.zenandops.auth.application.port.PasswordEncoder;
 import com.zenandops.auth.application.port.RefreshTokenRepository;
+import com.zenandops.auth.application.port.TagRepository;
 import com.zenandops.auth.application.port.TokenProvider;
 import com.zenandops.auth.application.port.UserRepository;
 import com.zenandops.auth.domain.entity.RefreshToken;
+import com.zenandops.auth.domain.entity.Tag;
 import com.zenandops.auth.domain.entity.User;
 import com.zenandops.auth.domain.exception.InvalidCredentialsException;
 import com.zenandops.auth.domain.valueobject.AuthEvent;
@@ -15,6 +17,7 @@ import jakarta.inject.Inject;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -30,18 +33,21 @@ public class LoginUseCase {
     private final TokenProvider tokenProvider;
     private final RefreshTokenRepository refreshTokenRepository;
     private final AuthEventPublisher authEventPublisher;
+    private final TagRepository tagRepository;
 
     @Inject
     public LoginUseCase(UserRepository userRepository,
                         PasswordEncoder passwordEncoder,
                         TokenProvider tokenProvider,
                         RefreshTokenRepository refreshTokenRepository,
-                        AuthEventPublisher authEventPublisher) {
+                        AuthEventPublisher authEventPublisher,
+                        TagRepository tagRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.tokenProvider = tokenProvider;
         this.refreshTokenRepository = refreshTokenRepository;
         this.authEventPublisher = authEventPublisher;
+        this.tagRepository = tagRepository;
     }
 
     /**
@@ -61,7 +67,7 @@ public class LoginUseCase {
             throw new InvalidCredentialsException();
         }
 
-        String accessToken = tokenProvider.generateAccessToken(user);
+        String accessToken = tokenProvider.generateAccessToken(user, resolveTags(user));
         String refreshTokenValue = tokenProvider.generateRefreshToken();
 
         RefreshToken refreshToken = new RefreshToken();
@@ -82,5 +88,12 @@ public class LoginUseCase {
         ));
 
         return new TokenPair(accessToken, refreshTokenValue);
+    }
+
+    private List<Tag> resolveTags(User user) {
+        if (user.getTagIds() == null || user.getTagIds().isEmpty()) {
+            return List.of();
+        }
+        return tagRepository.findAllByIds(user.getTagIds());
     }
 }

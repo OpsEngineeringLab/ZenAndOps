@@ -10,21 +10,22 @@ export function useHasRole(...requiredRoles: string[]): boolean {
 }
 
 /**
- * Check if the user has all of the required attributes (key-value match).
+ * Check if the user has all of the required tag key-value pairs.
  */
 export function useHasAttributes(
   requiredAttributes: Record<string, string>
 ): boolean {
   const { user } = useAuth();
-  if (!user || !user.attributes) return false;
-  return Object.entries(requiredAttributes).every(
-    ([key, value]) => user.attributes[key] === value
+  if (!user || !user.tags) return false;
+  return Object.entries(requiredAttributes).every(([key, value]) =>
+    user.tags.some((tag) => tag.key === key && tag.value === value)
   );
 }
 
 /**
  * Combined RBAC + ABAC check.
  * Pass roles, attributes, or both. All provided conditions must be satisfied.
+ * Attributes are matched against the user's tags array (key-value pairs).
  */
 export function useIsAuthorized(options: {
   roles?: string[];
@@ -39,8 +40,8 @@ export function useIsAuthorized(options: {
   }
 
   if (options.attributes) {
-    const hasAttrs = Object.entries(options.attributes).every(
-      ([key, value]) => user.attributes?.[key] === value
+    const hasAttrs = Object.entries(options.attributes).every(([key, value]) =>
+      user.tags?.some((tag) => tag.key === key && tag.value === value)
     );
     if (!hasAttrs) return false;
   }

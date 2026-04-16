@@ -3,7 +3,7 @@ import { useIsAuthorized } from "../../hooks/useAuthorization";
 interface AuthorizeProps {
   /** User must have at least one of these roles */
   roles?: string[];
-  /** User must match all of these attribute key-value pairs */
+  /** User must match all of these tag key-value pairs */
   attributes?: Record<string, string>;
   /** Content to render when authorized */
   children: React.ReactNode;
@@ -12,7 +12,7 @@ interface AuthorizeProps {
 }
 
 /**
- * Conditionally renders children based on JWT claims (roles and attributes).
+ * Conditionally renders children based on JWT claims (roles and tags).
  * Hides content by default when the user lacks authorization.
  */
 export default function Authorize({

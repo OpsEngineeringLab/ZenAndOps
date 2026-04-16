@@ -2,8 +2,12 @@ package com.zenandops.auth.infrastructure.rest;
 
 import com.zenandops.auth.domain.exception.AccessDeniedException;
 import com.zenandops.auth.domain.exception.InvalidCredentialsException;
+import com.zenandops.auth.domain.exception.TagAlreadyExistsException;
+import com.zenandops.auth.domain.exception.TagInUseException;
+import com.zenandops.auth.domain.exception.TagNotFoundException;
 import com.zenandops.auth.domain.exception.TokenExpiredException;
 import com.zenandops.auth.domain.exception.TokenRevokedException;
+import com.zenandops.auth.domain.exception.UserNotFoundException;
 import com.zenandops.auth.infrastructure.rest.dto.ErrorResponse;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
@@ -35,6 +39,22 @@ public class AuthExceptionMapper implements ExceptionMapper<RuntimeException> {
         if (exception instanceof AccessDeniedException) {
             return buildResponse(Response.Status.FORBIDDEN,
                     "AUTH_FORBIDDEN", "Access denied");
+        }
+        if (exception instanceof TagAlreadyExistsException) {
+            return buildResponse(Response.Status.CONFLICT,
+                    "TAG_ALREADY_EXISTS", exception.getMessage());
+        }
+        if (exception instanceof TagInUseException) {
+            return buildResponse(Response.Status.CONFLICT,
+                    "TAG_IN_USE", exception.getMessage());
+        }
+        if (exception instanceof TagNotFoundException) {
+            return buildResponse(Response.Status.NOT_FOUND,
+                    "TAG_NOT_FOUND", exception.getMessage());
+        }
+        if (exception instanceof UserNotFoundException) {
+            return buildResponse(Response.Status.NOT_FOUND,
+                    "USER_NOT_FOUND", exception.getMessage());
         }
         // Let other exceptions propagate
         throw exception;
