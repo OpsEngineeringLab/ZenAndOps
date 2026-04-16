@@ -68,7 +68,7 @@ This plan implements the ZenAndOps 1.1.0 enhancements on top of the completed MV
 - [x] 5. Checkpoint — Auth_Service Tag ABAC and seed data
   - Ensure all Auth_Service changes compile and the application starts correctly, ask the user if questions arise.
 
-- [-] 6. Auth_Service — OpenAPI documentation
+- [x] 6. Auth_Service — OpenAPI documentation
   - [x] 6.1 Add `quarkus-smallrye-openapi` dependency to Auth_Service `pom.xml`
     - _Requirements: 9.1, 9.4_
   - [x] 6.2 Annotate `AuthResource`, `TagResource`, and `UserTagResource` with OpenAPI annotations (descriptions, request/response schemas, authentication requirements, error response codes)
@@ -76,7 +76,7 @@ This plan implements the ZenAndOps 1.1.0 enhancements on top of the completed MV
   - [x] 6.3 Configure `application.properties` to enable Swagger UI in dev mode
     - _Requirements: 9.8_
 
-- [ ] 7. Dashboard_Service — OpenAPI documentation
+- [-] 7. Dashboard_Service — OpenAPI documentation
   - [~] 7.1 Add `quarkus-smallrye-openapi` dependency to Dashboard_Service `pom.xml`
     - _Requirements: 9.2, 9.5_
   - [~] 7.2 Annotate `DashboardResource` with OpenAPI annotations (descriptions, request/response schemas, authentication requirements, error response codes)

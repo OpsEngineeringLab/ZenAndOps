@@ -54,6 +54,12 @@
             <artifactId>quarkus-arc</artifactId>
         </dependency>
 
+        <!-- OpenAPI and Swagger UI -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-smallrye-openapi</artifactId>
+        </dependency>
+
         <!-- Test dependencies -->
         <dependency>
             <groupId>io.quarkus</groupId>
