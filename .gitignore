@@ -13,6 +13,9 @@ out/
 .env.*
 !.env.example
 
+# Keys
+*.pem
+
 # Logs
 *.log
 logs/
@@ -59,10 +62,6 @@ gateway-service/target/
 
 # Docker
 docker-compose.override.yml
-
-# Root-level generated keys (service copies in src/main/resources are tracked)
-/privateKey.pem
-/publicKey.pem
 
 # Package lock files are tracked
 # !package-lock.json
