@@ -94,27 +94,27 @@ This plan implements the ZenAndOps 1.1.0 enhancements on top of the completed MV
   - [x] 8.3 Define application port interfaces: `RouteResolver` (resolve target backend URL for a given path) and `RateLimiter` (check rate limit for a client IP)
     - _Requirements: 6.2, 6.3, 6.4, 8.1_
 
-- [-] 9. Gateway_Service — Infrastructure adapters
-  - [~] 9.1 Implement `ConfigRouteResolver` adapter: config-driven route resolution mapping path prefixes to backend service URLs with JWT requirement flag
+- [x] 9. Gateway_Service — Infrastructure adapters
+  - [x] 9.1 Implement `ConfigRouteResolver` adapter: config-driven route resolution mapping path prefixes to backend service URLs with JWT requirement flag
     - Route definitions: `/api/v1/auth/login` → Auth_Service (no JWT), `/api/v1/auth/refresh` → Auth_Service (no JWT), `/api/v1/auth/*` → Auth_Service (JWT), `/api/v1/tags/*` → Auth_Service (JWT), `/api/v1/users/*/tags*` → Auth_Service (JWT), `/api/v1/dashboard/*` → Dashboard_Service (JWT)
     - _Requirements: 6.2, 6.3, 6.4, 7.3_
-  - [~] 9.2 Implement `InMemoryRateLimiter` adapter: sliding window rate limiter per IP using `ConcurrentHashMap`, configurable max requests and window seconds via environment variables
+  - [x] 9.2 Implement `InMemoryRateLimiter` adapter: sliding window rate limiter per IP using `ConcurrentHashMap`, configurable max requests and window seconds via environment variables
     - _Requirements: 8.1, 8.2, 8.3, 8.4_
-  - [~] 9.3 Implement `VertxHttpProxyAdapter`: Vert.x HTTP client for proxying requests to backend services, preserving original path, headers, query parameters, and body
+  - [x] 9.3 Implement `VertxHttpProxyAdapter`: Vert.x HTTP client for proxying requests to backend services, preserving original path, headers, query parameters, and body
     - _Requirements: 6.5, 6.7_
 
-- [ ] 10. Gateway_Service — REST layer and request handling
-  - [~] 10.1 Create `GatewayResource` catch-all route handler: apply rate limiting → resolve route → validate JWT (if required) → proxy request to backend → return response
+- [x] 10. Gateway_Service — REST layer and request handling
+  - [x] 10.1 Create `GatewayResource` catch-all route handler: apply rate limiting → resolve route → validate JWT (if required) → proxy request to backend → return response
     - Rate limiting applied before JWT validation per requirement 8.5
     - Forward original Authorization header on valid JWT per requirement 7.5
     - _Requirements: 6.2, 6.3, 6.4, 6.5, 6.6, 7.1, 7.2, 7.3, 7.4, 7.5, 8.5_
-  - [~] 10.2 Create `HealthResource` exposing a health check endpoint (e.g., `/q/health`)
+  - [x] 10.2 Create `HealthResource` exposing a health check endpoint (e.g., `/q/health`)
     - _Requirements: 10.6_
-  - [~] 10.3 Create `GatewayExceptionMapper` mapping errors to the standard error envelope format: 429 `GATEWAY_RATE_LIMITED` with Retry-After header, 401 `GATEWAY_UNAUTHORIZED`, 404 `GATEWAY_ROUTE_NOT_FOUND`, 503 `GATEWAY_SERVICE_UNAVAILABLE`
+  - [x] 10.3 Create `GatewayExceptionMapper` mapping errors to the standard error envelope format: 429 `GATEWAY_RATE_LIMITED` with Retry-After header, 401 `GATEWAY_UNAUTHORIZED`, 404 `GATEWAY_ROUTE_NOT_FOUND`, 503 `GATEWAY_SERVICE_UNAVAILABLE`
     - _Requirements: 6.6, 6.7, 7.2, 8.2_
-  - [~] 10.4 Annotate `GatewayResource` and `HealthResource` with OpenAPI annotations
+  - [x] 10.4 Annotate `GatewayResource` and `HealthResource` with OpenAPI annotations
     - _Requirements: 9.3, 9.6, 9.7_
-  - [~] 10.5 Configure `application.properties` for Gateway_Service: backend service URLs, JWT public key/issuer, rate limit settings, HTTP port, Swagger UI in dev mode
+  - [x] 10.5 Configure `application.properties` for Gateway_Service: backend service URLs, JWT public key/issuer, rate limit settings, HTTP port, Swagger UI in dev mode
     - _Requirements: 7.4, 8.4, 9.8_
 
 - [ ] 11. Checkpoint — Gateway_Service
