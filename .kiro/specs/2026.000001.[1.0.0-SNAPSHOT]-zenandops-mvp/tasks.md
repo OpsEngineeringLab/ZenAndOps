@@ -53,21 +53,21 @@
   - [x] 7.4 Implement login form submission: call Auth_Service `/api/v1/auth/login`, store tokens, redirect to dashboard
   - [x] 7.5 Implement logoff: call Auth_Service `/api/v1/auth/logoff`, clear tokens from storage, redirect to login page
 
-- [-] 8. Frontend protected routes and navigation
-  - [-] 8.1 Create `ProtectedRoute` component that checks authentication state and redirects unauthenticated users to `/login`
-  - [-] 8.2 Update `App.tsx` routing: `/login` (public), `/` dashboard (protected), redirect authenticated users from `/login` to `/`
-  - [-] 8.3 Implement client-side RBAC/ABAC checks: hide or disable UI elements based on JWT claims (roles and attributes)
-  - [-] 8.4 Update sidebar and header components to show authenticated user info and logoff button
+- [x] 8. Frontend protected routes and navigation
+  - [x] 8.1 Create `ProtectedRoute` component that checks authentication state and redirects unauthenticated users to `/login`
+  - [x] 8.2 Update `App.tsx` routing: `/login` (public), `/` dashboard (protected), redirect authenticated users from `/login` to `/`
+  - [x] 8.3 Implement client-side RBAC/ABAC checks: hide or disable UI elements based on JWT claims (roles and attributes)
+  - [x] 8.4 Update sidebar and header components to show authenticated user info and logoff button
 
-- [ ] 9. Frontend dashboard page
-  - [~] 9.1 Adapt the `.frontend-template` Dashboard Home layout for the operational dashboard page
-  - [~] 9.2 Create executive summary metric cards (total open tickets, critical incidents, overall availability, error budget remaining) derived from the EcommerceMetrics component pattern
-  - [~] 9.3 Create ticket-by-state bar chart visualization (New, Processing Assigned, Processing Planned, Pending, Solved, Closed) using the existing chart components
-  - [~] 9.4 Create SLI/SLO compliance gauge or percentage indicator component
-  - [~] 9.5 Create MTTR and MTTD metric cards with trend indicators (up/down/stable arrows)
-  - [~] 9.6 Create error budget consumption progress bar or gauge visualization
-  - [~] 9.7 Create change failure rate display component
-  - [~] 9.8 Wire dashboard page to fetch Dashboard_Payload from Dashboard_Service `/api/v1/dashboard` on mount
+- [-] 9. Frontend dashboard page
+  - [-] 9.1 Adapt the `.frontend-template` Dashboard Home layout for the operational dashboard page
+  - [-] 9.2 Create executive summary metric cards (total open tickets, critical incidents, overall availability, error budget remaining) derived from the EcommerceMetrics component pattern
+  - [-] 9.3 Create ticket-by-state bar chart visualization (New, Processing Assigned, Processing Planned, Pending, Solved, Closed) using the existing chart components
+  - [-] 9.4 Create SLI/SLO compliance gauge or percentage indicator component
+  - [-] 9.5 Create MTTR and MTTD metric cards with trend indicators (up/down/stable arrows)
+  - [-] 9.6 Create error budget consumption progress bar or gauge visualization
+  - [-] 9.7 Create change failure rate display component
+  - [-] 9.8 Wire dashboard page to fetch Dashboard_Payload from Dashboard_Service `/api/v1/dashboard` on mount
 
 - [ ] 10. Frontend PWA configuration
   - [~] 10.1 Create web app manifest (`manifest.json`) with application name "ZenAndOps", icons, theme color, and `display: standalone`
