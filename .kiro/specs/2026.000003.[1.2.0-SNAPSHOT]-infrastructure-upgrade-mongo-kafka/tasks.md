@@ -12,7 +12,7 @@
 - [-] 3. Version control and release
   - [x] Ensure all previous tasks are complete and tests pass
   - [x] Remove SNAPSHOT suffix from all version references in the codebase
-  - [ ] Commit the version bump: "release: 1.2.0 - infrastructure-upgrade-mongo-kafka"
+  - [x] Commit the version bump: "release: 1.2.0 - infrastructure-upgrade-mongo-kafka"
   - [ ] Merge branch into main/master
   - [ ] Apply Git tag: 1.2.0 (without SNAPSHOT)
   - [ ] Push branch, merge, and tag to remote
