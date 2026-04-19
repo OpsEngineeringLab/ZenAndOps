@@ -9,10 +9,10 @@
   - [x] Review and update KRaft configuration properties for Kafka 4.x compatibility
   - [x] Verify healthcheck command path for Kafka 4.x
 
-- [-] 3. Version control and release
+- [x] 3. Version control and release
   - [x] Ensure all previous tasks are complete and tests pass
   - [x] Remove SNAPSHOT suffix from all version references in the codebase
   - [x] Commit the version bump: "release: 1.2.0 - infrastructure-upgrade-mongo-kafka"
-  - [ ] Merge branch into main/master
-  - [ ] Apply Git tag: 1.2.0 (without SNAPSHOT)
-  - [ ] Push branch, merge, and tag to remote
+  - [x] Merge branch into main/master
+  - [x] Apply Git tag: 1.2.0 (without SNAPSHOT)
+  - [x] Push branch, merge, and tag to remote
