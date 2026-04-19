@@ -3,7 +3,7 @@ services:
   # --- Infrastructure ---
 
   mongodb:
-    image: mongo:7
+    image: mongo:8
     container_name: zenandops-mongodb
     ports:
       - "${MONGODB_PORT}:27017"
@@ -22,7 +22,7 @@ services:
       - zenandops-net
 
   kafka:
-    image: apache/kafka:3.9.0
+    image: apache/kafka:4.2.0
     container_name: zenandops-kafka
     ports:
       - "${KAFKA_PORT}:9092"
