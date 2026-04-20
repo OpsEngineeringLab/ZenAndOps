@@ -1,16 +1,16 @@
 # Tasks
 
-- [-] 1. Add OpenTelemetry and Micrometer dependencies to all backend services
-  - [-] 1.1 Add `quarkus-opentelemetry` and `quarkus-micrometer-opentelemetry` dependencies to `auth-service/pom.xml`
-  - [~] 1.2 Add `quarkus-opentelemetry` and `quarkus-micrometer-opentelemetry` dependencies to `dashboard-service/pom.xml`
-  - [~] 1.3 Add `quarkus-opentelemetry` and `quarkus-micrometer-opentelemetry` dependencies to `gateway-service/pom.xml`
-  - [~] 1.4 Add `jqwik` test dependency to `auth-service/pom.xml` and `gateway-service/pom.xml`
-- [ ] 2. Configure OpenTelemetry properties for all backend services
-  - [~] 2.1 Add OTel tracing, logging, metrics, and JSON logging properties to `auth-service/src/main/resources/application.properties` with `quarkus.application.name=zenandops-auth`
-  - [~] 2.2 Add OTel tracing, logging, metrics, and JSON logging properties to `dashboard-service/src/main/resources/application.properties` with `quarkus.application.name=zenandops-dashboard`
-  - [~] 2.3 Add OTel tracing, logging, metrics, and JSON logging properties to `gateway-service/src/main/resources/application.properties` with `quarkus.application.name=zenandops-gateway`
-- [ ] 3. Implement custom application metrics
-  - [~] 3.1 Create `AuthMetrics` class in `auth-service` with a `LongCounter` tracking login attempts by outcome (success/failure)
+- [x] 1. Add OpenTelemetry and Micrometer dependencies to all backend services
+  - [x] 1.1 Add `quarkus-opentelemetry` and `quarkus-micrometer-opentelemetry` dependencies to `auth-service/pom.xml`
+  - [x] 1.2 Add `quarkus-opentelemetry` and `quarkus-micrometer-opentelemetry` dependencies to `dashboard-service/pom.xml`
+  - [x] 1.3 Add `quarkus-opentelemetry` and `quarkus-micrometer-opentelemetry` dependencies to `gateway-service/pom.xml`
+  - [x] 1.4 Add `jqwik` test dependency to `auth-service/pom.xml` and `gateway-service/pom.xml`
+- [x] 2. Configure OpenTelemetry properties for all backend services
+  - [x] 2.1 Add OTel tracing, logging, metrics, and JSON logging properties to `auth-service/src/main/resources/application.properties` with `quarkus.application.name=zenandops-auth`
+  - [x] 2.2 Add OTel tracing, logging, metrics, and JSON logging properties to `dashboard-service/src/main/resources/application.properties` with `quarkus.application.name=zenandops-dashboard`
+  - [x] 2.3 Add OTel tracing, logging, metrics, and JSON logging properties to `gateway-service/src/main/resources/application.properties` with `quarkus.application.name=zenandops-gateway`
+- [-] 3. Implement custom application metrics
+  - [-] 3.1 Create `AuthMetrics` class in `auth-service` with a `LongCounter` tracking login attempts by outcome (success/failure)
   - [~] 3.2 Integrate `AuthMetrics` into the existing authentication use case to record login attempts
   - [~] 3.3 Create `RateLimitMetrics` class in `gateway-service` with an observable gauge reporting rate-limit bucket count per client IP
   - [~] 3.4 Integrate `RateLimitMetrics` into the existing rate-limiting logic to expose bucket counts
