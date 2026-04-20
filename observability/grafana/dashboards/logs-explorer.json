@@ -1,0 +1,105 @@
+{
+  "uid": "logs-explorer",
+  "title": "Logs Explorer",
+  "description": "Filterable log stream with service name, log level, and traceId filters with Tempo click-through",
+  "editable": true,
+  "graphTooltip": 1,
+  "schemaVersion": 39,
+  "templating": {
+    "list": [
+      {
+        "name": "service",
+        "type": "custom",
+        "label": "Service",
+        "current": { "text": "All", "value": "$__all" },
+        "options": [
+          { "text": "All", "value": "$__all", "selected": true },
+          { "text": "zenandops-auth", "value": "zenandops-auth", "selected": false },
+          { "text": "zenandops-dashboard", "value": "zenandops-dashboard", "selected": false },
+          { "text": "zenandops-gateway", "value": "zenandops-gateway", "selected": false }
+        ],
+        "query": "zenandops-auth,zenandops-dashboard,zenandops-gateway",
+        "includeAll": true,
+        "multi": true
+      },
+      {
+        "name": "level",
+        "type": "custom",
+        "label": "Log Level",
+        "current": { "text": "All", "value": "$__all" },
+        "options": [
+          { "text": "All", "value": "$__all", "selected": true },
+          { "text": "DEBUG", "value": "DEBUG", "selected": false },
+          { "text": "INFO", "value": "INFO", "selected": false },
+          { "text": "WARN", "value": "WARN", "selected": false },
+          { "text": "ERROR", "value": "ERROR", "selected": false }
+        ],
+        "query": "DEBUG,INFO,WARN,ERROR",
+        "includeAll": true,
+        "multi": true
+      },
+      {
+        "name": "traceId",
+        "type": "textbox",
+        "label": "Trace ID",
+        "current": { "text": "", "value": "" }
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "title": "Log Stream",
+      "type": "logs",
+      "gridPos": { "h": 20, "w": 24, "x": 0, "y": 0 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "targets": [
+        {
+          "expr": "{service_name=~\"$service\"} |= `$traceId` | json | level=~\"$level\"",
+          "refId": "A"
+        }
+      ],
+      "options": {
+        "showTime": true,
+        "showLabels": true,
+        "showCommonLabels": false,
+        "wrapLogMessage": true,
+        "enableLogDetails": true,
+        "sortOrder": "Descending",
+        "dedupStrategy": "none"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "links": [
+            {
+              "title": "View Trace in Tempo",
+              "url": "/explore?orgId=1&left={\"datasource\":\"tempo\",\"queries\":[{\"refId\":\"A\",\"queryType\":\"traceql\",\"query\":\"${__data.fields.traceId}\"}]}",
+              "targetBlank": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": 2,
+      "title": "Log Volume",
+      "type": "timeseries",
+      "gridPos": { "h": 6, "w": 24, "x": 0, "y": 20 },
+      "datasource": { "type": "loki", "uid": "loki" },
+      "targets": [
+        {
+          "expr": "sum(count_over_time({service_name=~\"$service\"} |= `$traceId` | json | level=~\"$level\" [1m])) by (service_name)",
+          "legendFormat": "{{service_name}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": { "drawStyle": "bars", "fillOpacity": 50 }
+        }
+      }
+    }
+  ],
+  "time": { "from": "now-1h", "to": "now" },
+  "refresh": "30s"
+}
