@@ -77,6 +77,8 @@ services:
         condition: service_healthy
       kafka:
         condition: service_healthy
+      otel-collector:
+        condition: service_started
     networks:
       - zenandops-net
 
@@ -93,6 +95,9 @@ services:
       MP_JWT_VERIFY_PUBLICKEY: ${JWT_PUBLIC_KEY}
       MP_JWT_VERIFY_ISSUER: ${JWT_ISSUER}
       OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+    depends_on:
+      otel-collector:
+        condition: service_started
     networks:
       - zenandops-net
 
@@ -117,6 +122,8 @@ services:
       auth-service:
         condition: service_started
       dashboard-service:
+        condition: service_started
+      otel-collector:
         condition: service_started
     healthcheck:
       test: ["CMD", "java", "-cp", "/app/healthcheck", "HealthCheck", "http://localhost:8080/q/health"]
