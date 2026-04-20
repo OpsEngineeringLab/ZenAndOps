@@ -6,7 +6,7 @@
 
     <groupId>com.zenandops</groupId>
     <artifactId>dashboard-service</artifactId>
-    <version>1.3.0</version>
+    <version>1.4.0</version>
     <packaging>jar</packaging>
 
     <name>ZenAndOps Dashboard Service</name>
@@ -58,6 +58,18 @@
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-smallrye-openapi</artifactId>
+        </dependency>
+
+        <!-- OpenTelemetry -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-opentelemetry</artifactId>
+        </dependency>
+
+        <!-- Micrometer OpenTelemetry bridge -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-micrometer-opentelemetry</artifactId>
         </dependency>
 
         <!-- Test dependencies -->

@@ -14,6 +14,7 @@ import com.zenandops.auth.domain.entity.User;
 import com.zenandops.auth.domain.exception.InvalidCredentialsException;
 import com.zenandops.auth.domain.valueobject.AuthEvent;
 import com.zenandops.auth.domain.valueobject.EventType;
+import com.zenandops.auth.infrastructure.adapter.metrics.AuthMetrics;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
@@ -39,6 +40,7 @@ public class LoginUseCase {
     private final AuthEventPublisher authEventPublisher;
     private final TagRepository tagRepository;
     private final RoleRepository roleRepository;
+    private final AuthMetrics authMetrics;
     private final int refreshTokenExpirationHours;
 
     @Inject
@@ -49,6 +51,7 @@ public class LoginUseCase {
                         AuthEventPublisher authEventPublisher,
                         TagRepository tagRepository,
                         RoleRepository roleRepository,
+                        AuthMetrics authMetrics,
                         @ConfigProperty(name = "zenandops.jwt.refresh-token-expiration-hours", defaultValue = "8")
                         int refreshTokenExpirationHours) {
         this.userRepository = userRepository;
@@ -58,6 +61,7 @@ public class LoginUseCase {
         this.authEventPublisher = authEventPublisher;
         this.tagRepository = tagRepository;
         this.roleRepository = roleRepository;
+        this.authMetrics = authMetrics;
         this.refreshTokenExpirationHours = refreshTokenExpirationHours;
     }
 
@@ -72,11 +76,17 @@ public class LoginUseCase {
     public TokenPair execute(String login, String password) {
         User user = userRepository.findByLogin(login)
                 .filter(User::isActive)
-                .orElseThrow(InvalidCredentialsException::new);
+                .orElseThrow(() -> {
+                    authMetrics.recordAttempt(false);
+                    return new InvalidCredentialsException();
+                });
 
         if (!passwordEncoder.matches(password, user.getPasswordHash())) {
+            authMetrics.recordAttempt(false);
             throw new InvalidCredentialsException();
         }
+
+        authMetrics.recordAttempt(true);
 
         String accessToken = tokenProvider.generateAccessToken(user, resolveTags(user), resolvePermissions(user));
         String refreshTokenValue = tokenProvider.generateRefreshToken();

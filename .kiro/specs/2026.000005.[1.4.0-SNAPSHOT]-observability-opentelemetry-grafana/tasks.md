@@ -1,0 +1,51 @@
+# Tasks
+
+- [x] 1. Add OpenTelemetry and Micrometer dependencies to all backend services
+  - [x] 1.1 Add `quarkus-opentelemetry` and `quarkus-micrometer-opentelemetry` dependencies to `auth-service/pom.xml`
+  - [x] 1.2 Add `quarkus-opentelemetry` and `quarkus-micrometer-opentelemetry` dependencies to `dashboard-service/pom.xml`
+  - [x] 1.3 Add `quarkus-opentelemetry` and `quarkus-micrometer-opentelemetry` dependencies to `gateway-service/pom.xml`
+  - [x] 1.4 Add `jqwik` test dependency to `auth-service/pom.xml` and `gateway-service/pom.xml`
+- [x] 2. Configure OpenTelemetry properties for all backend services
+  - [x] 2.1 Add OTel tracing, logging, metrics, and JSON logging properties to `auth-service/src/main/resources/application.properties` with `quarkus.application.name=zenandops-auth`
+  - [x] 2.2 Add OTel tracing, logging, metrics, and JSON logging properties to `dashboard-service/src/main/resources/application.properties` with `quarkus.application.name=zenandops-dashboard`
+  - [x] 2.3 Add OTel tracing, logging, metrics, and JSON logging properties to `gateway-service/src/main/resources/application.properties` with `quarkus.application.name=zenandops-gateway`
+- [x] 3. Implement custom application metrics
+  - [x] 3.1 Create `AuthMetrics` class in `auth-service` with a `LongCounter` tracking login attempts by outcome (success/failure)
+  - [x] 3.2 Integrate `AuthMetrics` into the existing authentication use case to record login attempts
+  - [x] 3.3 Create `RateLimitMetrics` class in `gateway-service` with an observable gauge reporting rate-limit bucket count per client IP
+  - [x] 3.4 Integrate `RateLimitMetrics` into the existing rate-limiting logic to expose bucket counts
+- [x] 4. Write property-based tests for custom metrics
+  - [x] 4.1 Write jqwik property test for `AuthMetrics` verifying counter totals match expected success/failure counts for any sequence of attempts
+  - [x] 4.2 Write jqwik property test for `RateLimitMetrics` verifying gauge callback reports correct count for any map of IP-to-count entries
+- [x] 5. Create observability infrastructure configuration files
+  - [x] 5.1 Create `observability/otel-collector-config.yaml` with OTLP receivers (gRPC 4317, HTTP 4318), batch processor, and exporters for Tempo, Mimir, and Loki
+  - [x] 5.2 Create `observability/loki-config.yaml` with single-binary mode and local filesystem storage
+  - [x] 5.3 Create `observability/mimir-config.yaml` with single-binary mode and local filesystem storage
+  - [x] 5.4 Create `observability/tempo-config.yaml` with single-binary mode, OTLP gRPC receiver, and local filesystem storage
+- [x] 6. Create Grafana provisioning configuration
+  - [x] 6.1 Create `observability/grafana/provisioning/datasources/datasources.yaml` with Loki, Mimir (Prometheus type), and Tempo data sources including trace-to-logs and trace-to-metrics correlation
+  - [x] 6.2 Create `observability/grafana/provisioning/dashboards/dashboards.yaml` dashboard provider configuration
+- [x] 7. Create pre-built Grafana dashboard JSON files
+  - [x] 7.1 Create `observability/grafana/dashboards/service-overview.json` with RED metrics (request rate, error rate, p50/p95/p99 latency) for all three backend services
+  - [x] 7.2 Create `observability/grafana/dashboards/jvm-metrics.json` with heap memory, GC activity, and thread count panels for all three services
+  - [x] 7.3 Create `observability/grafana/dashboards/logs-explorer.json` with filterable log stream, service name/level/traceId filters, and traceId click-through to Tempo
+  - [x] 7.4 Create `observability/grafana/dashboards/gateway-performance.json` with rate-limit metrics, upstream response times, and error breakdown by downstream service
+  - [x] 7.5 Create `observability/grafana/dashboards/auth-metrics.json` with login success/failure rate and token generation latency panels
+- [x] 8. Update Docker Compose with observability services
+  - [x] 8.1 Add `loki` service to `docker-compose.yml` using `grafana/loki` image with health check, volume mount, and `zenandops-net` network
+  - [x] 8.2 Add `mimir` service to `docker-compose.yml` using `grafana/mimir` image with health check, volume mount, and `zenandops-net` network
+  - [x] 8.3 Add `tempo` service to `docker-compose.yml` using `grafana/tempo` image with health check, volume mount, and `zenandops-net` network
+  - [x] 8.4 Add `otel-collector` service to `docker-compose.yml` using `otel/opentelemetry-collector-contrib` image with health check, config mount, depends_on loki/mimir/tempo, and `zenandops-net` network
+  - [x] 8.5 Add `grafana` service to `docker-compose.yml` using `grafana/grafana` image with health check, provisioning mounts, dashboard mounts, volume, depends_on loki/mimir/tempo, configurable `GRAFANA_PORT`, and `zenandops-net` network
+  - [x] 8.6 Add `OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317` environment variable to auth-service, dashboard-service, and gateway-service containers
+  - [x] 8.7 Add named volumes for loki-data, mimir-data, tempo-data, and grafana-data to the volumes section
+- [x] 9. Update environment configuration files
+  - [x] 9.1 Add all new observability environment variables (`GRAFANA_PORT`, `OTEL_COLLECTOR_PORT_GRPC`, `OTEL_COLLECTOR_PORT_HTTP`, `LOKI_PORT`, `MIMIR_PORT`, `TEMPO_PORT`, `OTEL_TRACES_SAMPLER_ARG`) to `.env` with default values
+  - [x] 9.2 Add all new observability environment variables to `.env.example` with descriptive comments
+- [-] 10. Version control and release
+  - [-] 10.1 Ensure all previous tasks are complete and tests pass
+  - [~] 10.2 Remove SNAPSHOT suffix from all version references in the codebase
+  - [~] 10.3 Commit the version bump: "release: 1.4.0 - observability-opentelemetry-grafana"
+  - [~] 10.4 Merge branch into main/master
+  - [~] 10.5 Apply Git tag: 1.4.0
+  - [~] 10.6 Push branch, merge, and tag to remote

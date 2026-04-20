@@ -53,6 +53,9 @@ target/
 # Quarkus
 .quarkus/
 
+# jqwik
+.jqwik-database
+
 # Frontend
 frontend-app/node_modules/
 frontend-app/dist/
