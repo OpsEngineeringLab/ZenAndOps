@@ -42,10 +42,10 @@
 - [x] 9. Update environment configuration files
   - [x] 9.1 Add all new observability environment variables (`GRAFANA_PORT`, `OTEL_COLLECTOR_PORT_GRPC`, `OTEL_COLLECTOR_PORT_HTTP`, `LOKI_PORT`, `MIMIR_PORT`, `TEMPO_PORT`, `OTEL_TRACES_SAMPLER_ARG`) to `.env` with default values
   - [x] 9.2 Add all new observability environment variables to `.env.example` with descriptive comments
-- [-] 10. Version control and release
-  - [-] 10.1 Ensure all previous tasks are complete and tests pass
-  - [~] 10.2 Remove SNAPSHOT suffix from all version references in the codebase
-  - [~] 10.3 Commit the version bump: "release: 1.4.0 - observability-opentelemetry-grafana"
-  - [~] 10.4 Merge branch into main/master
-  - [~] 10.5 Apply Git tag: 1.4.0
-  - [~] 10.6 Push branch, merge, and tag to remote
+- [x] 10. Version control and release
+  - [x] 10.1 Ensure all previous tasks are complete and tests pass
+  - [x] 10.2 Remove SNAPSHOT suffix from all version references in the codebase
+  - [x] 10.3 Commit the version bump: "release: 1.4.0 - observability-opentelemetry-grafana"
+  - [x] 10.4 Merge branch into main/master
+  - [x] 10.5 Apply Git tag: 1.4.0
+  - [x] 10.6 Push branch, merge, and tag to remote
