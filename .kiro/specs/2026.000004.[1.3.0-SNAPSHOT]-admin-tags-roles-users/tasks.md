@@ -108,36 +108,36 @@ Implement full CRUD administration for Roles and Users, a self-service profile p
   - /api/v1/users route already exists — no change needed
   - _Requirements: 10.1, 10.2, 10.3, 10.4_
 
-- [-] 16. Checkpoint — Verify full backend and gateway compilation
+- [x] 16. Checkpoint — Verify full backend and gateway compilation
   - Ensure all backend services compile. Ensure gateway routes are correctly defined. Ask the user if questions arise.
 
-- [~] 17. Update frontend AuthContext with RBAC permissions claim
+- [x] 17. Update frontend AuthContext with RBAC permissions claim
   - Add `permissions: string[]` to the `JwtClaims` interface in `AuthContext.tsx` (RBAC layer)
   - The existing `tags` field already carries ABAC attributes — both are now available for client-side dual RBAC + ABAC evaluation via `useIsAuthorized({ roles, attributes })`
   - _Requirements: 5.5, 5.8, 9.4_
 
-- [~] 18. Create frontend Role Management page with hooks and modals
+- [x] 18. Create frontend Role Management page with hooks and modals
   - Create `hooks/useRoleApi.ts` with: createRole, listRoles, getRole, updateRole, deleteRole — following useTagApi pattern
   - Create `pages/RoleManagement.tsx` with paginated table (name, description, permission count), create/edit modal (name, description, permission multi-select), delete confirmation modal
   - Create `components/roles/RoleFormModal.tsx` and `components/roles/RoleDeleteConfirmModal.tsx` following TagFormModal/TagDeleteConfirmModal patterns
   - Follow `.frontend-template` design patterns for table, modals, buttons, and page structure
   - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 6.8_
 
-- [~] 19. Create frontend User Management page with hooks and modals
+- [x] 19. Create frontend User Management page with hooks and modals
   - Create `hooks/useUserApi.ts` with: createUser, listUsers, getUser, updateUser, deleteUser, assignRoles, removeRoles — following useTagApi pattern
   - Create `pages/UserManagement.tsx` with paginated table (name, login, email, roles as badges, active status badge, creation date), create modal (login, name, email, password, role multi-select, tag multi-select), edit modal (name, email, password optional, roles, tags, active toggle), delete confirmation modal
   - Create `components/users/UserFormModal.tsx` and `components/users/UserDeleteConfirmModal.tsx` following existing modal patterns
   - Follow `.frontend-template` design patterns
   - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 7.8_
 
-- [~] 20. Create frontend Profile page with hooks
+- [x] 20. Create frontend Profile page with hooks
   - Create `hooks/useProfileApi.ts` with: getProfile, updateProfile, changePassword — following useTagApi pattern
   - Create `pages/Profile.tsx` displaying: login (read-only), name (editable), email (editable), roles (read-only badges), tags (read-only badges)
   - Add password change section: current password, new password, confirm password with client-side match validation
   - Follow `.frontend-template` design patterns for form layout
   - _Requirements: 8.1, 8.2, 8.3, 8.4, 8.5, 8.6, 8.8_
 
-- [~] 21. Update frontend sidebar navigation and App routing
+- [-] 21. Update frontend sidebar navigation and App routing
   - Add new nav items to `AppSidebar.tsx` navItems array: "Role Management" (/roles, adminOnly: true), "User Management" (/users, adminOnly: true), "Profile" (/profile, no adminOnly)
   - Add appropriate icons (check `.frontend-template/src/icons/` for ShieldIcon, UsersIcon, UserIcon or create them)
   - Add new routes in `App.tsx`: /roles with Authorize roles={["ADMIN"]}, /users with Authorize roles={["ADMIN"]}, /profile (no role restriction, just ProtectedRoute)

@@ -6,9 +6,12 @@ import { ReactComponent as CheckCircleIcon } from "./check-circle.svg?react";
 import { ReactComponent as EyeIcon } from "./eye.svg?react";
 import { ReactComponent as EyeCloseIcon } from "./eye-close.svg?react";
 import { ReactComponent as GridIcon } from "./grid.svg?react";
+import { ReactComponent as GroupIcon } from "./group.svg?react";
 import { ReactComponent as HorizontaLDots } from "./horizontal-dots.svg?react";
 import { ReactComponent as PieChartIcon } from "./pie-chart.svg?react";
+import { ReactComponent as ShieldIcon } from "./shield.svg?react";
 import { ReactComponent as TaskIcon } from "./task-icon.svg?react";
+import { ReactComponent as UserIcon } from "./user-line.svg?react";
 
 export {
   AlertIcon,
@@ -19,7 +22,10 @@ export {
   EyeIcon,
   EyeCloseIcon,
   GridIcon,
+  GroupIcon,
   HorizontaLDots,
   PieChartIcon,
+  ShieldIcon,
   TaskIcon,
+  UserIcon,
 };
