@@ -144,11 +144,11 @@ Implement full CRUD administration for Roles and Users, a self-service profile p
   - Ensure non-ADMIN users are redirected to home when accessing /roles or /users
   - _Requirements: 6.1, 6.7, 7.1, 7.7, 8.1, 8.7, 9.1, 9.2, 9.3, 9.4, 9.5_
 
-- [-] 22. Checkpoint — Verify full frontend compilation and routing
+- [x] 22. Checkpoint — Verify full frontend compilation and routing
   - Ensure frontend builds without errors. Verify all new routes, pages, hooks, and components are wired together. Ask the user if questions arise.
 
-- [~] 23. Version control and release
-  - [ ] Ensure all previous tasks are complete and tests pass
+- [-] 23. Version control and release
+  - [-] Ensure all previous tasks are complete and tests pass
   - [ ] Remove SNAPSHOT suffix from all version references in the codebase
   - [ ] Commit the version bump: "release: 1.3.0 - admin-tags-roles-users"
   - [ ] Merge branch into main/master
