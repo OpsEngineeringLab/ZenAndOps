@@ -26,7 +26,7 @@ Implement full CRUD administration for Roles and Users, a self-service profile p
   - All use cases in `application/usecase/` following existing patterns (constructor injection, @ApplicationScoped)
   - _Requirements: 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9_
 
-- [-] 4. Implement User CRUD use cases
+- [x] 4. Implement User CRUD use cases
   - Create `CreateUserUseCase.java` — validate login uniqueness via existsByLogin, validate role names exist via RoleRepository.findAllByNames, hash password via PasswordEncoder, create and save User
   - Create `ListUsersUseCase.java` — return PaginatedResult\<User\> using UserRepository.findAll(page, size) and count()
   - Create `GetUserUseCase.java` — find by id or throw UserNotFoundException
@@ -35,7 +35,7 @@ Implement full CRUD administration for Roles and Users, a self-service profile p
   - All use cases in `application/usecase/`
   - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9_
 
-- [~] 5. Implement Role assignment and Profile use cases
+- [x] 5. Implement Role assignment and Profile use cases
   - Create `AssignRolesToUserUseCase.java` — validate role names exist as Role entities via RoleRepository.findAllByNames (throw RoleNotFoundException if any missing), add to user's roles list ignoring duplicates, save
   - Create `RemoveRolesFromUserUseCase.java` — find user, remove specified role names from user's roles list, save
   - Create `GetProfileUseCase.java` — find user by login (from JWT sub claim), return user data
@@ -44,7 +44,7 @@ Implement full CRUD administration for Roles and Users, a self-service profile p
   - All use cases in `application/usecase/`
   - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 4.1, 4.2, 4.3, 4.4, 4.5_
 
-- [~] 6. Checkpoint — Verify domain, ports, and use case layers
+- [-] 6. Checkpoint — Verify domain, ports, and use case layers
   - Ensure all use cases compile and follow existing patterns. Ask the user if questions arise.
 
 - [~] 7. Implement MongoRoleRepository adapter and extend MongoUserRepository
