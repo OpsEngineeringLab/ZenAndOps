@@ -40,6 +40,7 @@ public class JwtTokenProvider implements TokenProvider {
                 .claim("name", user.getName())
                 .claim("email", user.getEmail())
                 .groups(new HashSet<>(user.getRoles()))
+                .claim("roles", user.getRoles())
                 .claim("tags", tagsClaim)
                 .claim("permissions", permissions)
                 .expiresIn(Duration.ofMinutes(accessTokenExpirationMinutes))

@@ -147,13 +147,13 @@ Implement full CRUD administration for Roles and Users, a self-service profile p
 - [x] 22. Checkpoint — Verify full frontend compilation and routing
   - Ensure frontend builds without errors. Verify all new routes, pages, hooks, and components are wired together. Ask the user if questions arise.
 
-- [-] 23. Version control and release
-  - [-] Ensure all previous tasks are complete and tests pass
-  - [ ] Remove SNAPSHOT suffix from all version references in the codebase
-  - [ ] Commit the version bump: "release: 1.3.0 - admin-tags-roles-users"
-  - [ ] Merge branch into main/master
-  - [ ] Apply Git tag: 1.3.0 (without SNAPSHOT)
-  - [ ] Push branch, merge, and tag to remote
+- [x] 23. Version control and release
+  - [x] Ensure all previous tasks are complete and tests pass
+  - [x] Remove SNAPSHOT suffix from all version references in the codebase
+  - [x] Commit the version bump: "release: 1.3.0 - admin-tags-roles-users"
+  - [x] Merge branch into main/master
+  - [x] Apply Git tag: 1.3.0 (without SNAPSHOT)
+  - [x] Push branch, merge, and tag to remote
 
 ## Notes
 
