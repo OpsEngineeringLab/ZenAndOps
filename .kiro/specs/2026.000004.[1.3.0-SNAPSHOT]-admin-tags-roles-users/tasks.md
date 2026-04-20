@@ -6,18 +6,18 @@ Implement full CRUD administration for Roles and Users, a self-service profile p
 
 ## Tasks
 
-- [-] 1. Create Role domain entity and domain exceptions
+- [x] 1. Create Role domain entity and domain exceptions
   - Create `Role.java` in `domain/entity/` with fields: id, name, description, permissions (List\<String\>), createdAt, updatedAt, getters and setters
   - Create domain exceptions in `domain/exception/`: `RoleAlreadyExistsException`, `RoleNotFoundException`, `RoleInUseException`, `UserAlreadyExistsException`, `SelfDeletionException`, `InvalidPasswordException`
   - Follow the same mutable class pattern as `Tag.java` and `User.java`
   - _Requirements: 1.1_
 
-- [~] 2. Create RoleRepository port and extend UserRepository port
+- [x] 2. Create RoleRepository port and extend UserRepository port
   - Create `RoleRepository.java` in `application/port/` with methods: save, findById, findByName, findAllByNames, findAll(page, size), count, delete, existsAssignedToAnyUser
   - Extend `UserRepository.java` with new methods: findAll(int page, int size), count(), delete(String id), existsByLogin(String login)
   - _Requirements: 1.1, 2.1, 2.3, 2.8_
 
-- [~] 3. Implement Role CRUD use cases
+- [x] 3. Implement Role CRUD use cases
   - Create `CreateRoleUseCase.java` — validate name uniqueness via RoleRepository.findByName, create and save Role
   - Create `ListRolesUseCase.java` — return PaginatedResult\<Role\> using RoleRepository.findAll(page, size) and count()
   - Create `GetRoleUseCase.java` — find by id or throw RoleNotFoundException
@@ -26,7 +26,7 @@ Implement full CRUD administration for Roles and Users, a self-service profile p
   - All use cases in `application/usecase/` following existing patterns (constructor injection, @ApplicationScoped)
   - _Requirements: 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9_
 
-- [~] 4. Implement User CRUD use cases
+- [-] 4. Implement User CRUD use cases
   - Create `CreateUserUseCase.java` — validate login uniqueness via existsByLogin, validate role names exist via RoleRepository.findAllByNames, hash password via PasswordEncoder, create and save User
   - Create `ListUsersUseCase.java` — return PaginatedResult\<User\> using UserRepository.findAll(page, size) and count()
   - Create `GetUserUseCase.java` — find by id or throw UserNotFoundException
