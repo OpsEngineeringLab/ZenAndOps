@@ -17,6 +17,7 @@ import com.zenandops.auth.domain.valueobject.AuthEvent;
 import com.zenandops.auth.domain.valueobject.EventType;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -38,6 +39,7 @@ public class RefreshTokenUseCase {
     private final AuthEventPublisher authEventPublisher;
     private final TagRepository tagRepository;
     private final RoleRepository roleRepository;
+    private final int refreshTokenExpirationHours;
 
     @Inject
     public RefreshTokenUseCase(RefreshTokenRepository refreshTokenRepository,
@@ -45,13 +47,16 @@ public class RefreshTokenUseCase {
                                TokenProvider tokenProvider,
                                AuthEventPublisher authEventPublisher,
                                TagRepository tagRepository,
-                               RoleRepository roleRepository) {
+                               RoleRepository roleRepository,
+                               @ConfigProperty(name = "zenandops.jwt.refresh-token-expiration-hours", defaultValue = "8")
+                               int refreshTokenExpirationHours) {
         this.refreshTokenRepository = refreshTokenRepository;
         this.userRepository = userRepository;
         this.tokenProvider = tokenProvider;
         this.authEventPublisher = authEventPublisher;
         this.tagRepository = tagRepository;
         this.roleRepository = roleRepository;
+        this.refreshTokenExpirationHours = refreshTokenExpirationHours;
     }
 
     /**
@@ -90,7 +95,7 @@ public class RefreshTokenUseCase {
         newRefreshToken.setId(UUID.randomUUID().toString());
         newRefreshToken.setToken(newRefreshTokenValue);
         newRefreshToken.setUserId(user.getId());
-        newRefreshToken.setExpiresAt(Instant.now().plus(8, ChronoUnit.HOURS));
+        newRefreshToken.setExpiresAt(Instant.now().plus(refreshTokenExpirationHours, ChronoUnit.HOURS));
         newRefreshToken.setCreatedAt(Instant.now());
 
         refreshTokenRepository.save(newRefreshToken);

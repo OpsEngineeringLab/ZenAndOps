@@ -3,11 +3,13 @@ import { ReactComponent as ArrowUpIcon } from "./arrow-up.svg?react";
 import { ReactComponent as ArrowDownIcon } from "./arrow-down.svg?react";
 import { ReactComponent as BoxIconLine } from "./box-line.svg?react";
 import { ReactComponent as CheckCircleIcon } from "./check-circle.svg?react";
+import { ReactComponent as ChevronDownIcon } from "./chevron-down.svg?react";
 import { ReactComponent as EyeIcon } from "./eye.svg?react";
 import { ReactComponent as EyeCloseIcon } from "./eye-close.svg?react";
 import { ReactComponent as GridIcon } from "./grid.svg?react";
 import { ReactComponent as GroupIcon } from "./group.svg?react";
 import { ReactComponent as HorizontaLDots } from "./horizontal-dots.svg?react";
+import { ReactComponent as ListIcon } from "./list.svg?react";
 import { ReactComponent as PieChartIcon } from "./pie-chart.svg?react";
 import { ReactComponent as ShieldIcon } from "./shield.svg?react";
 import { ReactComponent as TaskIcon } from "./task-icon.svg?react";
@@ -19,11 +21,13 @@ export {
   ArrowDownIcon,
   BoxIconLine,
   CheckCircleIcon,
+  ChevronDownIcon,
   EyeIcon,
   EyeCloseIcon,
   GridIcon,
   GroupIcon,
   HorizontaLDots,
+  ListIcon,
   PieChartIcon,
   ShieldIcon,
   TaskIcon,

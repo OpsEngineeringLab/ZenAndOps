@@ -16,6 +16,7 @@ import com.zenandops.auth.domain.valueobject.AuthEvent;
 import com.zenandops.auth.domain.valueobject.EventType;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -25,7 +26,7 @@ import java.util.stream.Collectors;
 
 /**
  * Use case for authenticating a user with login and password credentials.
- * Validates credentials, issues an Access_Token (15 min) and Refresh_Token (8 hours),
+ * Validates credentials, issues an Access_Token and Refresh_Token,
  * stores the refresh token, and publishes a LOGIN event.
  */
 @ApplicationScoped
@@ -38,6 +39,7 @@ public class LoginUseCase {
     private final AuthEventPublisher authEventPublisher;
     private final TagRepository tagRepository;
     private final RoleRepository roleRepository;
+    private final int refreshTokenExpirationHours;
 
     @Inject
     public LoginUseCase(UserRepository userRepository,
@@ -46,7 +48,9 @@ public class LoginUseCase {
                         RefreshTokenRepository refreshTokenRepository,
                         AuthEventPublisher authEventPublisher,
                         TagRepository tagRepository,
-                        RoleRepository roleRepository) {
+                        RoleRepository roleRepository,
+                        @ConfigProperty(name = "zenandops.jwt.refresh-token-expiration-hours", defaultValue = "8")
+                        int refreshTokenExpirationHours) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.tokenProvider = tokenProvider;
@@ -54,6 +58,7 @@ public class LoginUseCase {
         this.authEventPublisher = authEventPublisher;
         this.tagRepository = tagRepository;
         this.roleRepository = roleRepository;
+        this.refreshTokenExpirationHours = refreshTokenExpirationHours;
     }
 
     /**
@@ -80,7 +85,7 @@ public class LoginUseCase {
         refreshToken.setId(UUID.randomUUID().toString());
         refreshToken.setToken(refreshTokenValue);
         refreshToken.setUserId(user.getId());
-        refreshToken.setExpiresAt(Instant.now().plus(8, ChronoUnit.HOURS));
+        refreshToken.setExpiresAt(Instant.now().plus(refreshTokenExpirationHours, ChronoUnit.HOURS));
         refreshToken.setCreatedAt(Instant.now());
 
         refreshTokenRepository.save(refreshToken);
