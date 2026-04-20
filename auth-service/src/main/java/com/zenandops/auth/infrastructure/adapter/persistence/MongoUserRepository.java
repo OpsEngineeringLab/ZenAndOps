@@ -2,6 +2,7 @@ package com.zenandops.auth.infrastructure.adapter.persistence;
 
 import com.zenandops.auth.application.port.UserRepository;
 import com.zenandops.auth.domain.entity.User;
+import io.quarkus.panache.common.Page;
 import jakarta.enterprise.context.ApplicationScoped;
 
 import java.util.List;
@@ -32,6 +33,31 @@ public class MongoUserRepository implements UserRepository {
                 .stream()
                 .map(this::toDomain)
                 .toList();
+    }
+
+    @Override
+    public List<User> findAll(int page, int size) {
+        return UserPanacheEntity.<UserPanacheEntity>findAll()
+                .page(Page.of(page, size))
+                .list()
+                .stream()
+                .map(this::toDomain)
+                .toList();
+    }
+
+    @Override
+    public long count() {
+        return UserPanacheEntity.count();
+    }
+
+    @Override
+    public void delete(String id) {
+        UserPanacheEntity.deleteById(new org.bson.types.ObjectId(id));
+    }
+
+    @Override
+    public boolean existsByLogin(String login) {
+        return UserPanacheEntity.count("login", login) > 0;
     }
 
     @Override

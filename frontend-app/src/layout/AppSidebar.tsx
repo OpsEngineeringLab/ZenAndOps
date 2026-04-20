@@ -3,8 +3,11 @@ import { Link, useLocation } from "react-router";
 
 import {
   GridIcon,
-  TaskIcon,
+  GroupIcon,
   HorizontaLDots,
+  ShieldIcon,
+  TaskIcon,
+  UserIcon,
 } from "../icons";
 import { useSidebar } from "../context/SidebarContext";
 import { useAuth } from "../context/AuthContext";
@@ -28,6 +31,23 @@ const navItems: NavItem[] = [
     name: "Tag Management",
     path: "/tags",
     adminOnly: true,
+  },
+  {
+    icon: <ShieldIcon />,
+    name: "Role Management",
+    path: "/roles",
+    adminOnly: true,
+  },
+  {
+    icon: <GroupIcon />,
+    name: "User Management",
+    path: "/users",
+    adminOnly: true,
+  },
+  {
+    icon: <UserIcon />,
+    name: "Profile",
+    path: "/profile",
   },
 ];
 

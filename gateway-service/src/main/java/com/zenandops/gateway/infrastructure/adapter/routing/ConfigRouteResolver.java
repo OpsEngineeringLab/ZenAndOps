@@ -37,6 +37,8 @@ public class ConfigRouteResolver implements RouteResolver {
 
         // Protected routes (JWT required)
         definitions.add(new RouteDefinition("/api/v1/users", authServiceUrl, true));
+        definitions.add(new RouteDefinition("/api/v1/roles", authServiceUrl, true));
+        definitions.add(new RouteDefinition("/api/v1/profile", authServiceUrl, true));
         definitions.add(new RouteDefinition("/api/v1/tags", authServiceUrl, true));
         definitions.add(new RouteDefinition("/api/v1/auth/", authServiceUrl, true));
         definitions.add(new RouteDefinition("/api/v1/dashboard", dashboardServiceUrl, true));

@@ -11,7 +11,7 @@ import java.util.Map;
  */
 public interface TokenProvider {
 
-    String generateAccessToken(User user, List<Tag> resolvedTags);
+    String generateAccessToken(User user, List<Tag> resolvedTags, List<String> permissions);
 
     String generateRefreshToken();
 

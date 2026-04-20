@@ -2,11 +2,17 @@ package com.zenandops.auth.infrastructure.rest;
 
 import com.zenandops.auth.domain.exception.AccessDeniedException;
 import com.zenandops.auth.domain.exception.InvalidCredentialsException;
+import com.zenandops.auth.domain.exception.InvalidPasswordException;
+import com.zenandops.auth.domain.exception.RoleAlreadyExistsException;
+import com.zenandops.auth.domain.exception.RoleInUseException;
+import com.zenandops.auth.domain.exception.RoleNotFoundException;
+import com.zenandops.auth.domain.exception.SelfDeletionException;
 import com.zenandops.auth.domain.exception.TagAlreadyExistsException;
 import com.zenandops.auth.domain.exception.TagInUseException;
 import com.zenandops.auth.domain.exception.TagNotFoundException;
 import com.zenandops.auth.domain.exception.TokenExpiredException;
 import com.zenandops.auth.domain.exception.TokenRevokedException;
+import com.zenandops.auth.domain.exception.UserAlreadyExistsException;
 import com.zenandops.auth.domain.exception.UserNotFoundException;
 import com.zenandops.auth.infrastructure.rest.dto.ErrorResponse;
 import jakarta.ws.rs.core.Response;
@@ -55,6 +61,30 @@ public class AuthExceptionMapper implements ExceptionMapper<RuntimeException> {
         if (exception instanceof UserNotFoundException) {
             return buildResponse(Response.Status.NOT_FOUND,
                     "USER_NOT_FOUND", exception.getMessage());
+        }
+        if (exception instanceof RoleAlreadyExistsException) {
+            return buildResponse(Response.Status.CONFLICT,
+                    "ROLE_ALREADY_EXISTS", exception.getMessage());
+        }
+        if (exception instanceof RoleNotFoundException) {
+            return buildResponse(Response.Status.NOT_FOUND,
+                    "ROLE_NOT_FOUND", exception.getMessage());
+        }
+        if (exception instanceof RoleInUseException) {
+            return buildResponse(Response.Status.CONFLICT,
+                    "ROLE_IN_USE", exception.getMessage());
+        }
+        if (exception instanceof UserAlreadyExistsException) {
+            return buildResponse(Response.Status.CONFLICT,
+                    "USER_ALREADY_EXISTS", exception.getMessage());
+        }
+        if (exception instanceof SelfDeletionException) {
+            return buildResponse(Response.Status.CONFLICT,
+                    "USER_SELF_DELETION", exception.getMessage());
+        }
+        if (exception instanceof InvalidPasswordException) {
+            return buildResponse(Response.Status.UNAUTHORIZED,
+                    "AUTH_INVALID_PASSWORD", exception.getMessage());
         }
         // Let other exceptions propagate
         throw exception;

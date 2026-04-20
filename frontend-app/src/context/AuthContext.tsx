@@ -17,6 +17,7 @@ interface JwtClaims {
   email: string;
   roles: string[];
   tags: Array<{ key: string; value: string }>;
+  permissions: string[];
   iat: number;
   exp: number;
 }
