@@ -16,5 +16,13 @@ public interface UserRepository {
 
     List<User> findAll();
 
+    List<User> findAll(int page, int size);
+
+    long count();
+
     void save(User user);
+
+    void delete(String id);
+
+    boolean existsByLogin(String login);
 }
