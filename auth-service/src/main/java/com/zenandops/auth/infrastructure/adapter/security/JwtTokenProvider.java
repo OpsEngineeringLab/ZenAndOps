@@ -29,7 +29,7 @@ public class JwtTokenProvider implements TokenProvider {
     int accessTokenExpirationMinutes;
 
     @Override
-    public String generateAccessToken(User user, List<Tag> resolvedTags) {
+    public String generateAccessToken(User user, List<Tag> resolvedTags, List<String> permissions) {
         List<Map<String, String>> tagsClaim = resolvedTags.stream()
                 .map(tag -> Map.of("key", tag.getKey(), "value", tag.getValue()))
                 .toList();
@@ -41,6 +41,7 @@ public class JwtTokenProvider implements TokenProvider {
                 .claim("email", user.getEmail())
                 .groups(new HashSet<>(user.getRoles()))
                 .claim("tags", tagsClaim)
+                .claim("permissions", permissions)
                 .expiresIn(Duration.ofMinutes(accessTokenExpirationMinutes))
                 .sign();
     }

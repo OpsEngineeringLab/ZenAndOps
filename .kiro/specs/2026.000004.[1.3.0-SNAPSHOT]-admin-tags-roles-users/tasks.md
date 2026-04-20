@@ -44,17 +44,17 @@ Implement full CRUD administration for Roles and Users, a self-service profile p
   - All use cases in `application/usecase/`
   - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 4.1, 4.2, 4.3, 4.4, 4.5_
 
-- [-] 6. Checkpoint — Verify domain, ports, and use case layers
+- [x] 6. Checkpoint — Verify domain, ports, and use case layers
   - Ensure all use cases compile and follow existing patterns. Ask the user if questions arise.
 
-- [~] 7. Implement MongoRoleRepository adapter and extend MongoUserRepository
+- [x] 7. Implement MongoRoleRepository adapter and extend MongoUserRepository
   - Create `RolePanacheEntity.java` in `infrastructure/adapter/persistence/` with MongoDB Panache entity fields matching Role domain entity
   - Create `MongoRoleRepository.java` implementing RoleRepository port, following MongoTagRepository patterns (toEntity/toDomain mappers, ObjectId handling, unique index on `name` at startup)
   - Implement `existsAssignedToAnyUser(roleName)` by querying `UserPanacheEntity.count("roles", roleName) > 0`
   - Extend `MongoUserRepository.java` with: findAll(int page, int size) using Panache pagination, count() via UserPanacheEntity.count(), delete(String id) via UserPanacheEntity.deleteById, existsByLogin(String login) via UserPanacheEntity.count("login", login) > 0
   - _Requirements: 1.1, 1.9, 2.1, 2.3, 2.8_
 
-- [~] 8. Modify JwtTokenProvider to include RBAC permissions claim
+- [-] 8. Modify JwtTokenProvider to include RBAC permissions claim
   - Update `JwtTokenProvider.generateAccessToken` signature to accept `List<Role> resolvedRoles` (or resolve internally)
   - Aggregate unique RBAC permission strings from all resolved Role entities
   - Add `.claim("permissions", permissionsList)` to the JWT builder (RBAC layer)

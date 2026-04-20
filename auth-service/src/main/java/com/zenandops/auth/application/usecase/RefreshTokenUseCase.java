@@ -2,10 +2,12 @@ package com.zenandops.auth.application.usecase;
 
 import com.zenandops.auth.application.port.AuthEventPublisher;
 import com.zenandops.auth.application.port.RefreshTokenRepository;
+import com.zenandops.auth.application.port.RoleRepository;
 import com.zenandops.auth.application.port.TagRepository;
 import com.zenandops.auth.application.port.TokenProvider;
 import com.zenandops.auth.application.port.UserRepository;
 import com.zenandops.auth.domain.entity.RefreshToken;
+import com.zenandops.auth.domain.entity.Role;
 import com.zenandops.auth.domain.entity.Tag;
 import com.zenandops.auth.domain.entity.User;
 import com.zenandops.auth.domain.exception.InvalidCredentialsException;
@@ -20,6 +22,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Use case for refreshing authentication tokens.
@@ -34,18 +37,21 @@ public class RefreshTokenUseCase {
     private final TokenProvider tokenProvider;
     private final AuthEventPublisher authEventPublisher;
     private final TagRepository tagRepository;
+    private final RoleRepository roleRepository;
 
     @Inject
     public RefreshTokenUseCase(RefreshTokenRepository refreshTokenRepository,
                                UserRepository userRepository,
                                TokenProvider tokenProvider,
                                AuthEventPublisher authEventPublisher,
-                               TagRepository tagRepository) {
+                               TagRepository tagRepository,
+                               RoleRepository roleRepository) {
         this.refreshTokenRepository = refreshTokenRepository;
         this.userRepository = userRepository;
         this.tokenProvider = tokenProvider;
         this.authEventPublisher = authEventPublisher;
         this.tagRepository = tagRepository;
+        this.roleRepository = roleRepository;
     }
 
     /**
@@ -77,7 +83,7 @@ public class RefreshTokenUseCase {
         refreshTokenRepository.revokeByToken(refreshTokenValue);
 
         // Issue new token pair
-        String newAccessToken = tokenProvider.generateAccessToken(user, resolveTags(user));
+        String newAccessToken = tokenProvider.generateAccessToken(user, resolveTags(user), resolvePermissions(user));
         String newRefreshTokenValue = tokenProvider.generateRefreshToken();
 
         RefreshToken newRefreshToken = new RefreshToken();
@@ -105,5 +111,16 @@ public class RefreshTokenUseCase {
             return List.of();
         }
         return tagRepository.findAllByIds(user.getTagIds());
+    }
+
+    private List<String> resolvePermissions(User user) {
+        if (user.getRoles() == null || user.getRoles().isEmpty()) {
+            return List.of();
+        }
+        List<Role> roles = roleRepository.findAllByNames(user.getRoles());
+        return roles.stream()
+                .flatMap(role -> role.getPermissions().stream())
+                .distinct()
+                .collect(Collectors.toList());
     }
 }

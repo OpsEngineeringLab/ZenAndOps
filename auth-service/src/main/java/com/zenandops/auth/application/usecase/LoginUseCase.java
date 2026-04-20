@@ -3,10 +3,12 @@ package com.zenandops.auth.application.usecase;
 import com.zenandops.auth.application.port.AuthEventPublisher;
 import com.zenandops.auth.application.port.PasswordEncoder;
 import com.zenandops.auth.application.port.RefreshTokenRepository;
+import com.zenandops.auth.application.port.RoleRepository;
 import com.zenandops.auth.application.port.TagRepository;
 import com.zenandops.auth.application.port.TokenProvider;
 import com.zenandops.auth.application.port.UserRepository;
 import com.zenandops.auth.domain.entity.RefreshToken;
+import com.zenandops.auth.domain.entity.Role;
 import com.zenandops.auth.domain.entity.Tag;
 import com.zenandops.auth.domain.entity.User;
 import com.zenandops.auth.domain.exception.InvalidCredentialsException;
@@ -19,6 +21,7 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Use case for authenticating a user with login and password credentials.
@@ -34,6 +37,7 @@ public class LoginUseCase {
     private final RefreshTokenRepository refreshTokenRepository;
     private final AuthEventPublisher authEventPublisher;
     private final TagRepository tagRepository;
+    private final RoleRepository roleRepository;
 
     @Inject
     public LoginUseCase(UserRepository userRepository,
@@ -41,13 +45,15 @@ public class LoginUseCase {
                         TokenProvider tokenProvider,
                         RefreshTokenRepository refreshTokenRepository,
                         AuthEventPublisher authEventPublisher,
-                        TagRepository tagRepository) {
+                        TagRepository tagRepository,
+                        RoleRepository roleRepository) {
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.tokenProvider = tokenProvider;
         this.refreshTokenRepository = refreshTokenRepository;
         this.authEventPublisher = authEventPublisher;
         this.tagRepository = tagRepository;
+        this.roleRepository = roleRepository;
     }
 
     /**
@@ -67,7 +73,7 @@ public class LoginUseCase {
             throw new InvalidCredentialsException();
         }
 
-        String accessToken = tokenProvider.generateAccessToken(user, resolveTags(user));
+        String accessToken = tokenProvider.generateAccessToken(user, resolveTags(user), resolvePermissions(user));
         String refreshTokenValue = tokenProvider.generateRefreshToken();
 
         RefreshToken refreshToken = new RefreshToken();
@@ -95,5 +101,16 @@ public class LoginUseCase {
             return List.of();
         }
         return tagRepository.findAllByIds(user.getTagIds());
+    }
+
+    private List<String> resolvePermissions(User user) {
+        if (user.getRoles() == null || user.getRoles().isEmpty()) {
+            return List.of();
+        }
+        List<Role> roles = roleRepository.findAllByNames(user.getRoles());
+        return roles.stream()
+                .flatMap(role -> role.getPermissions().stream())
+                .distinct()
+                .collect(Collectors.toList());
     }
 }
