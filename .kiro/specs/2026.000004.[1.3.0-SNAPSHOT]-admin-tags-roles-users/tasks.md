@@ -137,14 +137,14 @@ Implement full CRUD administration for Roles and Users, a self-service profile p
   - Follow `.frontend-template` design patterns for form layout
   - _Requirements: 8.1, 8.2, 8.3, 8.4, 8.5, 8.6, 8.8_
 
-- [-] 21. Update frontend sidebar navigation and App routing
+- [x] 21. Update frontend sidebar navigation and App routing
   - Add new nav items to `AppSidebar.tsx` navItems array: "Role Management" (/roles, adminOnly: true), "User Management" (/users, adminOnly: true), "Profile" (/profile, no adminOnly)
   - Add appropriate icons (check `.frontend-template/src/icons/` for ShieldIcon, UsersIcon, UserIcon or create them)
   - Add new routes in `App.tsx`: /roles with Authorize roles={["ADMIN"]}, /users with Authorize roles={["ADMIN"]}, /profile (no role restriction, just ProtectedRoute)
   - Ensure non-ADMIN users are redirected to home when accessing /roles or /users
   - _Requirements: 6.1, 6.7, 7.1, 7.7, 8.1, 8.7, 9.1, 9.2, 9.3, 9.4, 9.5_
 
-- [~] 22. Checkpoint — Verify full frontend compilation and routing
+- [-] 22. Checkpoint — Verify full frontend compilation and routing
   - Ensure frontend builds without errors. Verify all new routes, pages, hooks, and components are wired together. Ask the user if questions arise.
 
 - [~] 23. Version control and release
