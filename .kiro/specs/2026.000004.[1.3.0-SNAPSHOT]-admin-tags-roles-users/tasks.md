@@ -54,7 +54,7 @@ Implement full CRUD administration for Roles and Users, a self-service profile p
   - Extend `MongoUserRepository.java` with: findAll(int page, int size) using Panache pagination, count() via UserPanacheEntity.count(), delete(String id) via UserPanacheEntity.deleteById, existsByLogin(String login) via UserPanacheEntity.count("login", login) > 0
   - _Requirements: 1.1, 1.9, 2.1, 2.3, 2.8_
 
-- [-] 8. Modify JwtTokenProvider to include RBAC permissions claim
+- [x] 8. Modify JwtTokenProvider to include RBAC permissions claim
   - Update `JwtTokenProvider.generateAccessToken` signature to accept `List<Role> resolvedRoles` (or resolve internally)
   - Aggregate unique RBAC permission strings from all resolved Role entities
   - Add `.claim("permissions", permissionsList)` to the JWT builder (RBAC layer)
@@ -63,31 +63,31 @@ Implement full CRUD administration for Roles and Users, a self-service profile p
   - Update all callers of generateAccessToken (LoginUseCase, RefreshTokenUseCase) to resolve roles via RoleRepository.findAllByNames and pass them
   - _Requirements: 5.2, 5.5_
 
-- [~] 9. Update SeedDataService with default Role entities
+- [x] 9. Update SeedDataService with default Role entities
   - Inject RoleRepository into SeedDataService
   - Create default Role entities before creating users: ADMIN (all permissions), USER (profile:read, profile:write, dashboard:read), GUEST (dashboard:read)
   - Use idempotent creation pattern (check findByName before creating)
   - Keep existing user creation logic unchanged — users already reference role names as strings
   - _Requirements: 5.6_
 
-- [~] 10. Extend AuthExceptionMapper with new exception mappings
+- [x] 10. Extend AuthExceptionMapper with new exception mappings
   - Add mappings: RoleAlreadyExistsException → 409 (ROLE_ALREADY_EXISTS), RoleNotFoundException → 404 (ROLE_NOT_FOUND), RoleInUseException → 409 (ROLE_IN_USE), UserAlreadyExistsException → 409 (USER_ALREADY_EXISTS), SelfDeletionException → 409 (USER_SELF_DELETION), InvalidPasswordException → 401 (AUTH_INVALID_PASSWORD)
   - Follow existing if-instanceof pattern in AuthExceptionMapper
   - _Requirements: 1.3, 1.6, 1.9, 2.2, 2.5, 2.9, 4.5_
 
-- [~] 11. Create REST DTOs for Role, User, Profile, and Role assignment
+- [x] 11. Create REST DTOs for Role, User, Profile, and Role assignment
   - Create in `infrastructure/rest/dto/`: CreateRoleRequest, UpdateRoleRequest, RoleResponse, PaginatedRolesResponse, CreateUserRequest, UpdateUserRequest, UserResponse, PaginatedUsersResponse, ProfileResponse, UpdateProfileRequest, ChangePasswordRequest, UserRolesRequest
   - Follow existing record pattern (e.g., TagResponse, CreateTagRequest)
   - UserResponse must NOT include passwordHash field
   - _Requirements: 2.1, 2.3, 2.4, 2.6, 4.1_
 
-- [~] 12. Create RoleResource REST endpoint
+- [x] 12. Create RoleResource REST endpoint
   - Create `RoleResource.java` at `/api/v1/roles` with @RolesAllowed("ADMIN")
   - Implement: POST (create, 201), GET (list paginated), GET /{id} (get by id), PUT /{id} (update), DELETE /{id} (delete, 204)
   - Follow TagResource patterns for OpenAPI annotations, pagination query params, and response mapping
   - _Requirements: 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 1.10_
 
-- [~] 13. Create UserResource REST endpoint
+- [x] 13. Create UserResource REST endpoint
   - Create `UserResource.java` at `/api/v1/users` with @RolesAllowed("ADMIN")
   - Implement: POST (create, 201), GET (list paginated), GET /{id} (get by id), PUT /{id} (update), DELETE /{id} (delete, 204)
   - Pass SecurityContext principal name as currentUserId to DeleteUserUseCase for self-deletion prevention
@@ -95,20 +95,20 @@ Implement full CRUD administration for Roles and Users, a self-service profile p
   - Follow TagResource patterns for OpenAPI annotations
   - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9, 2.10_
 
-- [~] 14. Create UserRoleResource and ProfileResource REST endpoints
+- [x] 14. Create UserRoleResource and ProfileResource REST endpoints
   - Create `UserRoleResource.java` at `/api/v1/users/{userId}/roles` with @RolesAllowed("ADMIN"): POST (assign roles), DELETE (remove roles)
   - Create `ProfileResource.java` at `/api/v1/profile` with @Authenticated: GET (get profile), PUT (update name/email), POST /password (change password)
   - ProfileResource extracts current user login from SecurityContext/JWT sub claim
   - Follow existing UserTagResource pattern for sub-resource structure
   - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 4.1, 4.2, 4.3, 4.4, 4.5, 4.6_
 
-- [~] 15. Add gateway routes for /api/v1/roles and /api/v1/profile
+- [x] 15. Add gateway routes for /api/v1/roles and /api/v1/profile
   - Add `new RouteDefinition("/api/v1/roles", authServiceUrl, true)` to ConfigRouteResolver.init()
   - Add `new RouteDefinition("/api/v1/profile", authServiceUrl, true)` to ConfigRouteResolver.init()
   - /api/v1/users route already exists — no change needed
   - _Requirements: 10.1, 10.2, 10.3, 10.4_
 
-- [~] 16. Checkpoint — Verify full backend and gateway compilation
+- [-] 16. Checkpoint — Verify full backend and gateway compilation
   - Ensure all backend services compile. Ensure gateway routes are correctly defined. Ask the user if questions arise.
 
 - [~] 17. Update frontend AuthContext with RBAC permissions claim
