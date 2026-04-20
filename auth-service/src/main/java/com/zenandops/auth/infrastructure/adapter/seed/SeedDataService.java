@@ -1,8 +1,10 @@
 package com.zenandops.auth.infrastructure.adapter.seed;
 
 import com.zenandops.auth.application.port.PasswordEncoder;
+import com.zenandops.auth.application.port.RoleRepository;
 import com.zenandops.auth.application.port.TagRepository;
 import com.zenandops.auth.application.port.UserRepository;
+import com.zenandops.auth.domain.entity.Role;
 import com.zenandops.auth.domain.entity.Tag;
 import com.zenandops.auth.domain.entity.User;
 import io.quarkus.runtime.StartupEvent;
@@ -28,14 +30,17 @@ public class SeedDataService {
 
     private final UserRepository userRepository;
     private final TagRepository tagRepository;
+    private final RoleRepository roleRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Inject
     public SeedDataService(UserRepository userRepository,
                            TagRepository tagRepository,
+                           RoleRepository roleRepository,
                            PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.tagRepository = tagRepository;
+        this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -48,6 +53,9 @@ public class SeedDataService {
     }
 
     private void seed() {
+        // Create default roles (idempotent — always runs regardless of existing users)
+        seedDefaultRoles();
+
         List<User> existingUsers = userRepository.findAll();
         if (!existingUsers.isEmpty()) {
             LOG.info("Users collection is not empty. Skipping seed data routine.");
@@ -76,6 +84,42 @@ public class SeedDataService {
                 List.of());
 
         LOG.info("Seed data routine completed successfully.");
+    }
+
+    private void seedDefaultRoles() {
+        LOG.info("Seeding default roles...");
+
+        createRole("ADMIN", "Full system access",
+                List.of("users:read", "users:write", "roles:read", "roles:write",
+                        "tags:read", "tags:write", "profile:read", "profile:write", "dashboard:read"));
+
+        createRole("USER", "Standard user access",
+                List.of("profile:read", "profile:write", "dashboard:read"));
+
+        createRole("GUEST", "Read-only guest access",
+                List.of("dashboard:read"));
+
+        LOG.info("Default roles seeding completed.");
+    }
+
+    private void createRole(String name, String description, List<String> permissions) {
+        Optional<Role> existing = roleRepository.findByName(name);
+        if (existing.isPresent()) {
+            LOG.infof("Role %s already exists. Skipping creation.", name);
+            return;
+        }
+
+        Role role = new Role();
+        role.setName(name);
+        role.setDescription(description);
+        role.setPermissions(permissions);
+
+        Instant now = Instant.now();
+        role.setCreatedAt(now);
+        role.setUpdatedAt(now);
+
+        roleRepository.save(role);
+        LOG.infof("Created default role: %s with permissions %s", name, permissions);
     }
 
     private Tag createTag(String key, String value, String description) {
