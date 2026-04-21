@@ -1,0 +1,41 @@
+service:
+  extensions: [jaeger_storage, jaeger_query, healthcheckv2]
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlp/tempo]
+
+extensions:
+  healthcheckv2:
+    http:
+      endpoint: 0.0.0.0:13133
+  jaeger_storage:
+    backends:
+      memory:
+        memory:
+          max-traces: 10000
+  jaeger_query:
+    storage:
+      traces: memory
+    ui:
+      config_file: ""
+
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  batch:
+    timeout: 5s
+    send_batch_size: 1024
+
+exporters:
+  otlp/tempo:
+    endpoint: tempo:4317
+    tls:
+      insecure: true
