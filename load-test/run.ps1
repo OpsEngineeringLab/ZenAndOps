@@ -137,9 +137,9 @@ Write-Host "  Output       : $OutputFormat"
 Write-Host "  Network      : $NETWORK_NAME"
 Write-Host ""
 Write-Host "Starting load test..." -ForegroundColor Yellow
-Write-Host "  Warm-up    :  0s - 30s  (1 VU, 3 iterations)"
-Write-Host "  Sustained  : 30s - 100s (2 VUs, rate-limit aware)"
-Write-Host "  Spike      : 105s - 130s (10 VUs burst)"
+Write-Host "  Warm-up    :   0s -  30s (1 VU, 5 iterations)"
+Write-Host "  Sustained  :  30s - 240s (ramp to 10 VUs)"
+Write-Host "  Spike      : 245s - 295s (30 VUs burst)"
 Write-Host ""
 Write-Host "----------------------------------------" -ForegroundColor DarkGray
 

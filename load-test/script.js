@@ -31,21 +31,22 @@ const USERS = [
 // ---------------------------------------------------------------------------
 // Scenarios
 //
-// Rate limit: 100 req / 60s per IP (all VUs share one IP inside Docker).
-// Each iteration = 1 login + 2-6 API calls ≈ 3-7 requests.
-// Budget: ~1.6 req/s sustained.
+// No artificial rate-limit budgeting — the script pushes as much traffic as
+// the VU count allows.  Adjust the server-side rate limit via .env:
+//   GATEWAY_RATE_LIMIT_MAX_REQUESTS   (default 100)
+//   GATEWAY_RATE_LIMIT_WINDOW_SECONDS (default 60)
 //
 // Strategy:
-//   warmup   — 1 VU, slow pace, validates connectivity
-//   sustained — 2 VUs with generous sleep to stay under limit
-//   spike    — intentional burst to exercise 429 handling
+//   warmup    — 1 VU, slow pace, validates connectivity
+//   sustained — ramp to 10 VUs with realistic think-time
+//   spike     — burst to 30 VUs to stress the system
 // ---------------------------------------------------------------------------
 export const options = {
   scenarios: {
     warmup: {
       executor: "per-vu-iterations",
       vus: 1,
-      iterations: 3,
+      iterations: 5,
       maxDuration: "30s",
       gracefulStop: "5s",
       exec: "warmup",
@@ -54,9 +55,10 @@ export const options = {
       executor: "ramping-vus",
       startVUs: 1,
       stages: [
-        { duration: "20s", target: 2 },
-        { duration: "40s", target: 2 },
-        { duration: "10s", target: 0 },
+        { duration: "30s",  target: 5 },
+        { duration: "30s",  target: 10 },
+        { duration: "120s", target: 10 },
+        { duration: "30s",  target: 0 },
       ],
       startTime: "30s",
       gracefulStop: "10s",
@@ -66,11 +68,11 @@ export const options = {
       executor: "ramping-vus",
       startVUs: 0,
       stages: [
-        { duration: "5s",  target: 10 },
-        { duration: "15s", target: 10 },
-        { duration: "5s",  target: 0 },
+        { duration: "10s", target: 30 },
+        { duration: "30s", target: 30 },
+        { duration: "10s", target: 0 },
       ],
-      startTime: "105s",
+      startTime: "245s",
       gracefulStop: "10s",
       exec: "spike",
     },
@@ -78,7 +80,7 @@ export const options = {
   thresholds: {
     http_req_duration: ["p(95)<3000"],
     login_failures:    ["rate<0.2"],
-    // spike scenario will push 429s; we only care about non-429 errors
+    // 429s are expected under heavy load; we track them separately via rateLimited counter
     api_errors:        ["rate<0.5"],
   },
 };
@@ -170,12 +172,12 @@ export function warmup() {
 }
 
 // ---------------------------------------------------------------------------
-// Sustained: realistic user flow within rate-limit budget
+// Sustained: realistic user flow with natural think-time (no rate-limit budgeting)
 // ---------------------------------------------------------------------------
 export function sustained() {
   const user = pickRandom(USERS);
   const tokens = authenticate(user);
-  if (!tokens) { sleep(8); return; }
+  if (!tokens) { sleep(2); return; }
 
   const hdrs = authHeaders(tokens.accessToken);
 
@@ -188,7 +190,7 @@ export function sustained() {
     check(res, { "profile 200": (r) => r.status === 200 });
   });
 
-  sleep(2);
+  sleep(1);
 
   group("dashboard", () => {
     const res = http.get(`${BASE_URL}/api/v1/dashboard`, {
@@ -199,7 +201,7 @@ export function sustained() {
     check(res, { "dashboard 200": (r) => r.status === 200 });
   });
 
-  sleep(2);
+  sleep(1);
 
   // Admin-only endpoints
   if (user.login === "admin") {
@@ -212,7 +214,7 @@ export function sustained() {
       );
       trackResponse(usersRes, listUsersDuration);
 
-      sleep(1);
+      sleep(0.5);
 
       const rolesRes = http.get(`${BASE_URL}/api/v1/roles?page=0&size=10`, {
         headers: hdrs,
@@ -220,7 +222,7 @@ export function sustained() {
       });
       trackResponse(rolesRes, listRolesDuration);
 
-      sleep(1);
+      sleep(0.5);
 
       const tagsRes = http.get(`${BASE_URL}/api/v1/tags?page=0&size=10`, {
         headers: hdrs,
@@ -230,7 +232,7 @@ export function sustained() {
     });
   }
 
-  sleep(2);
+  sleep(1);
 
   // Token refresh
   group("refresh", () => {
@@ -243,17 +245,17 @@ export function sustained() {
     check(res, { "refresh 200": (r) => r.status === 200 });
   });
 
-  // Generous sleep to stay within rate limit
-  sleep(Math.random() * 5 + 5);
+  // Natural think-time between iterations
+  sleep(Math.random() * 2 + 1);
 }
 
 // ---------------------------------------------------------------------------
-// Spike: intentional burst to test rate-limit enforcement and resilience
+// Spike: aggressive burst to stress the system under heavy load
 // ---------------------------------------------------------------------------
 export function spike() {
   const user = pickRandom(USERS);
   const tokens = authenticate(user);
-  if (!tokens) { sleep(1); return; }
+  if (!tokens) { sleep(0.5); return; }
 
   const hdrs = authHeaders(tokens.accessToken);
 
@@ -270,8 +272,8 @@ export function spike() {
     );
   }
 
-  // Fire 2-3 rapid requests
-  for (let i = 0; i < 2 + Math.floor(Math.random() * 2); i++) {
+  // Fire 3-5 rapid requests
+  for (let i = 0; i < 3 + Math.floor(Math.random() * 3); i++) {
     const ep = pickRandom(endpoints);
     const res = http.get(ep.url, { headers: hdrs, tags: { name: ep.name } });
 
@@ -284,5 +286,5 @@ export function spike() {
     }
   }
 
-  sleep(0.5);
+  sleep(0.2);
 }
