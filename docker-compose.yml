@@ -222,6 +222,27 @@ services:
     networks:
       - zenandops-net
 
+  fluent-bit:
+    image: fluent/fluent-bit:4.0
+    container_name: zenandops-fluent-bit
+    ports:
+      - "${FLUENT_BIT_MONITOR_PORT:-2020}:2020"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./observability/fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf
+      - ./observability/fluent-bit-parsers.conf:/fluent-bit/etc/parsers.conf
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:2020/api/v1/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    depends_on:
+      loki:
+        condition: service_healthy
+    networks:
+      - zenandops-net
+
   otel-collector:
     image: otel/opentelemetry-collector-contrib:0.150.1
     container_name: zenandops-otel-collector
