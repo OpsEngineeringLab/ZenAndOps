@@ -29,12 +29,12 @@
         "current": { "text": "All", "value": "$__all" },
         "options": [
           { "text": "All", "value": "$__all", "selected": true },
-          { "text": "DEBUG", "value": "DEBUG", "selected": false },
-          { "text": "INFO", "value": "INFO", "selected": false },
-          { "text": "WARN", "value": "WARN", "selected": false },
-          { "text": "ERROR", "value": "ERROR", "selected": false }
+          { "text": "debug", "value": "debug", "selected": false },
+          { "text": "info", "value": "info", "selected": false },
+          { "text": "warn", "value": "warn", "selected": false },
+          { "text": "error", "value": "error", "selected": false }
         ],
-        "query": "DEBUG,INFO,WARN,ERROR",
+        "query": "debug,info,warn,error",
         "includeAll": true,
         "multi": true
       },
@@ -55,7 +55,7 @@
       "datasource": { "type": "loki", "uid": "loki" },
       "targets": [
         {
-          "expr": "{service_name=~\"$service\"} |= `$traceId` | json | level=~\"$level\"",
+          "expr": "{service_name=~\"$service\"} | detected_level=~\"$level\" |= `$traceId`",
           "refId": "A"
         }
       ],
@@ -88,7 +88,7 @@
       "datasource": { "type": "loki", "uid": "loki" },
       "targets": [
         {
-          "expr": "sum(count_over_time({service_name=~\"$service\"} |= `$traceId` | json | level=~\"$level\" [1m])) by (service_name)",
+          "expr": "sum(count_over_time({service_name=~\"$service\"} | detected_level=~\"$level\" |= `$traceId` [1m])) by (service_name)",
           "legendFormat": "{{service_name}}"
         }
       ],

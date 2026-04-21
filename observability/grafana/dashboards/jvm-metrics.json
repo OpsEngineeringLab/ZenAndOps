@@ -33,8 +33,8 @@
       "datasource": { "type": "prometheus", "uid": "mimir" },
       "targets": [
         {
-          "expr": "sum(jvm_memory_used_bytes{service_name=~\"$service\", area=\"heap\"}) by (service_name)",
-          "legendFormat": "{{service_name}} used"
+          "expr": "sum(jvm_memory_used_bytes{job=~\"$service\", area=\"heap\"}) by (job)",
+          "legendFormat": "{{job}}"
         }
       ],
       "fieldConfig": {
@@ -52,8 +52,8 @@
       "datasource": { "type": "prometheus", "uid": "mimir" },
       "targets": [
         {
-          "expr": "sum(jvm_memory_committed_bytes{service_name=~\"$service\", area=\"heap\"}) by (service_name)",
-          "legendFormat": "{{service_name}} committed"
+          "expr": "sum(jvm_memory_committed_bytes{job=~\"$service\", area=\"heap\"}) by (job)",
+          "legendFormat": "{{job}}"
         }
       ],
       "fieldConfig": {
@@ -71,8 +71,8 @@
       "datasource": { "type": "prometheus", "uid": "mimir" },
       "targets": [
         {
-          "expr": "sum(jvm_memory_max_bytes{service_name=~\"$service\", area=\"heap\"}) by (service_name)",
-          "legendFormat": "{{service_name}} max"
+          "expr": "sum(jvm_memory_max_bytes{job=~\"$service\", area=\"heap\"}) by (job)",
+          "legendFormat": "{{job}}"
         }
       ],
       "fieldConfig": {
@@ -90,8 +90,8 @@
       "datasource": { "type": "prometheus", "uid": "mimir" },
       "targets": [
         {
-          "expr": "sum(rate(jvm_gc_pause_seconds_count{service_name=~\"$service\"}[5m])) by (service_name)",
-          "legendFormat": "{{service_name}}"
+          "expr": "sum(rate(jvm_gc_pause_milliseconds_count{job=~\"$service\"}[5m])) by (job)",
+          "legendFormat": "{{job}}"
         }
       ],
       "fieldConfig": {
@@ -109,13 +109,13 @@
       "datasource": { "type": "prometheus", "uid": "mimir" },
       "targets": [
         {
-          "expr": "sum(rate(jvm_gc_pause_seconds_sum{service_name=~\"$service\"}[5m])) by (service_name)",
-          "legendFormat": "{{service_name}}"
+          "expr": "sum(rate(jvm_gc_pause_milliseconds_sum{job=~\"$service\"}[5m])) by (job)",
+          "legendFormat": "{{job}}"
         }
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "s",
+          "unit": "ms",
           "custom": { "drawStyle": "line", "fillOpacity": 10 }
         }
       }
@@ -128,8 +128,8 @@
       "datasource": { "type": "prometheus", "uid": "mimir" },
       "targets": [
         {
-          "expr": "jvm_threads_live_threads{service_name=~\"$service\"}",
-          "legendFormat": "{{service_name}}"
+          "expr": "jvm_threads_live{job=~\"$service\"}",
+          "legendFormat": "{{job}}"
         }
       ],
       "fieldConfig": {

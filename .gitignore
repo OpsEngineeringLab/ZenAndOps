@@ -63,6 +63,9 @@ frontend-app/dist/
 # Gateway
 gateway-service/target/
 
+# Load test results
+load-test/results/
+
 # Docker
 docker-compose.override.yml
 

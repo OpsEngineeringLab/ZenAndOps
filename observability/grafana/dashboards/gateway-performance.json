@@ -54,13 +54,13 @@
       "datasource": { "type": "prometheus", "uid": "mimir" },
       "targets": [
         {
-          "expr": "histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket{service_name=\"zenandops-gateway\"}[5m])) by (le, http_route))",
-          "legendFormat": "{{http_route}}"
+          "expr": "histogram_quantile(0.95, sum(rate(http_server_requests_milliseconds_bucket{job=\"zenandops-gateway\"}[5m])) by (le, uri))",
+          "legendFormat": "{{uri}}"
         }
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "s",
+          "unit": "ms",
           "custom": { "drawStyle": "line", "fillOpacity": 10 }
         }
       }
@@ -73,31 +73,31 @@
       "datasource": { "type": "prometheus", "uid": "mimir" },
       "targets": [
         {
-          "expr": "histogram_quantile(0.50, sum(rate(http_server_requests_seconds_bucket{service_name=\"zenandops-gateway\"}[5m])) by (le, http_route))",
-          "legendFormat": "{{http_route}}"
+          "expr": "histogram_quantile(0.50, sum(rate(http_server_requests_milliseconds_bucket{job=\"zenandops-gateway\"}[5m])) by (le, uri))",
+          "legendFormat": "{{uri}}"
         }
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "s",
+          "unit": "ms",
           "custom": { "drawStyle": "line", "fillOpacity": 10 }
         }
       }
     },
     {
       "id": 5,
-      "title": "Error Breakdown by Downstream Service",
+      "title": "Error Breakdown by Status",
       "type": "timeseries",
       "gridPos": { "h": 8, "w": 24, "x": 0, "y": 16 },
       "datasource": { "type": "prometheus", "uid": "mimir" },
       "targets": [
         {
-          "expr": "sum(rate(http_server_requests_seconds_count{service_name=\"zenandops-gateway\", http_status_code=~\"5..\"}[5m])) by (http_route)",
-          "legendFormat": "{{http_route}} (5xx)"
+          "expr": "sum(rate(http_server_requests_milliseconds_count{job=\"zenandops-gateway\", status=~\"5..\"}[5m])) by (status)",
+          "legendFormat": "{{status}} (5xx)"
         },
         {
-          "expr": "sum(rate(http_server_requests_seconds_count{service_name=\"zenandops-gateway\", http_status_code=~\"4..\"}[5m])) by (http_route)",
-          "legendFormat": "{{http_route}} (4xx)"
+          "expr": "sum(rate(http_server_requests_milliseconds_count{job=\"zenandops-gateway\", status=~\"4..\"}[5m])) by (status)",
+          "legendFormat": "{{status}} (4xx)"
         }
       ],
       "fieldConfig": {

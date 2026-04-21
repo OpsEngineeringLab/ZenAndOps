@@ -203,7 +203,7 @@ services:
       - zenandops-net
 
   otel-collector:
-    image: otel/opentelemetry-collector-contrib
+    image: otel/opentelemetry-collector-contrib:0.150.1
     container_name: zenandops-otel-collector
     ports:
       - "${OTEL_COLLECTOR_PORT_GRPC:-4317}:4317"
@@ -221,7 +221,7 @@ services:
       - zenandops-net
 
   grafana:
-    image: grafana/grafana
+    image: grafana/grafana:12.4.3
     container_name: zenandops-grafana
     ports:
       - "${GRAFANA_PORT:-3000}:3000"

@@ -46,6 +46,9 @@ Thumbs.db
 # Frontend template (reference only)
 .frontend-template/
 
+# Load tests
+load-test/
+
 # Docker
 docker-compose*.yml
 Dockerfile*
