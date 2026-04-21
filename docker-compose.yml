@@ -205,17 +205,32 @@ services:
   otel-collector:
     image: otel/opentelemetry-collector-contrib:0.150.1
     container_name: zenandops-otel-collector
+    user: "0:0"
     ports:
       - "${OTEL_COLLECTOR_PORT_GRPC:-4317}:4317"
       - "${OTEL_COLLECTOR_PORT_HTTP:-4318}:4318"
     volumes:
       - ./observability/otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml
+      - /var/run/docker.sock:/var/run/docker.sock:ro
     depends_on:
       loki:
         condition: service_healthy
       mimir:
         condition: service_started
       tempo:
+        condition: service_healthy
+    networks:
+      - zenandops-net
+
+  promtail:
+    image: grafana/promtail:3.4.3
+    container_name: zenandops-promtail
+    volumes:
+      - ./observability/promtail-config.yaml:/etc/promtail/config.yaml
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    command: ["-config.file=/etc/promtail/config.yaml"]
+    depends_on:
+      loki:
         condition: service_healthy
     networks:
       - zenandops-net

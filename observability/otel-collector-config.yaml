@@ -6,10 +6,24 @@ receivers:
       http:
         endpoint: 0.0.0.0:4318
 
+  # Container metrics for MongoDB and Kafka
+  docker_stats:
+    endpoint: unix:///var/run/docker.sock
+    collection_interval: 15s
+    container_labels_to_metric_labels:
+      com.docker.compose.service: compose_service
+
 processors:
   batch:
     timeout: 5s
     send_batch_size: 1024
+
+  # Add service.name from container.name for infra metrics
+  resource/infra:
+    attributes:
+      - key: service.name
+        from_attribute: container.name
+        action: upsert
 
 exporters:
   otlp/tempo:
@@ -41,6 +55,10 @@ service:
     metrics:
       receivers: [otlp]
       processors: [batch]
+      exporters: [prometheusremotewrite/mimir]
+    metrics/infra:
+      receivers: [docker_stats]
+      processors: [resource/infra, batch]
       exporters: [prometheusremotewrite/mimir]
     logs:
       receivers: [otlp]
