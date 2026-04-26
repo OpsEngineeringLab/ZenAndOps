@@ -170,7 +170,7 @@ This plan implements the CMDB Service (`cmdb-service`) for the ZenAndOps ITSM pl
     - **Property 8: Name Uniqueness Enforcement**
     - **Validates: Requirements 1.8, 10.3**
 
-- [ ] 16. Implement cross-cutting validation property tests
+- [x] 16. Implement cross-cutting validation property tests
   - [ ]* 16.1 Write property test for foreign reference validation
     - **Property 6: Foreign Reference Validation**
     - **Validates: Requirements 1.3, 2.3, 2.4, 3.3, 4.3, 5.3, 5.7, 6.3, 6.4, 7.3, 7.7, 8.3, 9.2**
@@ -224,88 +224,88 @@ This plan implements the CMDB Service (`cmdb-service`) for the ZenAndOps ITSM pl
     - **Property 25: Historical Point-in-Time Query**
     - **Validates: Requirements 14.1, 14.2, 14.3, 14.4**
 
-- [ ] 21. Checkpoint — Verify data source, file import, reconciliation, impact analysis, and historical queries
+- [x] 21. Checkpoint — Verify data source, file import, reconciliation, impact analysis, and historical queries
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 22. Implement MongoDB adapters for all repository ports
-  - [~] 22.1 Implement MongoDB adapters for `OrganizationRepository`, `ServiceRepository`, `ServiceDependencyRepository`, `AssetRepository`, `AssetVersionRepository` using Quarkus MongoDB Panache with the `zenandops-cmdb` database
+- [x] 22. Implement MongoDB adapters for all repository ports
+  - [x] 22.1 Implement MongoDB adapters for `OrganizationRepository`, `ServiceRepository`, `ServiceDependencyRepository`, `AssetRepository`, `AssetVersionRepository` using Quarkus MongoDB Panache with the `zenandops-cmdb` database
     - Create MongoDB indexes as specified in the design (parentId, type, unique sibling name, organizationId, etc.)
     - _Requirements: 15.3, 17.4_
-  - [~] 22.2 Implement MongoDB adapters for `CIRepository`, `CIVersionRepository`, `CIRelationshipRepository`, `ServiceCIRepository`, `DataSourceRepository`, `FileImportRecordRepository`, `ReconciliationRecordRepository`
+  - [x] 22.2 Implement MongoDB adapters for `CIRepository`, `CIVersionRepository`, `CIRelationshipRepository`, `ServiceCIRepository`, `DataSourceRepository`, `FileImportRecordRepository`, `ReconciliationRecordRepository`
     - Create MongoDB indexes as specified in the design (unique constraints, foreign key indexes)
     - _Requirements: 15.3, 17.4_
 
-- [ ] 23. Implement Kafka event publisher adapter
-  - [~] 23.1 Implement `KafkaCmdbEventPublisher` adapter using SmallRye Reactive Messaging publishing to `cmdb-events` topic
+- [x] 23. Implement Kafka event publisher adapter
+  - [x] 23.1 Implement `KafkaCmdbEventPublisher` adapter using SmallRye Reactive Messaging publishing to `cmdb-events` topic
     - Include entity identifier, entity type, event type, user identity, and timestamp in every event
     - Handle Kafka unavailability gracefully: log failure and continue processing without blocking
     - _Requirements: 18.1, 18.2, 18.3, 18.4, 18.5, 18.6_
 
-- [ ] 24. Implement RBAC authorization and error handling
-  - [~] 24.1 Implement role-based authorization checks on all REST resources: ADMIN/OPERATOR for write operations, any authenticated user for read operations
+- [x] 24. Implement RBAC authorization and error handling
+  - [x] 24.1 Implement role-based authorization checks on all REST resources: ADMIN/OPERATOR for write operations, any authenticated user for read operations
     - _Requirements: 16.2, 16.3, 16.4_
-  - [~] 24.2 Implement global exception mapper for all domain exceptions, mapping to appropriate HTTP status codes and error response format as specified in the design
+  - [x] 24.2 Implement global exception mapper for all domain exceptions, mapping to appropriate HTTP status codes and error response format as specified in the design
     - _Requirements: 15.3_
   - [ ]* 24.3 Write property test for RBAC write operation enforcement
     - **Property 28: RBAC Write Operation Enforcement**
     - **Validates: Requirements 16.2, 16.3, 16.4**
 
-- [ ] 25. Checkpoint — Verify infrastructure adapters, Kafka publishing, and authorization
+- [x] 25. Checkpoint — Verify infrastructure adapters, Kafka publishing, and authorization
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 26. Update Docker Compose and Gateway configuration
-  - [~] 26.1 Add `cmdb-service` to `docker-compose.yml` on `zenandops-net` network with MongoDB connection, Kafka broker, OTel exporter endpoint, and port 8083
+- [x] 26. Update Docker Compose and Gateway configuration
+  - [x] 26.1 Add `cmdb-service` to `docker-compose.yml` on `zenandops-net` network with MongoDB connection, Kafka broker, OTel exporter endpoint, and port 8083
     - Configure `CMDB_DB_NAME=zenandops-cmdb`, `OTEL_EXPORTER_OTLP_ENDPOINT`, and health check
     - _Requirements: 17.2, 17.3, 17.4, 17.5_
-  - [~] 26.2 Add `GATEWAY_CMDB_SERVICE_URL` environment variable to gateway-service in Docker Compose and update `ConfigRouteResolver` to route `/api/v1/cmdb` to cmdb-service
+  - [x] 26.2 Add `GATEWAY_CMDB_SERVICE_URL` environment variable to gateway-service in Docker Compose and update `ConfigRouteResolver` to route `/api/v1/cmdb` to cmdb-service
     - _Requirements: 16.1, 17.6_
-  - [~] 26.3 Update `.env` and `.env.example` with all new environment variables: `CMDB_SERVICE_PORT`, `CMDB_DB_NAME`, `GATEWAY_CMDB_SERVICE_URL`, `CMDB_IMPACT_ANALYSIS_MAX_DEPTH`
+  - [x] 26.3 Update `.env` and `.env.example` with all new environment variables: `CMDB_SERVICE_PORT`, `CMDB_DB_NAME`, `GATEWAY_CMDB_SERVICE_URL`, `CMDB_IMPACT_ANALYSIS_MAX_DEPTH`
     - _Requirements: 17.7_
 
-- [ ] 27. Implement frontend API hooks
-  - [~] 27.1 Create all 14 API hooks: `useOrganizationApi`, `useServiceApi`, `useServiceDependencyApi`, `useAssetApi`, `useAssetVersionApi`, `useCIApi`, `useCIVersionApi`, `useCIRelationshipApi`, `useServiceCIApi`, `useDataSourceApi`, `useFileImportApi`, `useReconciliationApi`, `useImpactAnalysisApi`, `useHistoricalQueryApi`
+- [x] 27. Implement frontend API hooks
+  - [x] 27.1 Create all 14 API hooks: `useOrganizationApi`, `useServiceApi`, `useServiceDependencyApi`, `useAssetApi`, `useAssetVersionApi`, `useCIApi`, `useCIVersionApi`, `useCIRelationshipApi`, `useServiceCIApi`, `useDataSourceApi`, `useFileImportApi`, `useReconciliationApi`, `useImpactAnalysisApi`, `useHistoricalQueryApi`
     - All hooks call through the gateway at `/api/v1/cmdb/*` with JWT Bearer token
     - _Requirements: 16.5, 19.1, 20.1, 21.1, 22.1_
 
-- [ ] 28. Implement frontend Organization Management page
-  - [~] 28.1 Create Organization Management page at `/cmdb/organizations` with tree view displaying organizational hierarchy, create form (name, type dropdown, parent dropdown, responsible person, cost center), inline editing, and delete with in-use error feedback
+- [x] 28. Implement frontend Organization Management page
+  - [x] 28.1 Create Organization Management page at `/cmdb/organizations` with tree view displaying organizational hierarchy, create form (name, type dropdown, parent dropdown, responsible person, cost center), inline editing, and delete with in-use error feedback
     - Derive layout and styling from `.frontend-template` design system
     - _Requirements: 19.1, 19.2, 19.3, 19.4, 19.5, 19.6_
 
-- [ ] 29. Implement frontend Service Management page
-  - [~] 29.1 Create Service Management page at `/cmdb/services` with table view (name, type, organization, criticality, status, business owner, technical owner), create/edit form, dependency list per service, add dependency form, and filtering
+- [x] 29. Implement frontend Service Management page
+  - [x] 29.1 Create Service Management page at `/cmdb/services` with table view (name, type, organization, criticality, status, business owner, technical owner), create/edit form, dependency list per service, add dependency form, and filtering
     - Derive layout and styling from `.frontend-template` design system
     - _Requirements: 20.1, 20.2, 20.3, 20.4, 20.5, 20.6_
 
-- [ ] 30. Implement frontend Asset Management page
-  - [~] 30.1 Create Asset Management page at `/cmdb/assets` with table view (name, type, organization, cost, cost type, status, supplier), create/edit form, version history panel for selected asset, and filtering
+- [x] 30. Implement frontend Asset Management page
+  - [x] 30.1 Create Asset Management page at `/cmdb/assets` with table view (name, type, organization, cost, cost type, status, supplier), create/edit form, version history panel for selected asset, and filtering
     - Derive layout and styling from `.frontend-template` design system
     - _Requirements: 21.1, 21.2, 21.3, 21.8_
 
-- [ ] 31. Implement frontend CI Management page
-  - [~] 31.1 Create CI Management page at `/cmdb/cis` with table view (name, type, organization, status, associated asset), create/edit form, version history panel, relationship list, and filtering
+- [x] 31. Implement frontend CI Management page
+  - [x] 31.1 Create CI Management page at `/cmdb/cis` with table view (name, type, organization, status, associated asset), create/edit form, version history panel, relationship list, and filtering
     - Derive layout and styling from `.frontend-template` design system
     - _Requirements: 21.4, 21.5, 21.6, 21.7, 21.8_
 
-- [ ] 32. Implement frontend Impact Analysis and File Import pages
-  - [~] 32.1 Create Impact Analysis page at `/cmdb/impact-analysis` with search field to select CI or Service, structured result list showing affected entities with relationship paths and total counts
+- [x] 32. Implement frontend Impact Analysis and File Import pages
+  - [x] 32.1 Create Impact Analysis page at `/cmdb/impact-analysis` with search field to select CI or Service, structured result list showing affected entities with relationship paths and total counts
     - Derive layout and styling from `.frontend-template` design system
     - _Requirements: 22.1, 22.2, 22.3, 22.7_
-  - [~] 32.2 Create File Import page at `/cmdb/imports` with file upload component (CSV, JSON, XML), import summary display (successful, failed, error details), and import history list
+  - [x] 32.2 Create File Import page at `/cmdb/imports` with file upload component (CSV, JSON, XML), import summary display (successful, failed, error details), and import history list
     - Derive layout and styling from `.frontend-template` design system
     - _Requirements: 22.4, 22.5, 22.6, 22.7_
 
-- [ ] 33. Update frontend sidebar navigation and routing
-  - [~] 33.1 Add CMDB navigation group to `AppSidebar.tsx` with sub-items: Organizations, Services, Assets, Configuration Items, Impact Analysis, File Import
+- [x] 33. Update frontend sidebar navigation and routing
+  - [x] 33.1 Add CMDB navigation group to `AppSidebar.tsx` with sub-items: Organizations, Services, Assets, Configuration Items, Impact Analysis, File Import
     - _Requirements: 19.1, 20.1, 21.1, 21.4, 22.1, 22.4_
-  - [~] 33.2 Add routes in `App.tsx` for all 6 CMDB pages: `/cmdb/organizations`, `/cmdb/services`, `/cmdb/assets`, `/cmdb/cis`, `/cmdb/impact-analysis`, `/cmdb/imports`
+  - [x] 33.2 Add routes in `App.tsx` for all 6 CMDB pages: `/cmdb/organizations`, `/cmdb/services`, `/cmdb/assets`, `/cmdb/cis`, `/cmdb/impact-analysis`, `/cmdb/imports`
     - _Requirements: 19.1, 20.1, 21.1, 21.4, 22.1, 22.4_
 
-- [ ] 34. Checkpoint — Verify full frontend integration and end-to-end flows
+- [x] 34. Checkpoint — Verify full frontend integration and end-to-end flows
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 35. Version control and release
-  - [~] 35.1 Ensure all previous tasks are complete and tests pass
+  - [-] 35.1 Ensure all previous tasks are complete and tests pass
   - [~] 35.2 Remove SNAPSHOT suffix from all version references in the codebase
   - [~] 35.3 Commit the version bump: "release: 1.5.0 - asset-ci-management"
   - [~] 35.4 Merge branch into main/master
