@@ -78,12 +78,12 @@ This plan implements the CMDB Service (`cmdb-service`) for the ZenAndOps ITSM pl
   - Ensure all tests pass, ask the user if questions arise.
 
 
-- [ ] 8. Implement Asset use cases and REST resource
-  - [-] 8.1 Implement `CreateAssetUseCase`, `GetAssetUseCase`, `UpdateAssetUseCase`, `ListAssetsUseCase`, `DeleteAssetUseCase`, `GetAssetCostSummaryUseCase`
+- [x] 8. Implement Asset use cases and REST resource
+  - [x] 8.1 Implement `CreateAssetUseCase`, `GetAssetUseCase`, `UpdateAssetUseCase`, `ListAssetsUseCase`, `DeleteAssetUseCase`, `GetAssetCostSummaryUseCase`
     - Enforce organization existence validation, deletion protection for assets with CIs or active versions, filtering by org/type/cost type/status/supplier, cost summary grouped by org and cost type
     - Publish asset change events via `CmdbEventPublisher`
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 18.1_
-  - [~] 8.2 Create `AssetResource` REST resource at `/api/v1/cmdb/assets` with all endpoints (POST, GET list, GET by ID, PUT, DELETE, GET cost-summary) and role-based authorization
+  - [x] 8.2 Create `AssetResource` REST resource at `/api/v1/cmdb/assets` with all endpoints (POST, GET list, GET by ID, PUT, DELETE, GET cost-summary) and role-based authorization
     - _Requirements: 4.1, 16.3, 16.4_
   - [ ]* 8.3 Write property test for Asset CRUD round-trip
     - **Property 3: Asset CRUD Round-Trip**
@@ -93,7 +93,7 @@ This plan implements the CMDB Service (`cmdb-service`) for the ZenAndOps ITSM pl
     - **Validates: Requirements 4.6**
 
 - [ ] 9. Implement AssetVersion use cases and REST resource
-  - [~] 9.1 Implement `CreateAssetVersionUseCase` and `ListAssetVersionsUseCase`
+  - [-] 9.1 Implement `CreateAssetVersionUseCase` and `ListAssetVersionsUseCase`
     - Validate asset and data source exist, auto-assign sequential version number, close previous active version (set endDate), publish version created event
     - Enforce immutability — reject update and delete operations on existing versions
     - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7, 5.8, 18.4_
