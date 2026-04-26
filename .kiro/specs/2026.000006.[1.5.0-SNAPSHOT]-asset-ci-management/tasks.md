@@ -154,11 +154,11 @@ This plan implements the CMDB Service (`cmdb-service`) for the ZenAndOps ITSM pl
 - [x] 14. Checkpoint — Verify all core entity CRUD, versioning, and relationship functionality
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 15. Implement DataSource use cases and REST resource
-  - [-] 15.1 Implement `CreateDataSourceUseCase`, `GetDataSourceUseCase`, `UpdateDataSourceUseCase`, `ListDataSourcesUseCase`, `DeleteDataSourceUseCase`
+- [x] 15. Implement DataSource use cases and REST resource
+  - [x] 15.1 Implement `CreateDataSourceUseCase`, `GetDataSourceUseCase`, `UpdateDataSourceUseCase`, `ListDataSourcesUseCase`, `DeleteDataSourceUseCase`
     - Enforce name uniqueness, reliability rating range [0-100], deletion protection for data sources referenced by versions
     - _Requirements: 10.1, 10.2, 10.3, 10.4, 10.5_
-  - [~] 15.2 Create `DataSourceResource` REST resource at `/api/v1/cmdb/data-sources` with all endpoints and role-based authorization
+  - [x] 15.2 Create `DataSourceResource` REST resource at `/api/v1/cmdb/data-sources` with all endpoints and role-based authorization
     - _Requirements: 10.1, 16.3, 16.4_
   - [ ]* 15.3 Write property test for DataSource CRUD round-trip
     - **Property 5: DataSource CRUD Round-Trip**
@@ -181,31 +181,31 @@ This plan implements the CMDB Service (`cmdb-service`) for the ZenAndOps ITSM pl
     - **Property 18: Filter Result Correctness**
     - **Validates: Requirements 2.8, 4.4, 6.5**
 
-- [ ] 17. Implement File Import use cases and REST resource
-  - [~] 17.1 Implement `ImportFileUseCase` and `ListFileImportsUseCase`
+- [x] 17. Implement File Import use cases and REST resource
+  - [x] 17.1 Implement `ImportFileUseCase` and `ListFileImportsUseCase`
     - Validate file format (CSV, JSON, XML) and structure, process records creating/updating assets and CIs with new versions, associate imported records with FILE data source, handle partial failures (skip invalid records, continue processing valid ones), return summary with success/failure counts and error details
     - _Requirements: 11.1, 11.2, 11.3, 11.4, 11.5, 11.6_
-  - [~] 17.2 Create `FileImportResource` REST resource at `/api/v1/cmdb/imports` with POST (upload) and GET (history) endpoints and role-based authorization
+  - [x] 17.2 Create `FileImportResource` REST resource at `/api/v1/cmdb/imports` with POST (upload) and GET (history) endpoints and role-based authorization
     - _Requirements: 11.1, 11.6, 16.3, 16.4_
   - [ ]* 17.3 Write property test for file import partial failure summary
     - **Property 27: File Import Partial Failure Summary**
     - **Validates: Requirements 11.5**
 
-- [ ] 18. Implement Reconciliation use cases and REST resource
-  - [~] 18.1 Implement `TriggerReconciliationUseCase` and `ListReconciliationsUseCase`
+- [x] 18. Implement Reconciliation use cases and REST resource
+  - [x] 18.1 Implement `TriggerReconciliationUseCase` and `ListReconciliationsUseCase`
     - Compare records from different data sources, identify duplicates by name+type+organization, resolve conflicts by preferring higher reliability rating, return reconciliation report with counts and details
     - _Requirements: 12.1, 12.2, 12.3, 12.4, 12.5_
-  - [~] 18.2 Create `ReconciliationResource` REST resource at `/api/v1/cmdb/reconciliations` with POST (trigger) and GET (history) endpoints and role-based authorization
+  - [x] 18.2 Create `ReconciliationResource` REST resource at `/api/v1/cmdb/reconciliations` with POST (trigger) and GET (history) endpoints and role-based authorization
     - _Requirements: 12.1, 12.5, 16.3, 16.4_
   - [ ]* 18.3 Write property test for reconciliation conflict resolution by reliability
     - **Property 26: Reconciliation Conflict Resolution by Reliability**
     - **Validates: Requirements 12.2, 12.3**
 
-- [ ] 19. Implement Impact Analysis use cases and REST resource
-  - [~] 19.1 Implement `AnalyzeCIImpactUseCase` and `AnalyzeServiceImpactUseCase`
+- [x] 19. Implement Impact Analysis use cases and REST resource
+  - [x] 19.1 Implement `AnalyzeCIImpactUseCase` and `AnalyzeServiceImpactUseCase`
     - BFS traversal of CI relationships and service dependencies with configurable max depth, detect circular dependencies and include warnings, return structured response with root entity, affected entities with relationship paths, and total counts
     - _Requirements: 13.1, 13.2, 13.3, 13.4, 13.5_
-  - [~] 19.2 Create `ImpactAnalysisResource` REST resource at `/api/v1/cmdb/impact-analysis` with GET endpoints for CI and service impact analysis
+  - [x] 19.2 Create `ImpactAnalysisResource` REST resource at `/api/v1/cmdb/impact-analysis` with GET endpoints for CI and service impact analysis
     - _Requirements: 13.1, 13.2, 16.4_
   - [ ]* 19.3 Write property test for impact analysis transitive completeness
     - **Property 23: Impact Analysis Transitive Completeness**
@@ -214,11 +214,11 @@ This plan implements the CMDB Service (`cmdb-service`) for the ZenAndOps ITSM pl
     - **Property 24: Impact Analysis Circular Dependency Detection**
     - **Validates: Requirements 13.5**
 
-- [ ] 20. Implement Historical Query use cases and REST resource
-  - [~] 20.1 Implement `GetAssetVersionAtTimeUseCase` and `GetCIVersionAtTimeUseCase`
+- [x] 20. Implement Historical Query use cases and REST resource
+  - [x] 20.1 Implement `GetAssetVersionAtTimeUseCase` and `GetCIVersionAtTimeUseCase`
     - Find the version whose startDate is on or before the queried timestamp and whose endDate is after the timestamp or is null; return 404 if no version existed at that time
     - _Requirements: 14.1, 14.2, 14.3, 14.4_
-  - [~] 20.2 Create `HistoricalQueryResource` REST resource at `/api/v1/cmdb/history` with GET endpoints for asset and CI point-in-time queries
+  - [x] 20.2 Create `HistoricalQueryResource` REST resource at `/api/v1/cmdb/history` with GET endpoints for asset and CI point-in-time queries
     - _Requirements: 14.1, 14.2, 16.4_
   - [ ]* 20.3 Write property test for historical point-in-time query
     - **Property 25: Historical Point-in-Time Query**
