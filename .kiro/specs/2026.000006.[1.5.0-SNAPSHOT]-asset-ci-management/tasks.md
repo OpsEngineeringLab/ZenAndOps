@@ -304,13 +304,13 @@ This plan implements the CMDB Service (`cmdb-service`) for the ZenAndOps ITSM pl
 - [x] 34. Checkpoint — Verify full frontend integration and end-to-end flows
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 35. Version control and release
-  - [-] 35.1 Ensure all previous tasks are complete and tests pass
-  - [~] 35.2 Remove SNAPSHOT suffix from all version references in the codebase
-  - [~] 35.3 Commit the version bump: "release: 1.5.0 - asset-ci-management"
-  - [~] 35.4 Merge branch into main/master
-  - [~] 35.5 Apply Git tag: 1.5.0 (without SNAPSHOT)
-  - [~] 35.6 Push branch, merge, and tag to remote
+- [x] 35. Version control and release
+  - [x] 35.1 Ensure all previous tasks are complete and tests pass
+  - [x] 35.2 Remove SNAPSHOT suffix from all version references in the codebase
+  - [x] 35.3 Commit the version bump: "release: 1.5.0 - asset-ci-management"
+  - [x] 35.4 Merge branch into main/master
+  - [x] 35.5 Apply Git tag: 1.5.0 (without SNAPSHOT)
+  - [x] 35.6 Push branch, merge, and tag to remote
 
 ## Notes
 
