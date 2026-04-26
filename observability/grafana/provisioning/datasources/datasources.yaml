@@ -41,3 +41,9 @@ datasources:
         tags:
           - key: service.name
             value: service_name
+
+  - name: Jaeger
+    type: jaeger
+    access: proxy
+    uid: jaeger
+    url: http://jaeger:16686

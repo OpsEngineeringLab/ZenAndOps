@@ -71,13 +71,13 @@ services:
       ZENANDOPS_JWT_ISSUER: ${JWT_ISSUER}
       ZENANDOPS_JWT_ACCESS_TOKEN_EXPIRATION_MINUTES: ${JWT_ACCESS_TOKEN_EXPIRATION_MINUTES}
       ZENANDOPS_JWT_REFRESH_TOKEN_EXPIRATION_HOURS: ${JWT_REFRESH_TOKEN_EXPIRATION_HOURS}
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
     depends_on:
       mongodb:
         condition: service_healthy
       kafka:
         condition: service_healthy
-      otel-collector:
+      jaeger:
         condition: service_started
     networks:
       - zenandops-net
@@ -94,9 +94,36 @@ services:
       QUARKUS_HTTP_PORT: 8082
       MP_JWT_VERIFY_PUBLICKEY: ${JWT_PUBLIC_KEY}
       MP_JWT_VERIFY_ISSUER: ${JWT_ISSUER}
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
     depends_on:
-      otel-collector:
+      jaeger:
+        condition: service_started
+    networks:
+      - zenandops-net
+
+  cmdb-service:
+    build:
+      context: ./cmdb-service
+      dockerfile: Dockerfile
+    image: zenandops/cmdb-service:${ZENANDOPS_VERSION}
+    container_name: zenandops-cmdb-service
+    ports:
+      - "${CMDB_SERVICE_PORT:-8083}:8083"
+    environment:
+      QUARKUS_HTTP_PORT: 8083
+      QUARKUS_MONGODB_CONNECTION_STRING: mongodb://${MONGODB_ROOT_USERNAME}:${MONGODB_ROOT_PASSWORD}@mongodb:27017
+      QUARKUS_MONGODB_DATABASE: ${CMDB_DB_NAME:-zenandops-cmdb}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      MP_JWT_VERIFY_PUBLICKEY: ${JWT_PUBLIC_KEY}
+      MP_JWT_VERIFY_ISSUER: ${JWT_ISSUER}
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
+      CMDB_IMPACT_ANALYSIS_MAX_DEPTH: ${CMDB_IMPACT_ANALYSIS_MAX_DEPTH:-10}
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      jaeger:
         condition: service_started
     networks:
       - zenandops-net
@@ -113,17 +140,20 @@ services:
       QUARKUS_HTTP_PORT: 8080
       GATEWAY_AUTH_SERVICE_URL: ${GATEWAY_AUTH_SERVICE_URL}
       GATEWAY_DASHBOARD_SERVICE_URL: ${GATEWAY_DASHBOARD_SERVICE_URL}
+      GATEWAY_CMDB_SERVICE_URL: ${GATEWAY_CMDB_SERVICE_URL}
       GATEWAY_RATE_LIMIT_MAX_REQUESTS: ${GATEWAY_RATE_LIMIT_MAX_REQUESTS}
       GATEWAY_RATE_LIMIT_WINDOW_SECONDS: ${GATEWAY_RATE_LIMIT_WINDOW_SECONDS}
       MP_JWT_VERIFY_PUBLICKEY: ${JWT_PUBLIC_KEY}
       MP_JWT_VERIFY_ISSUER: ${JWT_ISSUER}
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
     depends_on:
       auth-service:
         condition: service_started
       dashboard-service:
         condition: service_started
-      otel-collector:
+      cmdb-service:
+        condition: service_started
+      jaeger:
         condition: service_started
     healthcheck:
       test: ["CMD", "java", "-cp", "/app/healthcheck", "HealthCheck", "http://localhost:8080/q/health"]
@@ -202,35 +232,65 @@ services:
     networks:
       - zenandops-net
 
-  otel-collector:
-    image: otel/opentelemetry-collector-contrib:0.150.1
-    container_name: zenandops-otel-collector
-    user: "0:0"
+  prometheus:
+    image: prom/prometheus:v3.4.1
+    container_name: zenandops-prometheus
     ports:
-      - "${OTEL_COLLECTOR_PORT_GRPC:-4317}:4317"
-      - "${OTEL_COLLECTOR_PORT_HTTP:-4318}:4318"
+      - "${PROMETHEUS_PORT:-9090}:9090"
     volumes:
-      - ./observability/otel-collector-config.yaml:/etc/otelcol-contrib/config.yaml
-      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - prometheus-data:/prometheus
+      - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:9090/-/ready"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
     depends_on:
-      loki:
-        condition: service_healthy
       mimir:
         condition: service_started
-      tempo:
+    networks:
+      - zenandops-net
+
+  fluent-bit:
+    image: fluent/fluent-bit:4.0
+    container_name: zenandops-fluent-bit
+    ports:
+      - "${FLUENT_BIT_MONITOR_PORT:-2020}:2020"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./observability/fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf
+      - ./observability/fluent-bit-parsers.conf:/fluent-bit/etc/parsers.conf
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:2020/api/v1/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    depends_on:
+      loki:
         condition: service_healthy
     networks:
       - zenandops-net
 
-  promtail:
-    image: grafana/promtail:3.4.3
-    container_name: zenandops-promtail
+  jaeger:
+    image: jaegertracing/jaeger:2.6.0
+    container_name: zenandops-jaeger
+    ports:
+      - "${JAEGER_UI_PORT:-16686}:16686"
+      - "${JAEGER_OTLP_GRPC_PORT:-4317}:4317"
+      - "4318:4318"
     volumes:
-      - ./observability/promtail-config.yaml:/etc/promtail/config.yaml
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-    command: ["-config.file=/etc/promtail/config.yaml"]
+      - ./observability/jaeger-config.yaml:/etc/jaeger/config.yaml
+    command: ["--config", "/etc/jaeger/config.yaml"]
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:13133/"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
     depends_on:
-      loki:
+      tempo:
         condition: service_healthy
     networks:
       - zenandops-net
@@ -270,6 +330,7 @@ volumes:
   loki-data:
   mimir-data:
   tempo-data:
+  prometheus-data:
   grafana-data:
 
 networks:
