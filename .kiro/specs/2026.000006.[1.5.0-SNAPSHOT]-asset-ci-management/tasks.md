@@ -61,11 +61,11 @@ This plan implements the CMDB Service (`cmdb-service`) for the ZenAndOps ITSM pl
     - **Property 12: Service Owner Enforcement**
     - **Validates: Requirements 2.5**
 
-- [ ] 6. Implement ServiceDependency use cases and REST resource
-  - [-] 6.1 Implement `CreateServiceDependencyUseCase`, `DeleteServiceDependencyUseCase`, `ListServiceDependenciesUseCase`
+- [x] 6. Implement ServiceDependency use cases and REST resource
+  - [x] 6.1 Implement `CreateServiceDependencyUseCase`, `DeleteServiceDependencyUseCase`, `ListServiceDependenciesUseCase`
     - Enforce both services exist, prevent self-reference and duplicates, log CRITICAL warning
     - _Requirements: 3.1, 3.2, 3.3, 3.4, 3.5, 3.6, 3.7_
-  - [~] 6.2 Create `ServiceDependencyResource` REST resource at `/api/v1/cmdb/service-dependencies` with all endpoints and role-based authorization
+  - [x] 6.2 Create `ServiceDependencyResource` REST resource at `/api/v1/cmdb/service-dependencies` with all endpoints and role-based authorization
     - _Requirements: 3.1, 16.3, 16.4_
   - [ ]* 6.3 Write property test for self-reference prevention (ServiceDependency)
     - **Property 7: Self-Reference Prevention**
@@ -74,12 +74,12 @@ This plan implements the CMDB Service (`cmdb-service`) for the ZenAndOps ITSM pl
     - **Property 9: Relationship Uniqueness Enforcement**
     - **Validates: Requirements 3.5**
 
-- [ ] 7. Checkpoint — Verify organization, service, and dependency functionality
+- [x] 7. Checkpoint — Verify organization, service, and dependency functionality
   - Ensure all tests pass, ask the user if questions arise.
 
 
 - [ ] 8. Implement Asset use cases and REST resource
-  - [~] 8.1 Implement `CreateAssetUseCase`, `GetAssetUseCase`, `UpdateAssetUseCase`, `ListAssetsUseCase`, `DeleteAssetUseCase`, `GetAssetCostSummaryUseCase`
+  - [-] 8.1 Implement `CreateAssetUseCase`, `GetAssetUseCase`, `UpdateAssetUseCase`, `ListAssetsUseCase`, `DeleteAssetUseCase`, `GetAssetCostSummaryUseCase`
     - Enforce organization existence validation, deletion protection for assets with CIs or active versions, filtering by org/type/cost type/status/supplier, cost summary grouped by org and cost type
     - Publish asset change events via `CmdbEventPublisher`
     - _Requirements: 4.1, 4.2, 4.3, 4.4, 4.5, 4.6, 18.1_
