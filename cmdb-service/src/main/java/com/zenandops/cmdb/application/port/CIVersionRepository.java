@@ -2,6 +2,7 @@ package com.zenandops.cmdb.application.port;
 
 import com.zenandops.cmdb.domain.entity.CIVersion;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,4 +24,6 @@ public interface CIVersionRepository {
     int getMaxVersionNumber(String ciId);
 
     long countByDataSourceId(String dataSourceId);
+
+    Optional<CIVersion> findByCiIdAtTime(String ciId, Instant timestamp);
 }

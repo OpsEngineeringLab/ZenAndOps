@@ -2,6 +2,7 @@ package com.zenandops.cmdb.application.port;
 
 import com.zenandops.cmdb.domain.entity.AssetVersion;
 
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,4 +24,6 @@ public interface AssetVersionRepository {
     int getMaxVersionNumber(String assetId);
 
     long countByDataSourceId(String dataSourceId);
+
+    Optional<AssetVersion> findByAssetIdAtTime(String assetId, Instant timestamp);
 }
