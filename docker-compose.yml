@@ -101,6 +101,33 @@ services:
     networks:
       - zenandops-net
 
+  cmdb-service:
+    build:
+      context: ./cmdb-service
+      dockerfile: Dockerfile
+    image: zenandops/cmdb-service:${ZENANDOPS_VERSION}
+    container_name: zenandops-cmdb-service
+    ports:
+      - "${CMDB_SERVICE_PORT:-8083}:8083"
+    environment:
+      QUARKUS_HTTP_PORT: 8083
+      QUARKUS_MONGODB_CONNECTION_STRING: mongodb://${MONGODB_ROOT_USERNAME}:${MONGODB_ROOT_PASSWORD}@mongodb:27017
+      QUARKUS_MONGODB_DATABASE: ${CMDB_DB_NAME:-zenandops-cmdb}
+      KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      MP_JWT_VERIFY_PUBLICKEY: ${JWT_PUBLIC_KEY}
+      MP_JWT_VERIFY_ISSUER: ${JWT_ISSUER}
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
+      CMDB_IMPACT_ANALYSIS_MAX_DEPTH: ${CMDB_IMPACT_ANALYSIS_MAX_DEPTH:-10}
+    depends_on:
+      mongodb:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      jaeger:
+        condition: service_started
+    networks:
+      - zenandops-net
+
   gateway-service:
     build:
       context: ./gateway-service
@@ -113,6 +140,7 @@ services:
       QUARKUS_HTTP_PORT: 8080
       GATEWAY_AUTH_SERVICE_URL: ${GATEWAY_AUTH_SERVICE_URL}
       GATEWAY_DASHBOARD_SERVICE_URL: ${GATEWAY_DASHBOARD_SERVICE_URL}
+      GATEWAY_CMDB_SERVICE_URL: ${GATEWAY_CMDB_SERVICE_URL}
       GATEWAY_RATE_LIMIT_MAX_REQUESTS: ${GATEWAY_RATE_LIMIT_MAX_REQUESTS}
       GATEWAY_RATE_LIMIT_WINDOW_SECONDS: ${GATEWAY_RATE_LIMIT_WINDOW_SECONDS}
       MP_JWT_VERIFY_PUBLICKEY: ${JWT_PUBLIC_KEY}
@@ -122,6 +150,8 @@ services:
       auth-service:
         condition: service_started
       dashboard-service:
+        condition: service_started
+      cmdb-service:
         condition: service_started
       jaeger:
         condition: service_started

@@ -25,6 +25,9 @@ public class ConfigRouteResolver implements RouteResolver {
     @ConfigProperty(name = "gateway.dashboard-service.url")
     String dashboardServiceUrl;
 
+    @ConfigProperty(name = "gateway.cmdb-service.url")
+    String cmdbServiceUrl;
+
     private List<RouteDefinition> routes;
 
     @PostConstruct
@@ -42,6 +45,7 @@ public class ConfigRouteResolver implements RouteResolver {
         definitions.add(new RouteDefinition("/api/v1/tags", authServiceUrl, true));
         definitions.add(new RouteDefinition("/api/v1/auth/", authServiceUrl, true));
         definitions.add(new RouteDefinition("/api/v1/dashboard", dashboardServiceUrl, true));
+        definitions.add(new RouteDefinition("/api/v1/cmdb", cmdbServiceUrl, true));
 
         // Sort by path prefix length descending — most specific first
         definitions.sort(Comparator.comparingInt((RouteDefinition r) -> r.pathPrefix().length()).reversed());
