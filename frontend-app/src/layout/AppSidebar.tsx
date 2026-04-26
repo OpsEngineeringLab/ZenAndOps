@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router";
 
 import {
+  BoxIconLine,
   ChevronDownIcon,
   GridIcon,
   HorizontaLDots,
@@ -39,6 +40,18 @@ const navItems: NavItem[] = [
       { name: "User", path: "/users" },
       { name: "Role", path: "/roles" },
       { name: "Tag", path: "/tags" },
+    ],
+  },
+  {
+    icon: <BoxIconLine />,
+    name: "CMDB",
+    subItems: [
+      { name: "Organizations", path: "/cmdb/organizations" },
+      { name: "Services", path: "/cmdb/services" },
+      { name: "Assets", path: "/cmdb/assets" },
+      { name: "Configuration Items", path: "/cmdb/cis" },
+      { name: "Impact Analysis", path: "/cmdb/impact-analysis" },
+      { name: "File Import", path: "/cmdb/imports" },
     ],
   },
 ];

@@ -11,6 +11,12 @@ import Home from "./pages/Dashboard/Home";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import Authorize from "./components/auth/Authorize";
 import { useAuth } from "./context/AuthContext";
+import OrganizationManagement from "./pages/cmdb/OrganizationManagement";
+import ServiceManagement from "./pages/cmdb/ServiceManagement";
+import AssetManagement from "./pages/cmdb/AssetManagement";
+import CIManagement from "./pages/cmdb/CIManagement";
+import ImpactAnalysis from "./pages/cmdb/ImpactAnalysis";
+import FileImport from "./pages/cmdb/FileImport";
 
 function LoginRoute() {
   const { isAuthenticated } = useAuth();
@@ -59,6 +65,14 @@ export default function App() {
             }
           />
           <Route path="/profile" element={<Profile />} />
+
+          {/* CMDB Routes */}
+          <Route path="/cmdb/organizations" element={<OrganizationManagement />} />
+          <Route path="/cmdb/services" element={<ServiceManagement />} />
+          <Route path="/cmdb/assets" element={<AssetManagement />} />
+          <Route path="/cmdb/cis" element={<CIManagement />} />
+          <Route path="/cmdb/impact-analysis" element={<ImpactAnalysis />} />
+          <Route path="/cmdb/imports" element={<FileImport />} />
         </Route>
 
         {/* Public: Login (redirects authenticated users to dashboard) */}
