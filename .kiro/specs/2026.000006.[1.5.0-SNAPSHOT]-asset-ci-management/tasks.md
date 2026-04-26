@@ -92,12 +92,12 @@ This plan implements the CMDB Service (`cmdb-service`) for the ZenAndOps ITSM pl
     - **Property 22: Asset Cost Summary Accuracy**
     - **Validates: Requirements 4.6**
 
-- [ ] 9. Implement AssetVersion use cases and REST resource
-  - [-] 9.1 Implement `CreateAssetVersionUseCase` and `ListAssetVersionsUseCase`
+- [x] 9. Implement AssetVersion use cases and REST resource
+  - [x] 9.1 Implement `CreateAssetVersionUseCase` and `ListAssetVersionsUseCase`
     - Validate asset and data source exist, auto-assign sequential version number, close previous active version (set endDate), publish version created event
     - Enforce immutability — reject update and delete operations on existing versions
     - _Requirements: 5.1, 5.2, 5.3, 5.4, 5.5, 5.6, 5.7, 5.8, 18.4_
-  - [~] 9.2 Create `AssetVersionResource` REST resource at `/api/v1/cmdb/assets/{assetId}/versions` with POST and GET endpoints and role-based authorization
+  - [x] 9.2 Create `AssetVersionResource` REST resource at `/api/v1/cmdb/assets/{assetId}/versions` with POST and GET endpoints and role-based authorization
     - _Requirements: 5.1, 16.3, 16.4_
   - [ ]* 9.3 Write property test for version immutability (AssetVersion)
     - **Property 13: Version Immutability**
@@ -112,37 +112,37 @@ This plan implements the CMDB Service (`cmdb-service`) for the ZenAndOps ITSM pl
     - **Property 16: Version History Ordering**
     - **Validates: Requirements 5.8**
 
-- [ ] 10. Implement CI use cases and REST resource
-  - [~] 10.1 Implement `CreateCIUseCase`, `GetCIUseCase`, `UpdateCIUseCase`, `ListCIsUseCase`, `DeleteCIUseCase`
+- [x] 10. Implement CI use cases and REST resource
+  - [x] 10.1 Implement `CreateCIUseCase`, `GetCIUseCase`, `UpdateCIUseCase`, `ListCIsUseCase`, `DeleteCIUseCase`
     - Validate organization and optional asset exist, enforce deletion protection for CIs with versions/relationships/service associations, enforce service linkage requirement (unless controlled exception flag), filtering by org/type/status/asset
     - Publish CI change events via `CmdbEventPublisher`
     - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5, 6.6, 6.7, 18.2_
-  - [~] 10.2 Create `CIResource` REST resource at `/api/v1/cmdb/cis` with all endpoints and role-based authorization
+  - [x] 10.2 Create `CIResource` REST resource at `/api/v1/cmdb/cis` with all endpoints and role-based authorization
     - _Requirements: 6.1, 16.3, 16.4_
   - [ ]* 10.3 Write property test for CI CRUD round-trip
     - **Property 4: CI CRUD Round-Trip**
     - **Validates: Requirements 6.1, 6.2**
 
-- [ ] 11. Implement CIVersion use cases and REST resource
-  - [~] 11.1 Implement `CreateCIVersionUseCase` and `ListCIVersionsUseCase`
+- [x] 11. Implement CIVersion use cases and REST resource
+  - [x] 11.1 Implement `CreateCIVersionUseCase` and `ListCIVersionsUseCase`
     - Validate CI and data source exist, auto-assign sequential version number, close previous active version, publish version created event
     - Enforce immutability — reject update and delete operations on existing versions
     - _Requirements: 7.1, 7.2, 7.3, 7.4, 7.5, 7.6, 7.7, 7.8, 18.4_
-  - [~] 11.2 Create `CIVersionResource` REST resource at `/api/v1/cmdb/cis/{ciId}/versions` with POST and GET endpoints and role-based authorization
+  - [x] 11.2 Create `CIVersionResource` REST resource at `/api/v1/cmdb/cis/{ciId}/versions` with POST and GET endpoints and role-based authorization
     - _Requirements: 7.1, 16.3, 16.4_
 
-- [ ] 12. Implement CIRelationship use cases and REST resource
-  - [~] 12.1 Implement `CreateCIRelationshipUseCase`, `DeleteCIRelationshipUseCase`, `ListCIRelationshipsUseCase`
+- [x] 12. Implement CIRelationship use cases and REST resource
+  - [x] 12.1 Implement `CreateCIRelationshipUseCase`, `DeleteCIRelationshipUseCase`, `ListCIRelationshipsUseCase`
     - Validate both CIs exist, prevent self-reference and duplicates, list upstream and downstream relationships
     - _Requirements: 8.1, 8.2, 8.3, 8.4, 8.5, 8.6_
-  - [~] 12.2 Create `CIRelationshipResource` REST resource at `/api/v1/cmdb/ci-relationships` with all endpoints and role-based authorization
+  - [x] 12.2 Create `CIRelationshipResource` REST resource at `/api/v1/cmdb/ci-relationships` with all endpoints and role-based authorization
     - _Requirements: 8.1, 16.3, 16.4_
 
-- [ ] 13. Implement ServiceCI use cases and REST resource
-  - [~] 13.1 Implement `CreateServiceCIUseCase`, `DeleteServiceCIUseCase`, `ListCIsByServiceUseCase`, `ListServicesByCIUseCase`
+- [x] 13. Implement ServiceCI use cases and REST resource
+  - [x] 13.1 Implement `CreateServiceCIUseCase`, `DeleteServiceCIUseCase`, `ListCIsByServiceUseCase`, `ListServicesByCIUseCase`
     - Validate service and CI exist, prevent duplicates, enforce last service association protection (unless controlled exception flag)
     - _Requirements: 9.1, 9.2, 9.3, 9.4, 9.5, 9.6_
-  - [~] 13.2 Create `ServiceCIResource` REST resource at `/api/v1/cmdb/service-cis` with all endpoints and role-based authorization
+  - [x] 13.2 Create `ServiceCIResource` REST resource at `/api/v1/cmdb/service-cis` with all endpoints and role-based authorization
     - _Requirements: 9.1, 16.3, 16.4_
   - [ ]* 13.3 Write property test for last service association protection
     - **Property 20: Last Service Association Protection**
@@ -151,11 +151,11 @@ This plan implements the CMDB Service (`cmdb-service`) for the ZenAndOps ITSM pl
     - **Property 19: Bidirectional Relationship Listing**
     - **Validates: Requirements 3.6, 8.6, 9.4, 9.5**
 
-- [ ] 14. Checkpoint — Verify all core entity CRUD, versioning, and relationship functionality
+- [x] 14. Checkpoint — Verify all core entity CRUD, versioning, and relationship functionality
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 15. Implement DataSource use cases and REST resource
-  - [~] 15.1 Implement `CreateDataSourceUseCase`, `GetDataSourceUseCase`, `UpdateDataSourceUseCase`, `ListDataSourcesUseCase`, `DeleteDataSourceUseCase`
+  - [-] 15.1 Implement `CreateDataSourceUseCase`, `GetDataSourceUseCase`, `UpdateDataSourceUseCase`, `ListDataSourcesUseCase`, `DeleteDataSourceUseCase`
     - Enforce name uniqueness, reliability rating range [0-100], deletion protection for data sources referenced by versions
     - _Requirements: 10.1, 10.2, 10.3, 10.4, 10.5_
   - [~] 15.2 Create `DataSourceResource` REST resource at `/api/v1/cmdb/data-sources` with all endpoints and role-based authorization
