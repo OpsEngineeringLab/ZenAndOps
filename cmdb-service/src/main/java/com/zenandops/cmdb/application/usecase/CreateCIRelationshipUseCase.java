@@ -11,7 +11,6 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 import java.time.Instant;
-import java.util.UUID;
 
 /**
  * Use case for creating a new CIRelationship.
@@ -64,7 +63,6 @@ public class CreateCIRelationshipUseCase {
         }
 
         CIRelationship relationship = new CIRelationship();
-        relationship.setId(UUID.randomUUID().toString());
         relationship.setSourceCIId(sourceCIId);
         relationship.setTargetCIId(targetCIId);
         relationship.setRelationshipType(relationshipType);

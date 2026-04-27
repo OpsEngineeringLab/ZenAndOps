@@ -13,7 +13,6 @@ import jakarta.inject.Inject;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 /**
  * Use case for creating a new User.
@@ -60,7 +59,6 @@ public class CreateUserUseCase {
         }
 
         User user = new User();
-        user.setId(UUID.randomUUID().toString());
         user.setLogin(login);
         user.setName(name);
         user.setEmail(email);

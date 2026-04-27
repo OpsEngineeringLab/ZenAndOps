@@ -13,7 +13,6 @@ import jakarta.inject.Inject;
 
 import java.math.BigDecimal;
 import java.time.Instant;
-import java.util.UUID;
 
 /**
  * Use case for creating a new Asset.
@@ -60,7 +59,6 @@ public class CreateAssetUseCase {
 
         Instant now = Instant.now();
         Asset asset = new Asset();
-        asset.setId(UUID.randomUUID().toString());
         asset.setName(name);
         asset.setType(type);
         asset.setOrganizationId(organizationId);

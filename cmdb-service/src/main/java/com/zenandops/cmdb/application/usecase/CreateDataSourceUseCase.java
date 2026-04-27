@@ -9,7 +9,6 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 import java.time.Instant;
-import java.util.UUID;
 
 /**
  * Use case for creating a new DataSource.
@@ -46,7 +45,6 @@ public class CreateDataSourceUseCase {
 
         Instant now = Instant.now();
         DataSource dataSource = new DataSource();
-        dataSource.setId(UUID.randomUUID().toString());
         dataSource.setName(name);
         dataSource.setType(type);
         dataSource.setReliabilityRating(reliabilityRating);

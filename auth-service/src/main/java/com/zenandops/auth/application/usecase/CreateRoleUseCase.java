@@ -8,7 +8,6 @@ import jakarta.inject.Inject;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.UUID;
 
 /**
  * Use case for creating a new Role.
@@ -40,7 +39,6 @@ public class CreateRoleUseCase {
         });
 
         Role role = new Role();
-        role.setId(UUID.randomUUID().toString());
         role.setName(name);
         role.setDescription(description);
         role.setPermissions(permissions != null ? permissions : List.of());

@@ -13,7 +13,6 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 import java.time.Instant;
-import java.util.UUID;
 
 /**
  * Use case for creating a new Service.
@@ -75,7 +74,6 @@ public class CreateServiceUseCase {
 
         Instant now = Instant.now();
         Service service = new Service();
-        service.setId(UUID.randomUUID().toString());
         service.setName(name);
         service.setDescription(description);
         service.setType(type);

@@ -11,7 +11,6 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 import java.time.Instant;
-import java.util.UUID;
 
 /**
  * Use case for creating a new ServiceCI association.
@@ -57,7 +56,6 @@ public class CreateServiceCIUseCase {
         }
 
         ServiceCI serviceCI = new ServiceCI();
-        serviceCI.setId(UUID.randomUUID().toString());
         serviceCI.setServiceId(serviceId);
         serviceCI.setCiId(ciId);
         serviceCI.setCreatedAt(Instant.now());

@@ -10,7 +10,6 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 import java.time.Instant;
-import java.util.UUID;
 
 /**
  * Use case for creating a new Organization.
@@ -56,7 +55,6 @@ public class CreateOrganizationUseCase {
 
         Instant now = Instant.now();
         Organization organization = new Organization();
-        organization.setId(UUID.randomUUID().toString());
         organization.setName(name);
         organization.setType(type);
         organization.setParentId(parentId);

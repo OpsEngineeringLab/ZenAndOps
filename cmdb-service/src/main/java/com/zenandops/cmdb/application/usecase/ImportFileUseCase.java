@@ -31,7 +31,6 @@ import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 /**
  * Use case for importing asset and CI data from structured files.
@@ -91,7 +90,6 @@ public class ImportFileUseCase {
         DataSource fileDataSource = dataSourceRepository.findByName("FILE_IMPORT")
                 .orElseGet(() -> {
                     DataSource ds = new DataSource();
-                    ds.setId(UUID.randomUUID().toString());
                     ds.setName("FILE_IMPORT");
                     ds.setType(DataSourceType.FILE);
                     ds.setReliabilityRating(50);
@@ -117,7 +115,6 @@ public class ImportFileUseCase {
         }
 
         FileImportRecord record = new FileImportRecord();
-        record.setId(UUID.randomUUID().toString());
         record.setFileName(fileName);
         record.setFileFormat(normalizedFormat);
         record.setDataSourceId(fileDataSource.getId());
@@ -180,7 +177,6 @@ public class ImportFileUseCase {
 
         Instant now = Instant.now();
         Asset asset = new Asset();
-        asset.setId(UUID.randomUUID().toString());
         asset.setName(name);
         asset.setType(type);
         asset.setOrganizationId(organizationId);
@@ -200,7 +196,6 @@ public class ImportFileUseCase {
 
         // Create initial version
         AssetVersion version = new AssetVersion();
-        version.setId(UUID.randomUUID().toString());
         version.setAssetId(asset.getId());
         version.setVersionNumber(1);
         version.setDescription("Imported from file");
@@ -225,7 +220,6 @@ public class ImportFileUseCase {
 
         Instant now = Instant.now();
         CI ci = new CI();
-        ci.setId(UUID.randomUUID().toString());
         ci.setName(name);
         ci.setType(type);
         ci.setOrganizationId(organizationId);
@@ -241,7 +235,6 @@ public class ImportFileUseCase {
 
         // Create initial version
         CIVersion version = new CIVersion();
-        version.setId(UUID.randomUUID().toString());
         version.setCiId(ci.getId());
         version.setVersionNumber(1);
         version.setAttributes(recordData.containsKey("attributes")

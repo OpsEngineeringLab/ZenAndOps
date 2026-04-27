@@ -21,7 +21,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 
 /**
  * Use case for triggering a reconciliation process.
@@ -212,7 +211,6 @@ public class TriggerReconciliationUseCase {
                                             List<ReconciliationRecord.ReconciliationDetail> details,
                                             String userId) {
         ReconciliationRecord record = new ReconciliationRecord();
-        record.setId(UUID.randomUUID().toString());
         record.setEntityType(entityType);
         record.setRecordsAnalyzed(recordsAnalyzed);
         record.setDuplicatesFound(duplicatesFound);

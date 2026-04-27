@@ -13,7 +13,6 @@ import jakarta.inject.Inject;
 
 import java.time.Instant;
 import java.util.Map;
-import java.util.UUID;
 
 /**
  * Use case for creating a new AssetVersion.
@@ -75,7 +74,6 @@ public class CreateAssetVersionUseCase {
         int nextVersion = assetVersionRepository.getMaxVersionNumber(assetId) + 1;
 
         AssetVersion version = new AssetVersion();
-        version.setId(UUID.randomUUID().toString());
         version.setAssetId(assetId);
         version.setVersionNumber(nextVersion);
         version.setDescription(description);

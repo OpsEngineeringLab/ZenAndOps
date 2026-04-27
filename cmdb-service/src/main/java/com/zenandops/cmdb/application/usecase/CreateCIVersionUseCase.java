@@ -13,7 +13,6 @@ import jakarta.inject.Inject;
 
 import java.time.Instant;
 import java.util.Map;
-import java.util.UUID;
 
 /**
  * Use case for creating a new CIVersion.
@@ -74,7 +73,6 @@ public class CreateCIVersionUseCase {
         int nextVersion = ciVersionRepository.getMaxVersionNumber(ciId) + 1;
 
         CIVersion version = new CIVersion();
-        version.setId(UUID.randomUUID().toString());
         version.setCiId(ciId);
         version.setVersionNumber(nextVersion);
         version.setAttributes(attributes != null ? attributes : Map.of());

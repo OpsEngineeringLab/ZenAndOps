@@ -7,7 +7,6 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 import java.time.Instant;
-import java.util.UUID;
 
 /**
  * Use case for creating a new Tag.
@@ -39,7 +38,6 @@ public class CreateTagUseCase {
         });
 
         Tag tag = new Tag();
-        tag.setId(UUID.randomUUID().toString());
         tag.setKey(key);
         tag.setValue(value);
         tag.setDescription(description);

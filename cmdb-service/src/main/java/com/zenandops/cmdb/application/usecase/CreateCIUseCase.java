@@ -13,7 +13,6 @@ import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 import java.time.Instant;
-import java.util.UUID;
 
 /**
  * Use case for creating a new CI.
@@ -65,7 +64,6 @@ public class CreateCIUseCase {
 
         Instant now = Instant.now();
         CI ci = new CI();
-        ci.setId(UUID.randomUUID().toString());
         ci.setName(name);
         ci.setType(type);
         ci.setOrganizationId(organizationId);

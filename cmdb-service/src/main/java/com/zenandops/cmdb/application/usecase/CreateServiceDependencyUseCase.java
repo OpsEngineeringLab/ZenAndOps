@@ -12,7 +12,6 @@ import jakarta.inject.Inject;
 import org.jboss.logging.Logger;
 
 import java.time.Instant;
-import java.util.UUID;
 
 /**
  * Use case for creating a new ServiceDependency.
@@ -72,7 +71,6 @@ public class CreateServiceDependencyUseCase {
         }
 
         ServiceDependency dependency = new ServiceDependency();
-        dependency.setId(UUID.randomUUID().toString());
         dependency.setSourceServiceId(sourceServiceId);
         dependency.setTargetServiceId(targetServiceId);
         dependency.setDependencyType(dependencyType);
