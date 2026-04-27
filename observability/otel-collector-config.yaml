@@ -1,0 +1,104 @@
+# =============================================================================
+# OpenTelemetry Collector Configuration
+# =============================================================================
+# Central telemetry pipeline: all signals (logs, traces, metrics) flow through
+# this Collector before reaching their respective backends.
+#
+# Architecture:
+#   Fluent Bit ──(forward)──► Collector ──► Loki   (logs)
+#   Quarkus    ──(otlp)────► Collector ──► Tempo  (traces)
+#                                      └──► Mimir  (metrics)
+# =============================================================================
+
+receivers:
+  # OTLP receiver for traces, metrics, and logs from Quarkus services
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+  # Fluent Forward receiver for logs from Fluent Bit
+  fluentforward:
+    endpoint: 0.0.0.0:24224
+
+processors:
+  # Batch processor to reduce export calls
+  batch:
+    send_batch_size: 1024
+    send_batch_max_size: 2048
+    timeout: 5s
+
+  # Add common resource attributes to all signals
+  resource:
+    attributes:
+      - key: deployment.environment
+        value: development
+        action: upsert
+      - key: service.namespace
+        value: zenandops
+        action: upsert
+
+  # Memory limiter to prevent OOM
+  memory_limiter:
+    check_interval: 5s
+    limit_mib: 512
+    spike_limit_mib: 128
+
+exporters:
+  # Export traces to Tempo via OTLP gRPC
+  otlp/tempo:
+    endpoint: tempo:4317
+    tls:
+      insecure: true
+
+  # Export metrics to Mimir via OTLP HTTP
+  otlphttp/mimir:
+    endpoint: http://mimir:9009/otlp
+    tls:
+      insecure: true
+
+  # Export logs to Loki via OTLP HTTP
+  otlphttp/loki:
+    endpoint: http://loki:3100/otlp
+    tls:
+      insecure: true
+
+  # Debug exporter for troubleshooting (disabled by default)
+  debug:
+    verbosity: basic
+    sampling_initial: 5
+    sampling_thereafter: 200
+
+extensions:
+  health_check:
+    endpoint: 0.0.0.0:13133
+
+  zpages:
+    endpoint: 0.0.0.0:55679
+
+service:
+  extensions: [health_check, zpages]
+
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [memory_limiter, resource, batch]
+      exporters: [otlp/tempo]
+
+    metrics:
+      receivers: [otlp]
+      processors: [memory_limiter, resource, batch]
+      exporters: [otlphttp/mimir]
+
+    logs:
+      receivers: [otlp, fluentforward]
+      processors: [memory_limiter, resource, batch]
+      exporters: [otlphttp/loki]
+
+  telemetry:
+    logs:
+      level: info
+    metrics:
+      address: 0.0.0.0:8888

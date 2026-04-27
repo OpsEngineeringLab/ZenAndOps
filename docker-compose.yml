@@ -71,13 +71,13 @@ services:
       ZENANDOPS_JWT_ISSUER: ${JWT_ISSUER}
       ZENANDOPS_JWT_ACCESS_TOKEN_EXPIRATION_MINUTES: ${JWT_ACCESS_TOKEN_EXPIRATION_MINUTES}
       ZENANDOPS_JWT_REFRESH_TOKEN_EXPIRATION_HOURS: ${JWT_REFRESH_TOKEN_EXPIRATION_HOURS}
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4317
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
     depends_on:
       mongodb:
         condition: service_healthy
       kafka:
         condition: service_healthy
-      tempo:
+      otel-collector:
         condition: service_healthy
     networks:
       - zenandops-net
@@ -94,9 +94,9 @@ services:
       QUARKUS_HTTP_PORT: 8082
       MP_JWT_VERIFY_PUBLICKEY: ${JWT_PUBLIC_KEY}
       MP_JWT_VERIFY_ISSUER: ${JWT_ISSUER}
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4317
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
     depends_on:
-      tempo:
+      otel-collector:
         condition: service_healthy
     networks:
       - zenandops-net
@@ -116,14 +116,14 @@ services:
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       MP_JWT_VERIFY_PUBLICKEY: ${JWT_PUBLIC_KEY}
       MP_JWT_VERIFY_ISSUER: ${JWT_ISSUER}
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4317
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
       CMDB_IMPACT_ANALYSIS_MAX_DEPTH: ${CMDB_IMPACT_ANALYSIS_MAX_DEPTH:-10}
     depends_on:
       mongodb:
         condition: service_healthy
       kafka:
         condition: service_healthy
-      tempo:
+      otel-collector:
         condition: service_healthy
     networks:
       - zenandops-net
@@ -145,7 +145,7 @@ services:
       GATEWAY_RATE_LIMIT_WINDOW_SECONDS: ${GATEWAY_RATE_LIMIT_WINDOW_SECONDS}
       MP_JWT_VERIFY_PUBLICKEY: ${JWT_PUBLIC_KEY}
       MP_JWT_VERIFY_ISSUER: ${JWT_ISSUER}
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4317
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
     depends_on:
       auth-service:
         condition: service_started
@@ -153,7 +153,7 @@ services:
         condition: service_started
       cmdb-service:
         condition: service_started
-      tempo:
+      otel-collector:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "java", "-cp", "/app/healthcheck", "HealthCheck", "http://localhost:8080/q/health"]
@@ -219,7 +219,6 @@ services:
     container_name: zenandops-tempo
     ports:
       - "${TEMPO_PORT:-3200}:3200"
-      - "4317:4317"
     command: ["--config.file=/etc/tempo/tempo.yaml"]
     volumes:
       - tempo-data:/var/tempo
@@ -233,23 +232,29 @@ services:
     networks:
       - zenandops-net
 
-  prometheus:
-    image: prom/prometheus:v3.4.1
-    container_name: zenandops-prometheus
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.127.0
+    container_name: zenandops-otel-collector
     ports:
-      - "${PROMETHEUS_PORT:-9090}:9090"
+      - "${OTEL_COLLECTOR_GRPC_PORT:-4317}:4317"
+      - "${OTEL_COLLECTOR_HTTP_PORT:-4318}:4318"
+      - "${OTEL_COLLECTOR_HEALTH_PORT:-13133}:13133"
+    command: ["--config=/etc/otelcol/config.yaml"]
     volumes:
-      - prometheus-data:/prometheus
-      - ./observability/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./observability/otel-collector-config.yaml:/etc/otelcol/config.yaml
     healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:9090/-/ready"]
+      test: ["CMD", "/otelcol-contrib", "validate", "--config=/etc/otelcol/config.yaml"]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 20s
     depends_on:
+      loki:
+        condition: service_healthy
       mimir:
         condition: service_started
+      tempo:
+        condition: service_healthy
     networks:
       - zenandops-net
 
@@ -270,7 +275,7 @@ services:
       retries: 5
       start_period: 20s
     depends_on:
-      loki:
+      otel-collector:
         condition: service_healthy
     networks:
       - zenandops-net
@@ -310,7 +315,6 @@ volumes:
   loki-data:
   mimir-data:
   tempo-data:
-  prometheus-data:
   grafana-data:
 
 networks:
