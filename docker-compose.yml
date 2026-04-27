@@ -71,14 +71,14 @@ services:
       ZENANDOPS_JWT_ISSUER: ${JWT_ISSUER}
       ZENANDOPS_JWT_ACCESS_TOKEN_EXPIRATION_MINUTES: ${JWT_ACCESS_TOKEN_EXPIRATION_MINUTES}
       ZENANDOPS_JWT_REFRESH_TOKEN_EXPIRATION_HOURS: ${JWT_REFRESH_TOKEN_EXPIRATION_HOURS}
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4317
     depends_on:
       mongodb:
         condition: service_healthy
       kafka:
         condition: service_healthy
-      jaeger:
-        condition: service_started
+      tempo:
+        condition: service_healthy
     networks:
       - zenandops-net
 
@@ -94,10 +94,10 @@ services:
       QUARKUS_HTTP_PORT: 8082
       MP_JWT_VERIFY_PUBLICKEY: ${JWT_PUBLIC_KEY}
       MP_JWT_VERIFY_ISSUER: ${JWT_ISSUER}
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4317
     depends_on:
-      jaeger:
-        condition: service_started
+      tempo:
+        condition: service_healthy
     networks:
       - zenandops-net
 
@@ -116,15 +116,15 @@ services:
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       MP_JWT_VERIFY_PUBLICKEY: ${JWT_PUBLIC_KEY}
       MP_JWT_VERIFY_ISSUER: ${JWT_ISSUER}
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4317
       CMDB_IMPACT_ANALYSIS_MAX_DEPTH: ${CMDB_IMPACT_ANALYSIS_MAX_DEPTH:-10}
     depends_on:
       mongodb:
         condition: service_healthy
       kafka:
         condition: service_healthy
-      jaeger:
-        condition: service_started
+      tempo:
+        condition: service_healthy
     networks:
       - zenandops-net
 
@@ -145,7 +145,7 @@ services:
       GATEWAY_RATE_LIMIT_WINDOW_SECONDS: ${GATEWAY_RATE_LIMIT_WINDOW_SECONDS}
       MP_JWT_VERIFY_PUBLICKEY: ${JWT_PUBLIC_KEY}
       MP_JWT_VERIFY_ISSUER: ${JWT_ISSUER}
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4317
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4317
     depends_on:
       auth-service:
         condition: service_started
@@ -153,8 +153,8 @@ services:
         condition: service_started
       cmdb-service:
         condition: service_started
-      jaeger:
-        condition: service_started
+      tempo:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "java", "-cp", "/app/healthcheck", "HealthCheck", "http://localhost:8080/q/health"]
       interval: 10s
@@ -219,6 +219,7 @@ services:
     container_name: zenandops-tempo
     ports:
       - "${TEMPO_PORT:-3200}:3200"
+      - "4317:4317"
     command: ["--config.file=/etc/tempo/tempo.yaml"]
     volumes:
       - tempo-data:/var/tempo
@@ -259,6 +260,7 @@ services:
       - "${FLUENT_BIT_MONITOR_PORT:-2020}:2020"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
       - ./observability/fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf
       - ./observability/fluent-bit-parsers.conf:/fluent-bit/etc/parsers.conf
     healthcheck:
@@ -269,28 +271,6 @@ services:
       start_period: 20s
     depends_on:
       loki:
-        condition: service_healthy
-    networks:
-      - zenandops-net
-
-  jaeger:
-    image: jaegertracing/jaeger:2.6.0
-    container_name: zenandops-jaeger
-    ports:
-      - "${JAEGER_UI_PORT:-16686}:16686"
-      - "${JAEGER_OTLP_GRPC_PORT:-4317}:4317"
-      - "4318:4318"
-    volumes:
-      - ./observability/jaeger-config.yaml:/etc/jaeger/config.yaml
-    command: ["--config", "/etc/jaeger/config.yaml"]
-    healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:13133/"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 20s
-    depends_on:
-      tempo:
         condition: service_healthy
     networks:
       - zenandops-net
