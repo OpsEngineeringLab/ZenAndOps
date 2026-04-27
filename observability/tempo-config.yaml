@@ -1,4 +1,11 @@
-target: all
+# =============================================================================
+# Grafana Tempo Configuration (v2.7+)
+# =============================================================================
+# Single-binary mode with local storage for development.
+# Receives traces via OTLP gRPC from the OpenTelemetry Collector.
+# =============================================================================
+
+stream_over_http_enabled: true
 
 server:
   http_listen_port: 3200
@@ -10,15 +17,10 @@ distributor:
         grpc:
           endpoint: 0.0.0.0:4317
 
-storage:
-  trace:
-    backend: local
-    local:
-      path: /var/tempo/traces
-    wal:
-      path: /var/tempo/wal
-
 ingester:
+  trace_idle_period: 10s
+  max_block_bytes: 1_000_000
+  max_block_duration: 5m
   lifecycler:
     ring:
       kvstore:
@@ -32,7 +34,44 @@ compactor:
     kvstore:
       store: inmemory
 
+storage:
+  trace:
+    backend: local
+    local:
+      path: /var/tempo/traces
+    wal:
+      path: /var/tempo/wal
+    pool:
+      max_workers: 100
+      queue_depth: 10000
+
 metrics_generator:
+  processor:
+    span_metrics:
+      dimensions:
+        - service.name
+    service_graphs:
+      dimensions:
+        - service.name
+    local_blocks:
+      flush_to_storage: true
+  registry:
+    collection_interval: 5s
+    external_labels:
+      source: tempo
+      cluster: zenandops
   storage:
     path: /var/tempo/generator/wal
-    remote_write: []
+    remote_write:
+      - url: http://mimir:9009/api/v1/push
+        send_exemplars: true
+  traces_storage:
+    path: /var/tempo/generator/traces
+
+overrides:
+  defaults:
+    metrics_generator:
+      processors:
+        - service-graphs
+        - span-metrics
+        - local-blocks

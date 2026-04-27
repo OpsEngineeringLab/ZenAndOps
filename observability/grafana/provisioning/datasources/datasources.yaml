@@ -18,26 +18,29 @@ datasources:
     uid: tempo
     url: http://tempo:3200
     jsonData:
-      nodeGraph:
-        enabled: true
+      httpMethod: GET
+      tracesToLogsV2:
+        datasourceUid: loki
+        spanStartTimeShift: '-1h'
+        spanEndTimeShift: '1h'
+        tags: [{key: 'service.name', value: 'service_name'}]
+        filterByTraceID: true
+        filterBySpanID: false
+        customQuery: false
+      tracesToMetrics:
+        datasourceUid: mimir
+        spanStartTimeShift: '-1h'
+        spanEndTimeShift: '1h'
+        tags: [{key: 'service.name', value: 'service_name'}]
       serviceMap:
         datasourceUid: mimir
+      nodeGraph:
+        enabled: true
       search:
         hide: false
       traceQuery:
         timeShiftEnabled: true
         spanStartTimeShift: '-1h'
         spanEndTimeShift: '1h'
-      tracesToLogsV2:
-        datasourceUid: loki
-        filterByTraceID: true
-        filterBySpanID: false
-        customQuery: false
-        tags:
-          - key: service.name
-            value: service_name
-      tracesToMetrics:
-        datasourceUid: mimir
-        tags:
-          - key: service.name
-            value: service_name
+      streamingEnabled:
+        search: true
