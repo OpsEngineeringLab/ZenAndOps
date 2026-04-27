@@ -16,9 +16,10 @@
           { "text": "All", "value": "$__all", "selected": true },
           { "text": "zenandops-auth", "value": "zenandops-auth", "selected": false },
           { "text": "zenandops-dashboard", "value": "zenandops-dashboard", "selected": false },
+          { "text": "zenandops-cmdb", "value": "zenandops-cmdb", "selected": false },
           { "text": "zenandops-gateway", "value": "zenandops-gateway", "selected": false }
         ],
-        "query": "zenandops-auth,zenandops-dashboard,zenandops-gateway",
+        "query": "zenandops-auth,zenandops-dashboard,zenandops-cmdb,zenandops-gateway",
         "includeAll": true,
         "multi": true
       }
@@ -90,7 +91,7 @@
       "datasource": { "type": "prometheus", "uid": "mimir" },
       "targets": [
         {
-          "expr": "sum(rate(jvm_gc_pause_milliseconds_count{job=~\"$service\"}[5m])) by (job)",
+          "expr": "sum(rate(jvm_gc_pause_seconds_count{job=~\"$service\"}[5m])) by (job)",
           "legendFormat": "{{job}}"
         }
       ],
@@ -109,7 +110,7 @@
       "datasource": { "type": "prometheus", "uid": "mimir" },
       "targets": [
         {
-          "expr": "sum(rate(jvm_gc_pause_milliseconds_sum{job=~\"$service\"}[5m])) by (job)",
+          "expr": "sum(rate(jvm_gc_pause_seconds_sum{job=~\"$service\"}[5m])) by (job) * 1000",
           "legendFormat": "{{job}}"
         }
       ],

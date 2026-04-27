@@ -16,11 +16,12 @@
           { "text": "All", "value": "$__all", "selected": true },
           { "text": "zenandops-auth", "value": "zenandops-auth", "selected": false },
           { "text": "zenandops-dashboard", "value": "zenandops-dashboard", "selected": false },
+          { "text": "zenandops-cmdb", "value": "zenandops-cmdb", "selected": false },
           { "text": "zenandops-gateway", "value": "zenandops-gateway", "selected": false },
           { "text": "zenandops-mongodb", "value": "zenandops-mongodb", "selected": false },
           { "text": "zenandops-kafka", "value": "zenandops-kafka", "selected": false }
         ],
-        "query": "zenandops-auth,zenandops-dashboard,zenandops-gateway,zenandops-mongodb,zenandops-kafka",
+        "query": "zenandops-auth,zenandops-dashboard,zenandops-cmdb,zenandops-gateway,zenandops-mongodb,zenandops-kafka",
         "includeAll": true,
         "multi": true
       },

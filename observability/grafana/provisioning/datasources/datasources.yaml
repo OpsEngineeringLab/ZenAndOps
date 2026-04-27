@@ -18,7 +18,6 @@ datasources:
     uid: tempo
     url: http://tempo:3200
     jsonData:
-      httpMethod: GET
       tracesToLogsV2:
         datasourceUid: loki
         spanStartTimeShift: '-1h'
@@ -26,7 +25,6 @@ datasources:
         tags: [{key: 'service.name', value: 'service_name'}]
         filterByTraceID: true
         filterBySpanID: false
-        customQuery: false
       tracesToMetrics:
         datasourceUid: mimir
         spanStartTimeShift: '-1h'
@@ -44,3 +42,4 @@ datasources:
         spanEndTimeShift: '1h'
       streamingEnabled:
         search: true
+        traceView: true

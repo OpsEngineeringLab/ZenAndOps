@@ -215,7 +215,7 @@ services:
       - zenandops-net
 
   tempo:
-    image: grafana/tempo:2.7.2
+    image: grafana/tempo:2.10.5
     container_name: zenandops-tempo
     ports:
       - "${TEMPO_PORT:-3200}:3200"
@@ -281,7 +281,7 @@ services:
       - zenandops-net
 
   grafana:
-    image: grafana/grafana:11.4.0
+    image: grafana/grafana:13.0.1
     container_name: zenandops-grafana
     ports:
       - "${GRAFANA_PORT:-3000}:3000"

@@ -82,11 +82,11 @@
       "datasource": { "type": "prometheus", "uid": "mimir" },
       "targets": [
         {
-          "expr": "histogram_quantile(0.95, sum(rate(http_server_requests_milliseconds_bucket{job=\"zenandops-auth\", uri=~\"/api/v1/auth/(login|refresh)\"}[5m])) by (le))",
+          "expr": "histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket{job=\"zenandops-auth\", uri=~\"/api/v1/auth/(login|refresh)\"}[5m])) by (le)) * 1000",
           "legendFormat": "p95"
         },
         {
-          "expr": "histogram_quantile(0.50, sum(rate(http_server_requests_milliseconds_bucket{job=\"zenandops-auth\", uri=~\"/api/v1/auth/(login|refresh)\"}[5m])) by (le))",
+          "expr": "histogram_quantile(0.50, sum(rate(http_server_requests_seconds_bucket{job=\"zenandops-auth\", uri=~\"/api/v1/auth/(login|refresh)\"}[5m])) by (le)) * 1000",
           "legendFormat": "p50"
         }
       ],

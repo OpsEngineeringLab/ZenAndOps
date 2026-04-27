@@ -1,149 +1,153 @@
 {
   "uid": "infrastructure",
-  "title": "Infrastructure (MongoDB & Kafka)",
-  "description": "Container resource metrics for MongoDB and Kafka",
+  "title": "Infrastructure (OTel Collector & Kafka)",
+  "description": "OpenTelemetry Collector pipeline metrics and Kafka producer metrics",
   "editable": true,
   "graphTooltip": 1,
   "schemaVersion": 39,
   "templating": {
-    "list": [
-      {
-        "name": "container",
-        "type": "custom",
-        "label": "Container",
-        "current": { "text": "All", "value": "$__all" },
-        "options": [
-          { "text": "All", "value": "$__all", "selected": true },
-          { "text": "zenandops-mongodb", "value": "zenandops-mongodb", "selected": false },
-          { "text": "zenandops-kafka", "value": "zenandops-kafka", "selected": false }
-        ],
-        "query": "zenandops-mongodb,zenandops-kafka",
-        "includeAll": true,
-        "multi": true
-      }
-    ]
+    "list": []
   },
   "panels": [
     {
       "id": 1,
-      "title": "CPU Usage (%)",
+      "title": "OTel Collector — Exported Spans (rate)",
       "type": "timeseries",
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
       "datasource": { "type": "prometheus", "uid": "mimir" },
       "targets": [
         {
-          "expr": "container_cpu_utilization_ratio{job=~\"$container\"} * 100",
-          "legendFormat": "{{job}}"
+          "expr": "sum(rate(otelcol_exporter_sent_spans_total[5m])) by (exporter)",
+          "legendFormat": "{{exporter}}"
         }
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "percent",
+          "unit": "ops",
           "custom": { "drawStyle": "line", "fillOpacity": 10 }
         }
       }
     },
     {
       "id": 2,
-      "title": "Memory Usage",
+      "title": "OTel Collector — Exported Metric Points (rate)",
       "type": "timeseries",
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
       "datasource": { "type": "prometheus", "uid": "mimir" },
       "targets": [
         {
-          "expr": "container_memory_usage_total_bytes{job=~\"$container\"}",
-          "legendFormat": "{{job}} used"
-        },
-        {
-          "expr": "container_memory_usage_limit_bytes{job=~\"$container\"}",
-          "legendFormat": "{{job}} limit"
+          "expr": "sum(rate(otelcol_exporter_sent_metric_points_total[5m])) by (exporter)",
+          "legendFormat": "{{exporter}}"
         }
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "bytes",
+          "unit": "ops",
           "custom": { "drawStyle": "line", "fillOpacity": 10 }
         }
       }
     },
     {
       "id": 3,
-      "title": "Memory Usage (%)",
-      "type": "gauge",
+      "title": "OTel Collector — Exported Log Records (rate)",
+      "type": "timeseries",
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
       "datasource": { "type": "prometheus", "uid": "mimir" },
       "targets": [
         {
-          "expr": "container_memory_percent_ratio{job=~\"$container\"}",
-          "legendFormat": "{{job}}"
+          "expr": "sum(rate(otelcol_exporter_sent_log_records_total[5m])) by (exporter)",
+          "legendFormat": "{{exporter}}"
         }
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "percent",
-          "min": 0,
-          "max": 100,
-          "thresholds": {
-            "steps": [
-              { "color": "green", "value": null },
-              { "color": "yellow", "value": 70 },
-              { "color": "red", "value": 90 }
-            ]
-          }
+          "unit": "ops",
+          "custom": { "drawStyle": "line", "fillOpacity": 10 }
         }
       }
     },
     {
       "id": 4,
-      "title": "Network I/O (bytes/s)",
+      "title": "OTel Collector — Failed Exports (rate)",
       "type": "timeseries",
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
       "datasource": { "type": "prometheus", "uid": "mimir" },
       "targets": [
         {
-          "expr": "rate(container_network_io_usage_rx_bytes_total{job=~\"$container\"}[5m])",
-          "legendFormat": "{{job}} rx"
+          "expr": "sum(rate(otelcol_exporter_send_failed_spans_total[5m])) by (exporter)",
+          "legendFormat": "spans — {{exporter}}"
         },
         {
-          "expr": "rate(container_network_io_usage_tx_bytes_total{job=~\"$container\"}[5m])",
-          "legendFormat": "{{job}} tx"
+          "expr": "sum(rate(otelcol_exporter_send_failed_metric_points_total[5m])) by (exporter)",
+          "legendFormat": "metrics — {{exporter}}"
+        },
+        {
+          "expr": "sum(rate(otelcol_exporter_send_failed_log_records_total[5m])) by (exporter)",
+          "legendFormat": "logs — {{exporter}}"
         }
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "Bps",
+          "unit": "ops",
           "custom": { "drawStyle": "line", "fillOpacity": 10 }
         }
       }
     },
     {
       "id": 5,
-      "title": "Block I/O (bytes/s)",
+      "title": "OTel Collector — Receiver Accepted (rate)",
       "type": "timeseries",
       "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
       "datasource": { "type": "prometheus", "uid": "mimir" },
       "targets": [
         {
-          "expr": "rate(container_blockio_io_service_bytes_recursive_total{job=~\"$container\"}[5m])",
-          "legendFormat": "{{job}} {{operation}}"
+          "expr": "sum(rate(otelcol_receiver_accepted_spans_total[5m])) by (receiver)",
+          "legendFormat": "spans — {{receiver}}"
+        },
+        {
+          "expr": "sum(rate(otelcol_receiver_accepted_metric_points_total[5m])) by (receiver)",
+          "legendFormat": "metrics — {{receiver}}"
+        },
+        {
+          "expr": "sum(rate(otelcol_receiver_accepted_log_records_total[5m])) by (receiver)",
+          "legendFormat": "logs — {{receiver}}"
         }
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "Bps",
+          "unit": "ops",
           "custom": { "drawStyle": "line", "fillOpacity": 10 }
         }
       }
     },
     {
       "id": 6,
-      "title": "Kafka Producer — Record Send Rate",
+      "title": "OTel Collector — Queue Size",
       "type": "timeseries",
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
       "datasource": { "type": "prometheus", "uid": "mimir" },
       "targets": [
         {
-          "expr": "kafka_producer_record_send_rate",
+          "expr": "otelcol_exporter_queue_size",
+          "legendFormat": "{{exporter}}"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": {
+          "unit": "short",
+          "custom": { "drawStyle": "line", "fillOpacity": 10 }
+        }
+      }
+    },
+    {
+      "id": 7,
+      "title": "Kafka Producer — Record Send Rate",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 24 },
+      "datasource": { "type": "prometheus", "uid": "mimir" },
+      "targets": [
+        {
+          "expr": "sum(rate(kafka_producer_record_send_total[5m])) by (job)",
           "legendFormat": "{{job}} records/s"
         }
       ],
@@ -155,47 +159,20 @@
       }
     },
     {
-      "id": 7,
-      "title": "Kafka Producer — Request Latency",
-      "type": "timeseries",
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 24 },
-      "datasource": { "type": "prometheus", "uid": "mimir" },
-      "targets": [
-        {
-          "expr": "kafka_producer_request_latency_avg",
-          "legendFormat": "avg"
-        },
-        {
-          "expr": "kafka_producer_request_latency_max",
-          "legendFormat": "max"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "unit": "ms",
-          "custom": { "drawStyle": "line", "fillOpacity": 10 }
-        }
-      }
-    },
-    {
       "id": 8,
-      "title": "Kafka Producer — Error & Retry Rate",
+      "title": "Kafka Producer — Request Latency (p95)",
       "type": "timeseries",
       "gridPos": { "h": 8, "w": 12, "x": 12, "y": 24 },
       "datasource": { "type": "prometheus", "uid": "mimir" },
       "targets": [
         {
-          "expr": "kafka_producer_record_error_rate",
-          "legendFormat": "error rate"
-        },
-        {
-          "expr": "kafka_producer_record_retry_rate",
-          "legendFormat": "retry rate"
+          "expr": "histogram_quantile(0.95, sum(rate(kafka_producer_request_latency_seconds_bucket[5m])) by (le, job)) * 1000",
+          "legendFormat": "p95 — {{job}}"
         }
       ],
       "fieldConfig": {
         "defaults": {
-          "unit": "ops",
+          "unit": "ms",
           "custom": { "drawStyle": "line", "fillOpacity": 10 }
         }
       }
