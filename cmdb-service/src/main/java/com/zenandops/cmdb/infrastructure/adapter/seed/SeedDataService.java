@@ -37,6 +37,8 @@ import org.jboss.logging.Logger;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Idempotent seed data service that populates MongoDB with sample CMDB data
@@ -56,6 +58,9 @@ public class SeedDataService {
     private final ServiceCIRepository serviceCIRepository;
     private final ServiceDependencyRepository serviceDependencyRepository;
     private final DataSourceRepository dataSourceRepository;
+
+    /** Maps logical seed keys to MongoDB-generated ObjectId strings. */
+    private final Map<String, String> idMap = new HashMap<>();
 
     @Inject
     public SeedDataService(OrganizationRepository organizationRepository,
@@ -104,6 +109,17 @@ public class SeedDataService {
         LOG.info("CMDB seed data routine completed successfully.");
     }
 
+    /**
+     * Resolves a logical key to its MongoDB-generated ObjectId string.
+     * Returns null if the key is null.
+     */
+    private String resolve(String key) {
+        if (key == null) {
+            return null;
+        }
+        return idMap.get(key);
+    }
+
     // =========================================================================
     // Organizations
     // =========================================================================
@@ -141,22 +157,19 @@ public class SeedDataService {
         LOG.info("Organizations seeding completed.");
     }
 
-    private void createOrganization(String id, String name, OrganizationType type,
-                                    String parentId, String responsiblePerson,
+    private void createOrganization(String key, String name, OrganizationType type,
+                                    String parentKey, String responsiblePerson,
                                     String costCenter, Instant createdAt) {
-        if (organizationRepository.existsById(id)) {
-            return;
-        }
         Organization org = new Organization();
-        org.setId(id);
         org.setName(name);
         org.setType(type);
-        org.setParentId(parentId);
+        org.setParentId(resolve(parentKey));
         org.setResponsiblePerson(responsiblePerson);
         org.setCostCenter(costCenter);
         org.setCreatedAt(createdAt);
         org.setUpdatedAt(createdAt);
         organizationRepository.save(org);
+        idMap.put(key, org.getId());
     }
 
     // =========================================================================
@@ -221,17 +234,13 @@ public class SeedDataService {
         LOG.info("Assets seeding completed.");
     }
 
-    private void createAsset(String id, String name, AssetType type, String organizationId,
+    private void createAsset(String key, String name, AssetType type, String organizationKey,
                              BigDecimal cost, CostType costType, Instant acquisitionDate,
                              AssetStatus status, String supplier, Instant createdAt) {
-        if (assetRepository.existsById(id)) {
-            return;
-        }
         Asset asset = new Asset();
-        asset.setId(id);
         asset.setName(name);
         asset.setType(type);
-        asset.setOrganizationId(organizationId);
+        asset.setOrganizationId(resolve(organizationKey));
         asset.setCost(cost);
         asset.setCostType(costType);
         asset.setAcquisitionDate(acquisitionDate);
@@ -240,6 +249,7 @@ public class SeedDataService {
         asset.setCreatedAt(createdAt);
         asset.setUpdatedAt(createdAt);
         assetRepository.save(asset);
+        idMap.put(key, asset.getId());
     }
 
     // =========================================================================
@@ -308,23 +318,20 @@ public class SeedDataService {
         LOG.info("Configuration items seeding completed.");
     }
 
-    private void createCI(String id, String name, CIType type, String organizationId,
-                          String assetId, CIStatus status, boolean controlledExceptionFlag,
+    private void createCI(String key, String name, CIType type, String organizationKey,
+                          String assetKey, CIStatus status, boolean controlledExceptionFlag,
                           Instant createdAt) {
-        if (ciRepository.existsById(id)) {
-            return;
-        }
         CI ci = new CI();
-        ci.setId(id);
         ci.setName(name);
         ci.setType(type);
-        ci.setOrganizationId(organizationId);
-        ci.setAssetId(assetId);
+        ci.setOrganizationId(resolve(organizationKey));
+        ci.setAssetId(resolve(assetKey));
         ci.setStatus(status);
         ci.setControlledExceptionFlag(controlledExceptionFlag);
         ci.setCreatedAt(createdAt);
         ci.setUpdatedAt(createdAt);
         ciRepository.save(ci);
+        idMap.put(key, ci.getId());
     }
 
     // =========================================================================
@@ -407,20 +414,16 @@ public class SeedDataService {
         LOG.info("Services seeding completed.");
     }
 
-    private void createService(String id, String name, String description, ServiceType type,
-                               String parentId, String organizationId, String businessOwner,
+    private void createService(String key, String name, String description, ServiceType type,
+                               String parentKey, String organizationKey, String businessOwner,
                                String technicalOwner, CriticalityLevel criticality,
                                ServiceStatus status, Instant createdAt) {
-        if (serviceRepository.existsById(id)) {
-            return;
-        }
         Service service = new Service();
-        service.setId(id);
         service.setName(name);
         service.setDescription(description);
         service.setType(type);
-        service.setParentId(parentId);
-        service.setOrganizationId(organizationId);
+        service.setParentId(resolve(parentKey));
+        service.setOrganizationId(resolve(organizationKey));
         service.setBusinessOwner(businessOwner);
         service.setTechnicalOwner(technicalOwner);
         service.setCriticality(criticality);
@@ -428,6 +431,7 @@ public class SeedDataService {
         service.setCreatedAt(createdAt);
         service.setUpdatedAt(createdAt);
         serviceRepository.save(service);
+        idMap.put(key, service.getId());
     }
 
     // =========================================================================
@@ -442,74 +446,75 @@ public class SeedDataService {
         Instant threeMonthsAgo = Instant.now().minus(90, ChronoUnit.DAYS);
 
         // Load balancer routes to API gateways
-        createCIRelationship("rel-lb-to-api01", "ci-net-lb-prod", "ci-vm-api-01",
+        createCIRelationship("ci-net-lb-prod", "ci-vm-api-01",
                 RelationshipType.CONNECTS_TO, sixMonthsAgo);
-        createCIRelationship("rel-lb-to-api02", "ci-net-lb-prod", "ci-vm-api-02",
+        createCIRelationship("ci-net-lb-prod", "ci-vm-api-02",
                 RelationshipType.CONNECTS_TO, sixMonthsAgo);
 
         // API gateways connect to app servers
-        createCIRelationship("rel-api01-to-app01", "ci-vm-api-01", "ci-vm-app-01",
+        createCIRelationship("ci-vm-api-01", "ci-vm-app-01",
                 RelationshipType.CONNECTS_TO, sixMonthsAgo);
-        createCIRelationship("rel-api02-to-app02", "ci-vm-api-02", "ci-vm-app-02",
+        createCIRelationship("ci-vm-api-02", "ci-vm-app-02",
                 RelationshipType.CONNECTS_TO, sixMonthsAgo);
 
         // App servers depend on databases
-        createCIRelationship("rel-app01-depends-postgres", "ci-vm-app-01", "ci-db-postgres-prod",
+        createCIRelationship("ci-vm-app-01", "ci-db-postgres-prod",
                 RelationshipType.DEPENDS_ON, oneYearAgo);
-        createCIRelationship("rel-app02-depends-postgres", "ci-vm-app-02", "ci-db-postgres-prod",
+        createCIRelationship("ci-vm-app-02", "ci-db-postgres-prod",
                 RelationshipType.DEPENDS_ON, oneYearAgo);
-        createCIRelationship("rel-app01-depends-mongo", "ci-vm-app-01", "ci-db-mongo-prod",
+        createCIRelationship("ci-vm-app-01", "ci-db-mongo-prod",
                 RelationshipType.DEPENDS_ON, sixMonthsAgo);
-        createCIRelationship("rel-app01-depends-redis", "ci-vm-app-01", "ci-db-redis-prod",
+        createCIRelationship("ci-vm-app-01", "ci-db-redis-prod",
                 RelationshipType.DEPENDS_ON, sixMonthsAgo);
 
         // Postgres primary hosts replica
-        createCIRelationship("rel-postgres-hosts-replica", "ci-db-postgres-prod", "ci-db-postgres-replica",
+        createCIRelationship("ci-db-postgres-prod", "ci-db-postgres-replica",
                 RelationshipType.HOSTS, oneYearAgo);
 
         // APIs depend on app servers
-        createCIRelationship("rel-auth-api-depends-app01", "ci-api-auth", "ci-vm-app-01",
+        createCIRelationship("ci-api-auth", "ci-vm-app-01",
                 RelationshipType.DEPENDS_ON, sixMonthsAgo);
-        createCIRelationship("rel-cmdb-api-depends-app01", "ci-api-cmdb", "ci-vm-app-01",
+        createCIRelationship("ci-api-cmdb", "ci-vm-app-01",
                 RelationshipType.DEPENDS_ON, sixMonthsAgo);
-        createCIRelationship("rel-incident-api-depends-app02", "ci-api-incident", "ci-vm-app-02",
+        createCIRelationship("ci-api-incident", "ci-vm-app-02",
                 RelationshipType.DEPENDS_ON, threeMonthsAgo);
-        createCIRelationship("rel-notification-api-depends-app02", "ci-api-notification", "ci-vm-app-02",
+        createCIRelationship("ci-api-notification", "ci-vm-app-02",
                 RelationshipType.DEPENDS_ON, threeMonthsAgo);
 
         // Firewall and VPN
-        createCIRelationship("rel-firewall-to-lb", "ci-net-firewall", "ci-net-lb-prod",
+        createCIRelationship("ci-net-firewall", "ci-net-lb-prod",
                 RelationshipType.CONNECTS_TO, oneYearAgo);
-        createCIRelationship("rel-vpn-to-firewall", "ci-net-vpn", "ci-net-firewall",
+        createCIRelationship("ci-net-vpn", "ci-net-firewall",
                 RelationshipType.CONNECTS_TO, oneYearAgo);
 
         // Storage dependencies
-        createCIRelationship("rel-app01-depends-s3", "ci-vm-app-01", "ci-storage-s3-prod",
+        createCIRelationship("ci-vm-app-01", "ci-storage-s3-prod",
                 RelationshipType.DEPENDS_ON, oneYearAgo);
-        createCIRelationship("rel-postgres-to-backup", "ci-db-postgres-prod", "ci-storage-s3-backup",
+        createCIRelationship("ci-db-postgres-prod", "ci-storage-s3-backup",
                 RelationshipType.CONNECTS_TO, sixMonthsAgo);
 
         // Legacy
-        createCIRelationship("rel-legacy-depends-oracle", "ci-vm-legacy", "ci-db-oracle-legacy",
+        createCIRelationship("ci-vm-legacy", "ci-db-oracle-legacy",
                 RelationshipType.DEPENDS_ON, oneYearAgo);
 
         // Payment depends on auth
-        createCIRelationship("rel-payment-depends-auth", "ci-api-payment", "ci-api-auth",
+        createCIRelationship("ci-api-payment", "ci-api-auth",
                 RelationshipType.DEPENDS_ON, sixMonthsAgo);
 
         LOG.info("CI relationships seeding completed.");
     }
 
-    private void createCIRelationship(String id, String sourceCIId, String targetCIId,
+    private void createCIRelationship(String sourceCIKey, String targetCIKey,
                                       RelationshipType type, Instant createdAt) {
+        String sourceId = resolve(sourceCIKey);
+        String targetId = resolve(targetCIKey);
         if (ciRelationshipRepository.existsBySourceCIIdAndTargetCIIdAndRelationshipType(
-                sourceCIId, targetCIId, type)) {
+                sourceId, targetId, type)) {
             return;
         }
         CIRelationship rel = new CIRelationship();
-        rel.setId(id);
-        rel.setSourceCIId(sourceCIId);
-        rel.setTargetCIId(targetCIId);
+        rel.setSourceCIId(sourceId);
+        rel.setTargetCIId(targetId);
         rel.setRelationshipType(type);
         rel.setCreatedAt(createdAt);
         ciRelationshipRepository.save(rel);
@@ -527,57 +532,58 @@ public class SeedDataService {
         Instant threeMonthsAgo = Instant.now().minus(90, ChronoUnit.DAYS);
 
         // Authentication service
-        createServiceCI("sci-auth-api", "svc-tech-auth", "ci-api-auth", sixMonthsAgo);
-        createServiceCI("sci-auth-app01", "svc-tech-auth", "ci-vm-app-01", sixMonthsAgo);
-        createServiceCI("sci-auth-postgres", "svc-tech-auth", "ci-db-postgres-prod", sixMonthsAgo);
-        createServiceCI("sci-auth-redis", "svc-tech-auth", "ci-db-redis-prod", sixMonthsAgo);
+        createServiceCI("svc-tech-auth", "ci-api-auth", sixMonthsAgo);
+        createServiceCI("svc-tech-auth", "ci-vm-app-01", sixMonthsAgo);
+        createServiceCI("svc-tech-auth", "ci-db-postgres-prod", sixMonthsAgo);
+        createServiceCI("svc-tech-auth", "ci-db-redis-prod", sixMonthsAgo);
 
         // CMDB service
-        createServiceCI("sci-cmdb-api", "svc-biz-cmdb", "ci-api-cmdb", sixMonthsAgo);
-        createServiceCI("sci-cmdb-app01", "svc-biz-cmdb", "ci-vm-app-01", sixMonthsAgo);
-        createServiceCI("sci-cmdb-mongo", "svc-biz-cmdb", "ci-db-mongo-prod", sixMonthsAgo);
+        createServiceCI("svc-biz-cmdb", "ci-api-cmdb", sixMonthsAgo);
+        createServiceCI("svc-biz-cmdb", "ci-vm-app-01", sixMonthsAgo);
+        createServiceCI("svc-biz-cmdb", "ci-db-mongo-prod", sixMonthsAgo);
 
         // Incident management
-        createServiceCI("sci-incident-api", "svc-biz-incident-mgmt", "ci-api-incident", threeMonthsAgo);
-        createServiceCI("sci-incident-app02", "svc-biz-incident-mgmt", "ci-vm-app-02", threeMonthsAgo);
-        createServiceCI("sci-incident-postgres", "svc-biz-incident-mgmt", "ci-db-postgres-prod", threeMonthsAgo);
+        createServiceCI("svc-biz-incident-mgmt", "ci-api-incident", threeMonthsAgo);
+        createServiceCI("svc-biz-incident-mgmt", "ci-vm-app-02", threeMonthsAgo);
+        createServiceCI("svc-biz-incident-mgmt", "ci-db-postgres-prod", threeMonthsAgo);
 
         // Notification service
-        createServiceCI("sci-notif-api", "svc-biz-notifications", "ci-api-notification", threeMonthsAgo);
-        createServiceCI("sci-notif-app02", "svc-biz-notifications", "ci-vm-app-02", threeMonthsAgo);
+        createServiceCI("svc-biz-notifications", "ci-api-notification", threeMonthsAgo);
+        createServiceCI("svc-biz-notifications", "ci-vm-app-02", threeMonthsAgo);
 
         // Messaging service
-        createServiceCI("sci-messaging-app01", "svc-tech-messaging", "ci-vm-app-01", sixMonthsAgo);
-        createServiceCI("sci-messaging-app02", "svc-tech-messaging", "ci-vm-app-02", sixMonthsAgo);
+        createServiceCI("svc-tech-messaging", "ci-vm-app-01", sixMonthsAgo);
+        createServiceCI("svc-tech-messaging", "ci-vm-app-02", sixMonthsAgo);
 
         // Monitoring service
-        createServiceCI("sci-monitoring-app01", "svc-tech-monitoring", "ci-vm-app-01", sixMonthsAgo);
-        createServiceCI("sci-monitoring-app02", "svc-tech-monitoring", "ci-vm-app-02", sixMonthsAgo);
+        createServiceCI("svc-tech-monitoring", "ci-vm-app-01", sixMonthsAgo);
+        createServiceCI("svc-tech-monitoring", "ci-vm-app-02", sixMonthsAgo);
 
         // Backup service
-        createServiceCI("sci-backup-s3", "svc-tech-backup", "ci-storage-s3-backup", sixMonthsAgo);
-        createServiceCI("sci-backup-postgres", "svc-tech-backup", "ci-db-postgres-prod", sixMonthsAgo);
-        createServiceCI("sci-backup-mongo", "svc-tech-backup", "ci-db-mongo-prod", sixMonthsAgo);
+        createServiceCI("svc-tech-backup", "ci-storage-s3-backup", sixMonthsAgo);
+        createServiceCI("svc-tech-backup", "ci-db-postgres-prod", sixMonthsAgo);
+        createServiceCI("svc-tech-backup", "ci-db-mongo-prod", sixMonthsAgo);
 
         // Legacy ERP
-        createServiceCI("sci-legacy-vm", "svc-tech-legacy-erp", "ci-vm-legacy", oneYearAgo);
-        createServiceCI("sci-legacy-oracle", "svc-tech-legacy-erp", "ci-db-oracle-legacy", oneYearAgo);
+        createServiceCI("svc-tech-legacy-erp", "ci-vm-legacy", oneYearAgo);
+        createServiceCI("svc-tech-legacy-erp", "ci-db-oracle-legacy", oneYearAgo);
 
         // Platform shared infra
-        createServiceCI("sci-platform-lb", "svc-domain-platform", "ci-net-lb-prod", oneYearAgo);
-        createServiceCI("sci-platform-fw", "svc-domain-platform", "ci-net-firewall", oneYearAgo);
-        createServiceCI("sci-platform-vpn", "svc-domain-platform", "ci-net-vpn", oneYearAgo);
-        createServiceCI("sci-platform-s3", "svc-domain-platform", "ci-storage-s3-prod", oneYearAgo);
+        createServiceCI("svc-domain-platform", "ci-net-lb-prod", oneYearAgo);
+        createServiceCI("svc-domain-platform", "ci-net-firewall", oneYearAgo);
+        createServiceCI("svc-domain-platform", "ci-net-vpn", oneYearAgo);
+        createServiceCI("svc-domain-platform", "ci-storage-s3-prod", oneYearAgo);
 
         LOG.info("Service-CI associations seeding completed.");
     }
 
-    private void createServiceCI(String id, String serviceId, String ciId, Instant createdAt) {
+    private void createServiceCI(String serviceKey, String ciKey, Instant createdAt) {
+        String serviceId = resolve(serviceKey);
+        String ciId = resolve(ciKey);
         if (serviceCIRepository.existsByServiceIdAndCiId(serviceId, ciId)) {
             return;
         }
         ServiceCI serviceCI = new ServiceCI();
-        serviceCI.setId(id);
         serviceCI.setServiceId(serviceId);
         serviceCI.setCiId(ciId);
         serviceCI.setCreatedAt(createdAt);
@@ -596,58 +602,59 @@ public class SeedDataService {
         Instant threeMonthsAgo = Instant.now().minus(90, ChronoUnit.DAYS);
 
         // Incident Management dependencies
-        createServiceDependency("sdep-incident-auth", "svc-biz-incident-mgmt", "svc-tech-auth",
+        createServiceDependency("svc-biz-incident-mgmt", "svc-tech-auth",
                 DependencyType.SYNCHRONOUS, threeMonthsAgo);
-        createServiceDependency("sdep-incident-messaging", "svc-biz-incident-mgmt", "svc-tech-messaging",
+        createServiceDependency("svc-biz-incident-mgmt", "svc-tech-messaging",
                 DependencyType.ASYNCHRONOUS, threeMonthsAgo);
-        createServiceDependency("sdep-incident-notification", "svc-biz-incident-mgmt", "svc-biz-notifications",
+        createServiceDependency("svc-biz-incident-mgmt", "svc-biz-notifications",
                 DependencyType.ASYNCHRONOUS, threeMonthsAgo);
 
         // CMDB dependencies
-        createServiceDependency("sdep-cmdb-auth", "svc-biz-cmdb", "svc-tech-auth",
+        createServiceDependency("svc-biz-cmdb", "svc-tech-auth",
                 DependencyType.SYNCHRONOUS, sixMonthsAgo);
-        createServiceDependency("sdep-cmdb-messaging", "svc-biz-cmdb", "svc-tech-messaging",
+        createServiceDependency("svc-biz-cmdb", "svc-tech-messaging",
                 DependencyType.ASYNCHRONOUS, sixMonthsAgo);
 
         // Change Management dependencies
-        createServiceDependency("sdep-change-auth", "svc-biz-change-mgmt", "svc-tech-auth",
+        createServiceDependency("svc-biz-change-mgmt", "svc-tech-auth",
                 DependencyType.SYNCHRONOUS, threeMonthsAgo);
-        createServiceDependency("sdep-change-cmdb", "svc-biz-change-mgmt", "svc-biz-cmdb",
+        createServiceDependency("svc-biz-change-mgmt", "svc-biz-cmdb",
                 DependencyType.SYNCHRONOUS, threeMonthsAgo);
-        createServiceDependency("sdep-change-notification", "svc-biz-change-mgmt", "svc-biz-notifications",
+        createServiceDependency("svc-biz-change-mgmt", "svc-biz-notifications",
                 DependencyType.ASYNCHRONOUS, threeMonthsAgo);
 
         // Notifications dependencies
-        createServiceDependency("sdep-notif-auth", "svc-biz-notifications", "svc-tech-auth",
+        createServiceDependency("svc-biz-notifications", "svc-tech-auth",
                 DependencyType.SYNCHRONOUS, threeMonthsAgo);
-        createServiceDependency("sdep-notif-messaging", "svc-biz-notifications", "svc-tech-messaging",
+        createServiceDependency("svc-biz-notifications", "svc-tech-messaging",
                 DependencyType.CRITICAL, threeMonthsAgo);
 
         // Monitoring dependencies
-        createServiceDependency("sdep-monitoring-messaging", "svc-tech-monitoring", "svc-tech-messaging",
+        createServiceDependency("svc-tech-monitoring", "svc-tech-messaging",
                 DependencyType.CRITICAL, sixMonthsAgo);
 
         // Backup dependencies
-        createServiceDependency("sdep-backup-monitoring", "svc-tech-backup", "svc-tech-monitoring",
+        createServiceDependency("svc-tech-backup", "svc-tech-monitoring",
                 DependencyType.ASYNCHRONOUS, sixMonthsAgo);
 
         // Legacy ERP dependencies
-        createServiceDependency("sdep-legacy-auth", "svc-tech-legacy-erp", "svc-tech-auth",
+        createServiceDependency("svc-tech-legacy-erp", "svc-tech-auth",
                 DependencyType.SYNCHRONOUS, oneYearAgo);
 
         LOG.info("Service dependencies seeding completed.");
     }
 
-    private void createServiceDependency(String id, String sourceServiceId, String targetServiceId,
+    private void createServiceDependency(String sourceServiceKey, String targetServiceKey,
                                          DependencyType type, Instant createdAt) {
+        String sourceId = resolve(sourceServiceKey);
+        String targetId = resolve(targetServiceKey);
         if (serviceDependencyRepository.existsBySourceServiceIdAndTargetServiceId(
-                sourceServiceId, targetServiceId)) {
+                sourceId, targetId)) {
             return;
         }
         ServiceDependency dep = new ServiceDependency();
-        dep.setId(id);
-        dep.setSourceServiceId(sourceServiceId);
-        dep.setTargetServiceId(targetServiceId);
+        dep.setSourceServiceId(sourceId);
+        dep.setTargetServiceId(targetId);
         dep.setDependencyType(type);
         dep.setCreatedAt(createdAt);
         serviceDependencyRepository.save(dep);
@@ -673,18 +680,15 @@ public class SeedDataService {
         LOG.info("Data sources seeding completed.");
     }
 
-    private void createDataSource(String id, String name, DataSourceType type,
+    private void createDataSource(String key, String name, DataSourceType type,
                                   int reliabilityRating, Instant createdAt) {
-        if (dataSourceRepository.existsById(id)) {
-            return;
-        }
         DataSource ds = new DataSource();
-        ds.setId(id);
         ds.setName(name);
         ds.setType(type);
         ds.setReliabilityRating(reliabilityRating);
         ds.setCreatedAt(createdAt);
         ds.setUpdatedAt(createdAt);
         dataSourceRepository.save(ds);
+        idMap.put(key, ds.getId());
     }
 }
