@@ -5,10 +5,7 @@
 #
 # Targets:
 #   - Quarkus services (/q/metrics)
-#   - MongoDB Exporter
-#   - Kafka Exporter
-#   - Node Exporter
-#   - cAdvisor
+#   (Infrastructure exporters removed: MongoDB, Kafka, Node, cAdvisor)
 # =============================================================================
 
 global:
@@ -50,20 +47,3 @@ scrape_configs:
       - targets: ["cmdb-service:8083"]
         labels:
           service: zenandops-cmdb
-
-  # --- Infrastructure exporters ---
-  - job_name: mongodb
-    static_configs:
-      - targets: ["mongodb-exporter:9216"]
-
-  - job_name: kafka
-    static_configs:
-      - targets: ["kafka-exporter:9308"]
-
-  - job_name: node
-    static_configs:
-      - targets: ["node-exporter:9100"]
-
-  - job_name: cadvisor
-    static_configs:
-      - targets: ["cadvisor:8080"]
