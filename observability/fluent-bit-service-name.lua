@@ -1,4 +1,4 @@
--- Resolves container ID from the Fluent Bit tag to a service.name
+-- Resolves container ID from the Fluent Bit tag to a service_name
 -- by reading Docker's container config file.
 --
 -- Tag format from tail input: docker.<container_id>-json.log
@@ -10,13 +10,13 @@ function set_service_name(tag, timestamp, record)
     -- Extract container ID from the tag
     local container_id = tag:match("^docker%.(.+)")
     if not container_id then
-        record["service.name"] = "unknown"
+        record["service_name"] = "unknown"
         return 2, timestamp, record
     end
 
     -- Check cache first
     if cache[container_id] then
-        record["service.name"] = cache[container_id]
+        record["service_name"] = cache[container_id]
         return 2, timestamp, record
     end
 
@@ -31,12 +31,12 @@ function set_service_name(tag, timestamp, record)
         if name then
             local service_name = resolve_service_name(name)
             cache[container_id] = service_name
-            record["service.name"] = service_name
+            record["service_name"] = service_name
             return 2, timestamp, record
         end
     end
 
-    record["service.name"] = "unknown"
+    record["service_name"] = "unknown"
     return 2, timestamp, record
 end
 
@@ -50,7 +50,10 @@ function resolve_service_name(container_name)
         ["zenandops-mongodb"]           = "zenandops-mongodb",
         ["zenandops-mongodb-exporter"]  = "zenandops-mongodb-exporter",
         ["zenandops-kafka"]             = "zenandops-kafka",
-        ["zenandops-otel-collector"]    = "zenandops-otel-collector",
+        ["zenandops-kafka-exporter"]    = "zenandops-kafka-exporter",
+        ["zenandops-prometheus"]        = "zenandops-prometheus",
+        ["zenandops-node-exporter"]     = "zenandops-node-exporter",
+        ["zenandops-cadvisor"]          = "zenandops-cadvisor",
         ["zenandops-fluent-bit"]        = "zenandops-fluent-bit",
         ["zenandops-grafana"]           = "zenandops-grafana",
         ["zenandops-loki"]              = "zenandops-loki",

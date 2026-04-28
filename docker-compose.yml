@@ -89,14 +89,14 @@ services:
       ZENANDOPS_JWT_ISSUER: ${JWT_ISSUER}
       ZENANDOPS_JWT_ACCESS_TOKEN_EXPIRATION_MINUTES: ${JWT_ACCESS_TOKEN_EXPIRATION_MINUTES}
       ZENANDOPS_JWT_REFRESH_TOKEN_EXPIRATION_HOURS: ${JWT_REFRESH_TOKEN_EXPIRATION_HOURS}
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4317
     depends_on:
       mongodb:
         condition: service_healthy
       kafka:
         condition: service_healthy
-      otel-collector:
-        condition: service_healthy
+      tempo:
+        condition: service_started
     networks:
       - zenandops-net
 
@@ -112,10 +112,10 @@ services:
       QUARKUS_HTTP_PORT: 8082
       MP_JWT_VERIFY_PUBLICKEY: ${JWT_PUBLIC_KEY}
       MP_JWT_VERIFY_ISSUER: ${JWT_ISSUER}
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4317
     depends_on:
-      otel-collector:
-        condition: service_healthy
+      tempo:
+        condition: service_started
     networks:
       - zenandops-net
 
@@ -134,15 +134,15 @@ services:
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
       MP_JWT_VERIFY_PUBLICKEY: ${JWT_PUBLIC_KEY}
       MP_JWT_VERIFY_ISSUER: ${JWT_ISSUER}
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4317
       CMDB_IMPACT_ANALYSIS_MAX_DEPTH: ${CMDB_IMPACT_ANALYSIS_MAX_DEPTH:-10}
     depends_on:
       mongodb:
         condition: service_healthy
       kafka:
         condition: service_healthy
-      otel-collector:
-        condition: service_healthy
+      tempo:
+        condition: service_started
     networks:
       - zenandops-net
 
@@ -163,7 +163,7 @@ services:
       GATEWAY_RATE_LIMIT_WINDOW_SECONDS: ${GATEWAY_RATE_LIMIT_WINDOW_SECONDS}
       MP_JWT_VERIFY_PUBLICKEY: ${JWT_PUBLIC_KEY}
       MP_JWT_VERIFY_ISSUER: ${JWT_ISSUER}
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://otel-collector:4317
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4317
     depends_on:
       auth-service:
         condition: service_started
@@ -171,8 +171,8 @@ services:
         condition: service_started
       cmdb-service:
         condition: service_started
-      otel-collector:
-        condition: service_healthy
+      tempo:
+        condition: service_started
     healthcheck:
       test: ["CMD", "java", "-cp", "/app/healthcheck", "HealthCheck", "http://localhost:8080/q/health"]
       interval: 10s
@@ -246,31 +246,74 @@ services:
     networks:
       - zenandops-net
 
-  otel-collector:
-    image: otel/opentelemetry-collector-contrib:0.127.0
-    container_name: zenandops-otel-collector
+  prometheus:
+    image: prom/prometheus:v3.4.0
+    container_name: zenandops-prometheus
     ports:
-      - "${OTEL_COLLECTOR_GRPC_PORT:-4317}:4317"
-      - "${OTEL_COLLECTOR_HTTP_PORT:-4318}:4318"
-      - "${OTEL_COLLECTOR_HEALTH_PORT:-13133}:13133"
-    command: ["--config=/etc/otelcol/config.yaml"]
+      - "${PROMETHEUS_PORT:-9090}:9090"
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--web.enable-remote-write-receiver"
+      - "--storage.tsdb.retention.time=2h"
     volumes:
-      - ./observability/otel-collector-config.yaml:/etc/otelcol/config.yaml
+      - prometheus-data:/prometheus
+      - ./observability/prometheus.yaml:/etc/prometheus/prometheus.yml
     healthcheck:
-      test: ["CMD", "/otelcol-contrib", "validate", "--config=/etc/otelcol/config.yaml"]
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:9090/-/healthy || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 20s
     depends_on:
-      loki:
-        condition: service_healthy
       mimir:
         condition: service_started
-      tempo:
-        condition: service_started
-      mongodb-exporter:
-        condition: service_started
+    networks:
+      - zenandops-net
+
+  kafka-exporter:
+    image: danielqsj/kafka-exporter:v1.9.0
+    container_name: zenandops-kafka-exporter
+    ports:
+      - "${KAFKA_EXPORTER_PORT:-9308}:9308"
+    command:
+      - "--kafka.server=kafka:9092"
+    depends_on:
+      kafka:
+        condition: service_healthy
+    networks:
+      - zenandops-net
+
+  node-exporter:
+    image: prom/node-exporter:v1.9.1
+    container_name: zenandops-node-exporter
+    ports:
+      - "${NODE_EXPORTER_PORT:-9100}:9100"
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - "--path.procfs=/host/proc"
+      - "--path.sysfs=/host/sys"
+      - "--path.rootfs=/rootfs"
+      - "--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)"
+    networks:
+      - zenandops-net
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.52.1
+    container_name: zenandops-cadvisor
+    ports:
+      - "${CADVISOR_PORT:-8085}:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    privileged: true
+    devices:
+      - /dev/kmsg
     networks:
       - zenandops-net
 
@@ -293,7 +336,7 @@ services:
       retries: 5
       start_period: 20s
     depends_on:
-      otel-collector:
+      loki:
         condition: service_healthy
     networks:
       - zenandops-net
@@ -332,6 +375,7 @@ volumes:
   loki-data:
   mimir-data:
   tempo-data:
+  prometheus-data:
   grafana-data:
 
 networks:

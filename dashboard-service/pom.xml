@@ -66,10 +66,10 @@
             <artifactId>quarkus-opentelemetry</artifactId>
         </dependency>
 
-        <!-- Micrometer OpenTelemetry bridge -->
+        <!-- Micrometer Prometheus registry (exposes /q/metrics for Prometheus scraping) -->
         <dependency>
             <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-micrometer-opentelemetry</artifactId>
+            <artifactId>quarkus-micrometer-registry-prometheus</artifactId>
         </dependency>
 
         <!-- Test dependencies -->

@@ -5,6 +5,7 @@ datasources:
     access: proxy
     uid: mimir
     url: http://mimir:9009/prometheus
+    isDefault: true
 
   - name: Loki
     type: loki

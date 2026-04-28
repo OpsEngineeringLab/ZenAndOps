@@ -1,31 +1,40 @@
 package com.zenandops.auth.infrastructure.adapter.metrics;
 
-import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.metrics.LongCounter;
-import io.opentelemetry.api.metrics.Meter;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
 /**
  * Custom application metrics for authentication attempts.
- * Tracks login attempts by outcome (success/failure) using an OpenTelemetry LongCounter.
+ * Tracks login attempts by outcome (success/failure) using a Micrometer Counter.
  */
 @ApplicationScoped
 public class AuthMetrics {
 
-    private final LongCounter authAttempts;
+    private final Counter successCounter;
+    private final Counter failureCounter;
 
     @Inject
-    public AuthMetrics(Meter meter) {
-        this.authAttempts = meter.counterBuilder("zenandops.auth.login.attempts")
-            .setDescription("Number of authentication attempts")
-            .setUnit("{attempts}")
-            .build();
+    public AuthMetrics(MeterRegistry registry) {
+        this.successCounter = Counter.builder("zenandops.auth.login.attempts")
+            .description("Number of authentication attempts")
+            .baseUnit("attempts")
+            .tag("outcome", "success")
+            .register(registry);
+
+        this.failureCounter = Counter.builder("zenandops.auth.login.attempts")
+            .description("Number of authentication attempts")
+            .baseUnit("attempts")
+            .tag("outcome", "failure")
+            .register(registry);
     }
 
     public void recordAttempt(boolean success) {
-        authAttempts.add(1, Attributes.of(
-            AttributeKey.stringKey("outcome"), success ? "success" : "failure"));
+        if (success) {
+            successCounter.increment();
+        } else {
+            failureCounter.increment();
+        }
     }
 }

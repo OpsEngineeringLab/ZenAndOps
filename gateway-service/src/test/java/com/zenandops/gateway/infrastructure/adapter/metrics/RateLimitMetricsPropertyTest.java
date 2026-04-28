@@ -1,14 +1,9 @@
 package com.zenandops.gateway.infrastructure.adapter.metrics;
 
-import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.metrics.Meter;
-import io.opentelemetry.sdk.metrics.SdkMeterProvider;
-import io.opentelemetry.sdk.metrics.data.LongPointData;
-import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
+import io.micrometer.core.instrument.Gauge;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import net.jqwik.api.*;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,32 +28,32 @@ class RateLimitMetricsPropertyTest {
     void gaugeReportsCorrectCountForEachIp(
             @ForAll("ipToCountMaps") Map<String, Long> ipCounts) {
 
-        InMemoryMetricReader reader = InMemoryMetricReader.create();
-        SdkMeterProvider meterProvider = SdkMeterProvider.builder()
-                .registerMetricReader(reader)
-                .build();
-        Meter meter = meterProvider.get("test");
-
-        RateLimitMetrics rateLimitMetrics = new RateLimitMetrics(meter);
+        SimpleMeterRegistry registry = new SimpleMeterRegistry();
+        RateLimitMetrics rateLimitMetrics = new RateLimitMetrics(registry);
 
         // Supply a snapshot of the map via the gauge callback
         Map<String, Long> snapshot = new HashMap<>(ipCounts);
         rateLimitMetrics.registerBucketGauge(() -> snapshot);
 
-        Collection<MetricData> metrics = reader.collectAllMetrics();
+        // Trigger gauge evaluation by reading the total gauge
+        Gauge totalGauge = registry.find("zenandops.gateway.ratelimit.bucket_count")
+                .tag("type", "total")
+                .gauge();
+
+        if (totalGauge != null) {
+            // Force evaluation
+            totalGauge.value();
+        }
 
         for (Map.Entry<String, Long> entry : ipCounts.entrySet()) {
             String ip = entry.getKey();
             long expectedCount = entry.getValue();
 
-            long reportedCount = metrics.stream()
-                    .filter(m -> m.getName().equals("zenandops.gateway.ratelimit.bucket_count"))
-                    .flatMap(m -> m.getLongGaugeData().getPoints().stream())
-                    .filter(point -> ip.equals(
-                            point.getAttributes().get(AttributeKey.stringKey("client.ip"))))
-                    .mapToLong(LongPointData::getValue)
-                    .findFirst()
-                    .orElse(Long.MIN_VALUE);
+            Gauge ipGauge = registry.find("zenandops.gateway.ratelimit.bucket_count")
+                    .tag("client.ip", ip)
+                    .gauge();
+
+            long reportedCount = ipGauge != null ? (long) ipGauge.value() : Long.MIN_VALUE;
 
             assertEquals(expectedCount, reportedCount,
                     "Gauge value for IP " + ip + " should match expected count");

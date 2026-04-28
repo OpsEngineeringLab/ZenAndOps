@@ -1,14 +1,9 @@
 package com.zenandops.auth.infrastructure.adapter.metrics;
 
-import io.opentelemetry.api.common.AttributeKey;
-import io.opentelemetry.api.metrics.Meter;
-import io.opentelemetry.sdk.metrics.SdkMeterProvider;
-import io.opentelemetry.sdk.metrics.data.LongPointData;
-import io.opentelemetry.sdk.metrics.data.MetricData;
-import io.opentelemetry.sdk.testing.exporter.InMemoryMetricReader;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.simple.SimpleMeterRegistry;
 import net.jqwik.api.*;
 
-import java.util.Collection;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -33,13 +28,8 @@ class AuthMetricsPropertyTest {
     void counterTotalsMatchExpectedSuccessAndFailureCounts(
             @ForAll List<Boolean> attempts) {
 
-        InMemoryMetricReader reader = InMemoryMetricReader.create();
-        SdkMeterProvider meterProvider = SdkMeterProvider.builder()
-                .registerMetricReader(reader)
-                .build();
-        Meter meter = meterProvider.get("test");
-
-        AuthMetrics authMetrics = new AuthMetrics(meter);
+        SimpleMeterRegistry registry = new SimpleMeterRegistry();
+        AuthMetrics authMetrics = new AuthMetrics(registry);
 
         long expectedSuccesses = attempts.stream().filter(b -> b).count();
         long expectedFailures = attempts.stream().filter(b -> !b).count();
@@ -48,25 +38,19 @@ class AuthMetricsPropertyTest {
             authMetrics.recordAttempt(success);
         }
 
-        Collection<MetricData> metrics = reader.collectAllMetrics();
+        double totalSuccess = findCounter(registry, "success");
+        double totalFailure = findCounter(registry, "failure");
 
-        long totalSuccess = extractCounterValue(metrics, "success");
-        long totalFailure = extractCounterValue(metrics, "failure");
-
-        assertEquals(expectedSuccesses, totalSuccess,
+        assertEquals(expectedSuccesses, (long) totalSuccess,
                 "Success counter should match number of successful attempts");
-        assertEquals(expectedFailures, totalFailure,
+        assertEquals(expectedFailures, (long) totalFailure,
                 "Failure counter should match number of failed attempts");
     }
 
-    private long extractCounterValue(Collection<MetricData> metrics, String outcome) {
-        return metrics.stream()
-                .filter(m -> m.getName().equals("zenandops.auth.login.attempts"))
-                .flatMap(m -> m.getLongSumData().getPoints().stream())
-                .filter(point -> outcome.equals(
-                        point.getAttributes().get(AttributeKey.stringKey("outcome"))))
-                .mapToLong(LongPointData::getValue)
-                .findFirst()
-                .orElse(0L);
+    private double findCounter(SimpleMeterRegistry registry, String outcome) {
+        Counter counter = registry.find("zenandops.auth.login.attempts")
+                .tag("outcome", outcome)
+                .counter();
+        return counter != null ? counter.count() : 0.0;
     }
 }

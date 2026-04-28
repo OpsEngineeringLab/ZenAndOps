@@ -2,7 +2,8 @@
 # Grafana Tempo Configuration (v2.10+)
 # =============================================================================
 # Single-binary mode with local storage for development.
-# Receives traces via OTLP gRPC from the OpenTelemetry Collector.
+# Receives traces via OTLP gRPC directly from Quarkus services.
+# Generates span metrics and service graphs, remote-writes to Mimir.
 # =============================================================================
 
 stream_over_http_enabled: true

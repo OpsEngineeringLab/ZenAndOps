@@ -90,10 +90,10 @@
             <artifactId>quarkus-opentelemetry</artifactId>
         </dependency>
 
-        <!-- Micrometer OpenTelemetry bridge -->
+        <!-- Micrometer Prometheus registry (exposes /q/metrics for Prometheus scraping) -->
         <dependency>
             <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-micrometer-opentelemetry</artifactId>
+            <artifactId>quarkus-micrometer-registry-prometheus</artifactId>
         </dependency>
 
         <!-- Test dependencies -->
@@ -111,11 +111,6 @@
             <groupId>net.jqwik</groupId>
             <artifactId>jqwik</artifactId>
             <version>1.9.3</version>
-            <scope>test</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.opentelemetry</groupId>
-            <artifactId>opentelemetry-sdk-testing</artifactId>
             <scope>test</scope>
         </dependency>
     </dependencies>
