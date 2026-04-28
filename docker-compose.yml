@@ -21,6 +21,24 @@ services:
     networks:
       - zenandops-net
 
+  mongodb-exporter:
+    image: percona/mongodb_exporter:0.44.0
+    container_name: zenandops-mongodb-exporter
+    ports:
+      - "${MONGODB_EXPORTER_PORT:-9216}:9216"
+    environment:
+      MONGODB_URI: mongodb://${MONGODB_ROOT_USERNAME}:${MONGODB_ROOT_PASSWORD}@mongodb:27017/admin?authSource=admin
+    command:
+      - "--mongodb.global-conn-pool"
+      - "--discovering-mode"
+      - "--compatible-mode"
+      - "--collect-all"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - zenandops-net
+
   kafka:
     image: apache/kafka:4.2.0
     container_name: zenandops-kafka
@@ -251,8 +269,11 @@ services:
         condition: service_started
       tempo:
         condition: service_started
+      mongodb-exporter:
+        condition: service_started
     networks:
       - zenandops-net
+
 
   fluent-bit:
     image: fluent/fluent-bit:4.0
@@ -264,6 +285,7 @@ services:
       - /var/lib/docker/containers:/var/lib/docker/containers:ro
       - ./observability/fluent-bit.conf:/fluent-bit/etc/fluent-bit.conf
       - ./observability/fluent-bit-parsers.conf:/fluent-bit/etc/parsers.conf
+      - ./observability/fluent-bit-service-name.lua:/fluent-bit/etc/service_name.lua
     healthcheck:
       test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:2020/api/v1/health"]
       interval: 10s
@@ -289,7 +311,6 @@ services:
     volumes:
       - grafana-data:/var/lib/grafana
       - ./observability/grafana/provisioning:/etc/grafana/provisioning
-      - ./observability/grafana/dashboards:/var/lib/grafana/dashboards
     healthcheck:
       test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1"]
       interval: 10s

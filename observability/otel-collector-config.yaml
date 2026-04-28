@@ -23,6 +23,15 @@ receivers:
   fluentforward:
     endpoint: 0.0.0.0:24224
 
+  # Prometheus receiver to scrape MongoDB Exporter metrics
+  prometheus:
+    config:
+      scrape_configs:
+        - job_name: mongodb
+          scrape_interval: 15s
+          static_configs:
+            - targets: ["mongodb-exporter:9216"]
+
 processors:
   # Batch processor to reduce export calls
   batch:
@@ -42,6 +51,11 @@ processors:
     check_interval: 5s
     limit_mib: 512
     spike_limit_mib: 128
+
+  # Group logs by service.name to promote it as a resource attribute
+  groupbyattrs/logs:
+    keys:
+      - service.name
 
 exporters:
   # Export traces to Tempo via OTLP gRPC
@@ -85,13 +99,18 @@ service:
       exporters: [otlp/tempo]
 
     metrics:
-      receivers: [otlp]
+      receivers: [otlp, prometheus]
       processors: [memory_limiter, resource, batch]
       exporters: [otlphttp/mimir]
 
     logs:
-      receivers: [otlp, fluentforward]
+      receivers: [otlp]
       processors: [memory_limiter, resource, batch]
+      exporters: [otlphttp/loki]
+
+    logs/docker:
+      receivers: [fluentforward]
+      processors: [memory_limiter, groupbyattrs/logs, resource, batch]
       exporters: [otlphttp/loki]
 
   telemetry:
