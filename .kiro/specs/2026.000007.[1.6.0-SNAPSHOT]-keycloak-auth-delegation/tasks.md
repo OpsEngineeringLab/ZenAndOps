@@ -76,7 +76,7 @@ This plan migrates ZenAndOps authentication from a custom auth-service to Keyclo
     - Add `quarkus.oidc.auth-server-url`, `quarkus.oidc.client-id`, `quarkus.oidc.tls.verification=none`
     - _Requirements: 3.4, 3.7_
 
-- [~] 4. Checkpoint — Ensure all backend OIDC migrations compile
+- [x] 4. Checkpoint — Ensure all backend OIDC migrations compile
   - Ensure all tests pass, ask the user if questions arise.
 
 - [ ] 5. Implement Gateway Service admin proxy adapter layer
