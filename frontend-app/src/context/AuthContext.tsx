@@ -7,8 +7,7 @@ import React, {
   useRef,
   useMemo,
 } from "react";
-import { jwtDecode } from "jwt-decode";
-import axios from "axios";
+import keycloak from "../lib/keycloak";
 
 interface JwtClaims {
   sub: string;
@@ -20,12 +19,6 @@ interface JwtClaims {
   permissions: string[];
   iat: number;
   exp: number;
-}
-
-interface AuthState {
-  accessToken: string | null;
-  refreshToken: string | null;
-  user: JwtClaims | null;
 }
 
 interface AuthContextType {
@@ -40,161 +33,241 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-const STORAGE_KEY_ACCESS = "zenandops_access_token";
-const STORAGE_KEY_REFRESH = "zenandops_refresh_token";
+// Token refresh interval: check every 30 seconds
+const TOKEN_REFRESH_INTERVAL_MS = 30 * 1000;
 
-// Auto-refresh buffer: refresh 60 seconds before expiry
-const REFRESH_BUFFER_MS = 60 * 1000;
+// Minimum token validity buffer in seconds for updateToken
+const TOKEN_MIN_VALIDITY_SECONDS = 60;
 
-function decodeToken(token: string): JwtClaims | null {
-  try {
-    return jwtDecode<JwtClaims>(token);
-  } catch {
-    return null;
-  }
-}
+/**
+ * Parse user claims from keycloak.tokenParsed into the JwtClaims interface.
+ * Custom claims (userId, name, email, roles, tags, permissions) are added
+ * to the token via Keycloak protocol mappers configured in the realm.
+ */
+function parseUserClaims(): JwtClaims | null {
+  const parsed = keycloak.tokenParsed;
+  if (!parsed) return null;
 
-function loadInitialState(): AuthState {
-  const accessToken = localStorage.getItem(STORAGE_KEY_ACCESS);
-  const refreshToken = localStorage.getItem(STORAGE_KEY_REFRESH);
-
-  if (accessToken) {
-    const claims = decodeToken(accessToken);
-    if (claims && claims.exp * 1000 > Date.now()) {
-      return { accessToken, refreshToken, user: claims };
+  // Parse tags: may come as a JSON string or already parsed array
+  let tags: Array<{ key: string; value: string }> = [];
+  if (parsed.tags) {
+    if (typeof parsed.tags === "string") {
+      try {
+        tags = JSON.parse(parsed.tags);
+      } catch {
+        tags = [];
+      }
+    } else if (Array.isArray(parsed.tags)) {
+      tags = parsed.tags;
     }
   }
 
-  // If access token is expired but refresh token exists, keep refresh token
-  // so auto-refresh can attempt renewal
-  if (refreshToken) {
-    return { accessToken: null, refreshToken, user: null };
+  // Parse permissions: may come as a JSON string or already parsed array
+  let permissions: string[] = [];
+  if (parsed.permissions) {
+    if (typeof parsed.permissions === "string") {
+      try {
+        permissions = JSON.parse(parsed.permissions);
+      } catch {
+        permissions = [];
+      }
+    } else if (Array.isArray(parsed.permissions)) {
+      permissions = parsed.permissions;
+    }
   }
 
-  return { accessToken: null, refreshToken: null, user: null };
+  // Parse roles: may come from custom claim or realm_access
+  let roles: string[] = [];
+  if (parsed.roles) {
+    if (Array.isArray(parsed.roles)) {
+      roles = parsed.roles;
+    }
+  } else if (parsed.realm_access?.roles) {
+    roles = parsed.realm_access.roles;
+  }
+
+  return {
+    sub: parsed.sub ?? "",
+    userId: parsed.userId ?? parsed.sub ?? "",
+    name: parsed.name ?? "",
+    email: parsed.email ?? "",
+    roles,
+    tags,
+    permissions,
+    iat: parsed.iat ?? 0,
+    exp: parsed.exp ?? 0,
+  };
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [authState, setAuthState] = useState<AuthState>(loadInitialState);
-  const refreshTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [initialized, setInitialized] = useState(false);
+  const [initError, setInitError] = useState<string | null>(null);
+  const [user, setUser] = useState<JwtClaims | null>(null);
+  const [authenticated, setAuthenticated] = useState(false);
+  const refreshIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  const clearTokens = useCallback(() => {
-    localStorage.removeItem(STORAGE_KEY_ACCESS);
-    localStorage.removeItem(STORAGE_KEY_REFRESH);
-    setAuthState({ accessToken: null, refreshToken: null, user: null });
-    if (refreshTimerRef.current) {
-      clearTimeout(refreshTimerRef.current);
-      refreshTimerRef.current = null;
-    }
+  // Update auth state from keycloak instance
+  const updateAuthState = useCallback(() => {
+    setAuthenticated(!!keycloak.authenticated);
+    setUser(keycloak.authenticated ? parseUserClaims() : null);
   }, []);
 
-  const storeTokens = useCallback((accessToken: string, refreshToken: string) => {
-    localStorage.setItem(STORAGE_KEY_ACCESS, accessToken);
-    localStorage.setItem(STORAGE_KEY_REFRESH, refreshToken);
-    const user = decodeToken(accessToken);
-    setAuthState({ accessToken, refreshToken, user });
-  }, []);
-
-  const refreshTokens = useCallback(async (): Promise<string | null> => {
-    const currentRefresh = localStorage.getItem(STORAGE_KEY_REFRESH);
-    if (!currentRefresh) {
-      clearTokens();
-      return null;
-    }
-
-    try {
-      const response = await axios.post("/api/v1/auth/refresh", {
-        refreshToken: currentRefresh,
-      });
-
-      const { accessToken, refreshToken: newRefreshToken } = response.data;
-      storeTokens(accessToken, newRefreshToken);
-      return accessToken;
-    } catch {
-      clearTokens();
-      return null;
-    }
-  }, [clearTokens, storeTokens]);
-
-  const login = useCallback(
-    async (loginId: string, password: string): Promise<void> => {
-      const response = await axios.post("/api/v1/auth/login", {
-        login: loginId,
-        password,
-      });
-
-      const { accessToken, refreshToken } = response.data;
-      storeTokens(accessToken, refreshToken);
-    },
-    [storeTokens]
-  );
-
-  const logoff = useCallback(async (): Promise<void> => {
-    const token = localStorage.getItem(STORAGE_KEY_ACCESS);
-    try {
-      if (token) {
-        await axios.post(
-          "/api/v1/auth/logoff",
-          {},
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
-      }
-    } catch {
-      // Logoff should always clear local state regardless of server response
-    } finally {
-      clearTokens();
-    }
-  }, [clearTokens]);
-
-  // Schedule auto-refresh based on access token expiry
+  // Initialize keycloak on mount
   useEffect(() => {
-    if (refreshTimerRef.current) {
-      clearTimeout(refreshTimerRef.current);
-      refreshTimerRef.current = null;
-    }
+    let cancelled = false;
 
-    if (authState.accessToken && authState.user) {
-      const expiresAt = authState.user.exp * 1000;
-      const now = Date.now();
-      const timeUntilRefresh = expiresAt - now - REFRESH_BUFFER_MS;
+    async function initKeycloak() {
+      try {
+        const auth = await keycloak.init({
+          onLoad: "login-required",
+          pkceMethod: "S256",
+          checkLoginIframe: false,
+        });
 
-      if (timeUntilRefresh > 0) {
-        refreshTimerRef.current = setTimeout(() => {
-          refreshTokens();
-        }, timeUntilRefresh);
-      } else if (authState.refreshToken) {
-        // Token is about to expire or already expired, refresh immediately
-        refreshTokens();
+        if (cancelled) return;
+
+        if (auth) {
+          updateAuthState();
+        }
+
+        setInitialized(true);
+      } catch (error) {
+        if (cancelled) return;
+        console.error("Keycloak initialization failed:", error);
+        setInitError("Failed to initialize authentication. Please try again.");
+        setInitialized(true);
       }
     }
+
+    initKeycloak();
 
     return () => {
-      if (refreshTimerRef.current) {
-        clearTimeout(refreshTimerRef.current);
-      }
+      cancelled = true;
     };
-  }, [authState.accessToken, authState.user, authState.refreshToken, refreshTokens]);
+  }, [updateAuthState]);
 
-  // On mount, if we have a refresh token but no valid access token, try to refresh
+  // Set up automatic token refresh interval
   useEffect(() => {
-    if (!authState.accessToken && authState.refreshToken) {
-      refreshTokens();
+    if (!initialized || !keycloak.authenticated) return;
+
+    // Set up keycloak event callbacks
+    keycloak.onTokenExpired = () => {
+      keycloak.updateToken(TOKEN_MIN_VALIDITY_SECONDS).catch(() => {
+        // Token refresh failed, redirect to login
+        keycloak.login();
+      });
+    };
+
+    keycloak.onAuthRefreshSuccess = () => {
+      updateAuthState();
+    };
+
+    keycloak.onAuthRefreshError = () => {
+      // Redirect to Keycloak login on refresh failure
+      keycloak.login();
+    };
+
+    // Periodic token refresh every 30 seconds with 60-second buffer
+    refreshIntervalRef.current = setInterval(() => {
+      keycloak
+        .updateToken(TOKEN_MIN_VALIDITY_SECONDS)
+        .then((refreshed) => {
+          if (refreshed) {
+            updateAuthState();
+          }
+        })
+        .catch(() => {
+          // Token refresh failed, redirect to login
+          keycloak.login();
+        });
+    }, TOKEN_REFRESH_INTERVAL_MS);
+
+    return () => {
+      if (refreshIntervalRef.current) {
+        clearInterval(refreshIntervalRef.current);
+        refreshIntervalRef.current = null;
+      }
+      keycloak.onTokenExpired = undefined;
+      keycloak.onAuthRefreshSuccess = undefined;
+      keycloak.onAuthRefreshError = undefined;
+    };
+  }, [initialized, authenticated, updateAuthState]);
+
+  // login: redirect to Keycloak login page
+  // loginId and password params are kept for backward compatibility but ignored
+  const login = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    async (_loginId: string, _password: string): Promise<void> => {
+      await keycloak.login();
+    },
+    []
+  );
+
+  // logoff: terminate SSO session via Keycloak
+  const logoff = useCallback(async (): Promise<void> => {
+    if (refreshIntervalRef.current) {
+      clearInterval(refreshIntervalRef.current);
+      refreshIntervalRef.current = null;
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    await keycloak.logout();
   }, []);
+
+  // refreshTokens: manually trigger token refresh and return new access token
+  const refreshTokens = useCallback(async (): Promise<string | null> => {
+    try {
+      await keycloak.updateToken(TOKEN_MIN_VALIDITY_SECONDS);
+      updateAuthState();
+      return keycloak.token ?? null;
+    } catch {
+      // Token refresh failed, redirect to Keycloak login
+      keycloak.login();
+      return null;
+    }
+  }, [updateAuthState]);
 
   const contextValue = useMemo<AuthContextType>(
     () => ({
-      accessToken: authState.accessToken,
-      refreshToken: authState.refreshToken,
-      user: authState.user,
-      isAuthenticated: !!authState.accessToken && !!authState.user,
+      accessToken: keycloak.token ?? null,
+      refreshToken: keycloak.refreshToken ?? null,
+      user,
+      isAuthenticated: authenticated,
       login,
       logoff,
       refreshTokens,
     }),
-    [authState, login, logoff, refreshTokens]
+    [user, authenticated, login, logoff, refreshTokens]
   );
+
+  // Show loading state while keycloak is initializing
+  if (!initialized) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="text-center">
+          <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-4 border-brand-500 border-t-transparent" />
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Initializing authentication...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show error state if initialization failed
+  if (initError) {
+    return (
+      <div className="flex h-screen items-center justify-center">
+        <div className="text-center">
+          <p className="mb-4 text-sm text-red-500">{initError}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="rounded-lg bg-brand-500 px-4 py-2 text-sm text-white hover:bg-brand-600"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>

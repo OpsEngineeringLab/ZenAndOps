@@ -290,7 +290,7 @@ public class SeedDataService {
                 "org-platform", "asset-sw-oracle-db", CIStatus.ACTIVE, true, oneYearAgo);
 
         // APIs
-        createCI("ci-api-auth", "auth-service-api", CIType.API,
+        createCI("ci-api-auth", "keycloak-auth-api", CIType.API,
                 "org-platform", "asset-cloud-aws-prod", CIStatus.ACTIVE, false, sixMonthsAgo);
         createCI("ci-api-cmdb", "cmdb-service-api", CIType.API,
                 "org-platform", "asset-cloud-aws-prod", CIStatus.ACTIVE, false, sixMonthsAgo);

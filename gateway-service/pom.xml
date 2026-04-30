@@ -6,7 +6,7 @@
 
     <groupId>com.zenandops</groupId>
     <artifactId>gateway-service</artifactId>
-    <version>1.5.0</version>
+    <version>1.6.0</version>
     <packaging>jar</packaging>
 
     <name>ZenAndOps Gateway Service</name>
@@ -42,10 +42,22 @@
             <artifactId>quarkus-rest-jackson</artifactId>
         </dependency>
 
-        <!-- SmallRye JWT for token validation -->
+        <!-- OIDC token validation (Keycloak JWKS) -->
         <dependency>
             <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-smallrye-jwt</artifactId>
+            <artifactId>quarkus-oidc</artifactId>
+        </dependency>
+
+        <!-- OIDC client for service account token management (Admin REST API calls) -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-oidc-client</artifactId>
+        </dependency>
+
+        <!-- REST client with Jackson for Keycloak Admin REST API -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-rest-client-jackson</artifactId>
         </dependency>
 
         <!-- Vert.x Web Client for proxying requests -->

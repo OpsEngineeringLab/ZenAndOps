@@ -15,12 +15,14 @@ import java.util.Optional;
  * Config-driven route resolver that maps path prefixes to backend service URLs.
  * Routes are ordered from most specific (longest prefix) to least specific
  * so that the first match wins.
+ * <p>
+ * Auth-related routes (login, refresh, logoff) and admin proxy routes (users, roles,
+ * tags, profile) are no longer routed here — authentication is handled by Keycloak
+ * OIDC flows, and admin operations are handled by dedicated JAX-RS resources
+ * (UserAdminResource, RoleAdminResource, TagAdminResource, ProfileResource).
  */
 @ApplicationScoped
 public class ConfigRouteResolver implements RouteResolver {
-
-    @ConfigProperty(name = "gateway.auth-service.url")
-    String authServiceUrl;
 
     @ConfigProperty(name = "gateway.dashboard-service.url")
     String dashboardServiceUrl;
@@ -34,16 +36,7 @@ public class ConfigRouteResolver implements RouteResolver {
     void init() {
         var definitions = new ArrayList<RouteDefinition>();
 
-        // Public routes (no JWT required)
-        definitions.add(new RouteDefinition("/api/v1/auth/login", authServiceUrl, false));
-        definitions.add(new RouteDefinition("/api/v1/auth/refresh", authServiceUrl, false));
-
         // Protected routes (JWT required)
-        definitions.add(new RouteDefinition("/api/v1/users", authServiceUrl, true));
-        definitions.add(new RouteDefinition("/api/v1/roles", authServiceUrl, true));
-        definitions.add(new RouteDefinition("/api/v1/profile", authServiceUrl, true));
-        definitions.add(new RouteDefinition("/api/v1/tags", authServiceUrl, true));
-        definitions.add(new RouteDefinition("/api/v1/auth/", authServiceUrl, true));
         definitions.add(new RouteDefinition("/api/v1/dashboard", dashboardServiceUrl, true));
         definitions.add(new RouteDefinition("/api/v1/cmdb", cmdbServiceUrl, true));
 

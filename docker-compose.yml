@@ -49,38 +49,32 @@ services:
     networks:
       - zenandops-net
 
-  # --- Backend Services ---
-
-  auth-service:
-    build:
-      context: ./auth-service
-      dockerfile: Dockerfile
-    image: zenandops/auth-service:${ZENANDOPS_VERSION}
-    container_name: zenandops-auth-service
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.2
+    container_name: zenandops-keycloak
+    command: ["start-dev", "--import-realm"]
     ports:
-      - "${AUTH_SERVICE_PORT}:8081"
+      - "${KEYCLOAK_PORT:-8180}:8080"
     environment:
-      QUARKUS_HTTP_PORT: 8081
-      QUARKUS_MONGODB_CONNECTION_STRING: mongodb://${MONGODB_ROOT_USERNAME}:${MONGODB_ROOT_PASSWORD}@mongodb:27017
-      QUARKUS_MONGODB_DATABASE: ${AUTH_DB_NAME}
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-      MP_JWT_VERIFY_PUBLICKEY: ${JWT_PUBLIC_KEY}
-      MP_JWT_VERIFY_ISSUER: ${JWT_ISSUER}
-      SMALLRYE_JWT_SIGN_KEY: ${JWT_PRIVATE_KEY}
-      SMALLRYE_JWT_NEW_TOKEN_ISSUER: ${JWT_ISSUER}
-      ZENANDOPS_JWT_ISSUER: ${JWT_ISSUER}
-      ZENANDOPS_JWT_ACCESS_TOKEN_EXPIRATION_MINUTES: ${JWT_ACCESS_TOKEN_EXPIRATION_MINUTES}
-      ZENANDOPS_JWT_REFRESH_TOKEN_EXPIRATION_HOURS: ${JWT_REFRESH_TOKEN_EXPIRATION_HOURS}
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4317
+    volumes:
+      - ./keycloak/zenandops-realm.json:/opt/keycloak/data/import/zenandops-realm.json
+      - ./keycloak-event-listener/target/keycloak-event-listener.jar:/opt/keycloak/providers/keycloak-event-listener.jar
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/localhost/8080 && echo -e 'GET /health/ready HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n' >&3 && cat <&3 | grep -q '200 OK'"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 60s
     depends_on:
-      mongodb:
-        condition: service_healthy
       kafka:
         condition: service_healthy
-      tempo:
-        condition: service_started
     networks:
       - zenandops-net
+
+  # --- Backend Services ---
 
   dashboard-service:
     build:
@@ -92,10 +86,12 @@ services:
       - "${DASHBOARD_SERVICE_PORT}:8082"
     environment:
       QUARKUS_HTTP_PORT: 8082
-      MP_JWT_VERIFY_PUBLICKEY: ${JWT_PUBLIC_KEY}
-      MP_JWT_VERIFY_ISSUER: ${JWT_ISSUER}
+      QUARKUS_OIDC_AUTH_SERVER_URL: http://keycloak:8080/realms/zenandops
+      QUARKUS_OIDC_CLIENT_ID: ${KEYCLOAK_BACKEND_CLIENT_ID}
       OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4317
     depends_on:
+      keycloak:
+        condition: service_healthy
       tempo:
         condition: service_started
     networks:
@@ -111,14 +107,16 @@ services:
       - "${CMDB_SERVICE_PORT:-8083}:8083"
     environment:
       QUARKUS_HTTP_PORT: 8083
+      QUARKUS_OIDC_AUTH_SERVER_URL: http://keycloak:8080/realms/zenandops
+      QUARKUS_OIDC_CLIENT_ID: ${KEYCLOAK_BACKEND_CLIENT_ID}
       QUARKUS_MONGODB_CONNECTION_STRING: mongodb://${MONGODB_ROOT_USERNAME}:${MONGODB_ROOT_PASSWORD}@mongodb:27017
       QUARKUS_MONGODB_DATABASE: ${CMDB_DB_NAME:-zenandops-cmdb}
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
-      MP_JWT_VERIFY_PUBLICKEY: ${JWT_PUBLIC_KEY}
-      MP_JWT_VERIFY_ISSUER: ${JWT_ISSUER}
       OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4317
       CMDB_IMPACT_ANALYSIS_MAX_DEPTH: ${CMDB_IMPACT_ANALYSIS_MAX_DEPTH:-10}
     depends_on:
+      keycloak:
+        condition: service_healthy
       mongodb:
         condition: service_healthy
       kafka:
@@ -138,17 +136,18 @@ services:
       - "${GATEWAY_SERVICE_PORT}:8080"
     environment:
       QUARKUS_HTTP_PORT: 8080
-      GATEWAY_AUTH_SERVICE_URL: ${GATEWAY_AUTH_SERVICE_URL}
+      QUARKUS_OIDC_AUTH_SERVER_URL: http://keycloak:8080/realms/zenandops
+      QUARKUS_OIDC_CLIENT_ID: ${KEYCLOAK_BACKEND_CLIENT_ID}
+      QUARKUS_OIDC_CREDENTIALS_SECRET: ${KEYCLOAK_BACKEND_CLIENT_SECRET}
+      GATEWAY_KEYCLOAK_ADMIN_URL: http://keycloak:8080/admin/realms/zenandops
       GATEWAY_DASHBOARD_SERVICE_URL: ${GATEWAY_DASHBOARD_SERVICE_URL}
       GATEWAY_CMDB_SERVICE_URL: ${GATEWAY_CMDB_SERVICE_URL}
       GATEWAY_RATE_LIMIT_MAX_REQUESTS: ${GATEWAY_RATE_LIMIT_MAX_REQUESTS}
       GATEWAY_RATE_LIMIT_WINDOW_SECONDS: ${GATEWAY_RATE_LIMIT_WINDOW_SECONDS}
-      MP_JWT_VERIFY_PUBLICKEY: ${JWT_PUBLIC_KEY}
-      MP_JWT_VERIFY_ISSUER: ${JWT_ISSUER}
       OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4317
     depends_on:
-      auth-service:
-        condition: service_started
+      keycloak:
+        condition: service_healthy
       dashboard-service:
         condition: service_started
       cmdb-service:
@@ -172,6 +171,9 @@ services:
       dockerfile: Dockerfile
       args:
         VITE_GATEWAY_URL: http://localhost:${GATEWAY_SERVICE_PORT}
+        VITE_KEYCLOAK_URL: http://localhost:${KEYCLOAK_PORT:-8180}
+        VITE_KEYCLOAK_REALM: ${KEYCLOAK_REALM}
+        VITE_KEYCLOAK_CLIENT_ID: ${KEYCLOAK_FRONTEND_CLIENT_ID}
     image: zenandops/frontend-app:${ZENANDOPS_VERSION}
     container_name: zenandops-frontend
     ports:

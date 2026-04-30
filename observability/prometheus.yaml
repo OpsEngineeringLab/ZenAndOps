@@ -27,13 +27,6 @@ scrape_configs:
         labels:
           service: zenandops-gateway
 
-  - job_name: zenandops-auth
-    metrics_path: /q/metrics
-    static_configs:
-      - targets: ["auth-service:8081"]
-        labels:
-          service: zenandops-auth
-
   - job_name: zenandops-dashboard
     metrics_path: /q/metrics
     static_configs:

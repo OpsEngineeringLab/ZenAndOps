@@ -6,7 +6,7 @@
 
     <groupId>com.zenandops</groupId>
     <artifactId>cmdb-service</artifactId>
-    <version>1.5.0</version>
+    <version>1.6.0</version>
     <packaging>jar</packaging>
 
     <name>ZenAndOps CMDB Service</name>
@@ -48,10 +48,10 @@
             <artifactId>quarkus-mongodb-panache</artifactId>
         </dependency>
 
-        <!-- SmallRye JWT for token validation -->
+        <!-- OIDC token validation (Keycloak) -->
         <dependency>
             <groupId>io.quarkus</groupId>
-            <artifactId>quarkus-smallrye-jwt</artifactId>
+            <artifactId>quarkus-oidc</artifactId>
         </dependency>
 
         <!-- Kafka via SmallRye Reactive Messaging -->
