@@ -54,8 +54,8 @@ This plan migrates ZenAndOps authentication from a custom auth-service to Keyclo
     - **Property 5: Auth event serialization contains all required fields**
     - **Validates: Requirements 6.4**
 
-- [ ] 3. Migrate backend services to OIDC token validation
-  - [~] 3.1 Migrate Gateway Service from `quarkus-smallrye-jwt` to `quarkus-oidc`
+- [x] 3. Migrate backend services to OIDC token validation
+  - [x] 3.1 Migrate Gateway Service from `quarkus-smallrye-jwt` to `quarkus-oidc`
     - Replace `quarkus-smallrye-jwt` with `quarkus-oidc`, `quarkus-oidc-client`, and `quarkus-rest-client-jackson` in `gateway-service/pom.xml`
     - Remove `mp.jwt.verify.publickey` and `mp.jwt.verify.issuer` from `application.properties`
     - Add `quarkus.oidc.auth-server-url`, `quarkus.oidc.client-id`, `quarkus.oidc.credentials.secret`, `quarkus.oidc.tls.verification=none`
@@ -64,13 +64,13 @@ This plan migrates ZenAndOps authentication from a custom auth-service to Keyclo
     - Remove `gateway.auth-service.url` property
     - _Requirements: 3.1, 3.2, 3.5, 3.6, 3.7, 7.1, 7.3_
 
-  - [~] 3.2 Migrate Dashboard Service from `quarkus-smallrye-jwt` to `quarkus-oidc`
+  - [x] 3.2 Migrate Dashboard Service from `quarkus-smallrye-jwt` to `quarkus-oidc`
     - Replace `quarkus-smallrye-jwt` with `quarkus-oidc` in `dashboard-service/pom.xml`
     - Remove `mp.jwt.verify.*` from `application.properties`
     - Add `quarkus.oidc.auth-server-url`, `quarkus.oidc.client-id`, `quarkus.oidc.tls.verification=none`
     - _Requirements: 3.3, 3.7_
 
-  - [~] 3.3 Migrate CMDB Service from `quarkus-smallrye-jwt` to `quarkus-oidc`
+  - [x] 3.3 Migrate CMDB Service from `quarkus-smallrye-jwt` to `quarkus-oidc`
     - Replace `quarkus-smallrye-jwt` with `quarkus-oidc` in `cmdb-service/pom.xml`
     - Remove `mp.jwt.verify.*` from `application.properties`
     - Add `quarkus.oidc.auth-server-url`, `quarkus.oidc.client-id`, `quarkus.oidc.tls.verification=none`
