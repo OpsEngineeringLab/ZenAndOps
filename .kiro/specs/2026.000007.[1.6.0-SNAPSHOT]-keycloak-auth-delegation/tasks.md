@@ -79,8 +79,8 @@ This plan migrates ZenAndOps authentication from a custom auth-service to Keyclo
 - [x] 4. Checkpoint — Ensure all backend OIDC migrations compile
   - Ensure all tests pass, ask the user if questions arise.
 
-- [ ] 5. Implement Gateway Service admin proxy adapter layer
-  - [~] 5.1 Implement `KeycloakAdminClient` REST client
+- [x] 5. Implement Gateway Service admin proxy adapter layer
+  - [x] 5.1 Implement `KeycloakAdminClient` REST client
     - Create `gateway-service/src/main/java/com/zenandops/gateway/infrastructure/adapter/keycloak/KeycloakAdminClient.java`
     - Implement user CRUD operations against Keycloak Admin REST API
     - Implement role CRUD and role-mapping operations
@@ -90,7 +90,7 @@ This plan migrates ZenAndOps authentication from a custom auth-service to Keyclo
     - Use `quarkus-oidc-client` for automatic service account token management
     - _Requirements: 7.5, 7.6, 7.7, 7.8, 7.9, 7.10, 7.11_
 
-  - [~] 5.2 Implement response translators
+  - [x] 5.2 Implement response translators
     - Create `UserResponseTranslator` — convert Keycloak `UserRepresentation` ↔ ZenAndOps `UserResponse`/`CreateUserRequest`/`UpdateUserRequest`
     - Create `RoleResponseTranslator` — convert Keycloak `RoleRepresentation` ↔ ZenAndOps `RoleResponse`/`CreateRoleRequest`/`UpdateRoleRequest`
     - Create `TagResponseTranslator` — convert realm attribute JSON ↔ ZenAndOps `TagResponse`/`CreateTagRequest`/`UpdateTagRequest`
@@ -103,7 +103,7 @@ This plan migrates ZenAndOps authentication from a custom auth-service to Keyclo
     - **Property 4: User tag assignment round-trip**
     - **Validates: Requirements 7.5, 7.7, 7.8, 7.9, 7.12**
 
-  - [~] 5.4 Implement admin proxy JAX-RS resources
+  - [x] 5.4 Implement admin proxy JAX-RS resources
     - Create `UserAdminResource` — handles `GET/POST /api/v1/users`, `GET/PUT/DELETE /api/v1/users/{id}`
     - Create `UserRoleAdminResource` — handles `POST/DELETE /api/v1/users/{userId}/roles`
     - Create `UserTagAdminResource` — handles `GET/POST/DELETE /api/v1/users/{userId}/tags`
@@ -113,7 +113,7 @@ This plan migrates ZenAndOps authentication from a custom auth-service to Keyclo
     - Each resource validates JWT, checks permissions, calls `KeycloakAdminClient`, and translates responses
     - _Requirements: 7.5, 7.6, 7.7, 7.8, 7.9, 7.10_
 
-  - [~] 5.5 Implement Keycloak error mapping
+  - [x] 5.5 Implement Keycloak error mapping
     - Map Keycloak Admin REST API error responses to appropriate HTTP status codes (400→400, 404→404, 409→409, 401/403→403, 500→502)
     - Return descriptive error messages in ZenAndOps error response format
     - _Requirements: 7.13_
@@ -122,7 +122,7 @@ This plan migrates ZenAndOps authentication from a custom auth-service to Keyclo
     - **Property 6: Keycloak error status mapping**
     - **Validates: Requirements 7.13**
 
-  - [~] 5.7 Update Gateway route resolver
+  - [x] 5.7 Update Gateway route resolver
     - Remove all routes pointing to `auth-service.url` from `ConfigRouteResolver`
     - Remove `/api/v1/auth/login`, `/api/v1/auth/refresh`, `/api/v1/auth/logoff` route definitions
     - Keep dashboard and CMDB routes unchanged
