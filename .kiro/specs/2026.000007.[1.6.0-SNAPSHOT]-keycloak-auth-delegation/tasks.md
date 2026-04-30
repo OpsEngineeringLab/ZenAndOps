@@ -194,10 +194,10 @@ This plan migrates ZenAndOps authentication from a custom auth-service to Keyclo
     - Verify `quarkus.oidc.*` entries are present in all backend services
     - _Requirements: 8.7, 8.8_
 
-- [-] 10. Final checkpoint — Ensure all tests pass and full stack is functional
+- [x] 10. Final checkpoint — Ensure all tests pass and full stack is functional
   - Ensure all tests pass, ask the user if questions arise.
 
-- [~] 11. Version control and release
+- [-] 11. Version control and release
   - [ ] Ensure all previous tasks are complete and tests pass
   - [ ] Remove SNAPSHOT suffix from all version references in the codebase
   - [ ] Commit the version bump: "release: 1.6.0 - keycloak-auth-delegation"
