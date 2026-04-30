@@ -33,14 +33,14 @@ This plan migrates ZenAndOps authentication from a custom auth-service to Keyclo
     - Add `VITE_KEYCLOAK_URL`, `VITE_KEYCLOAK_REALM`, `VITE_KEYCLOAK_CLIENT_ID` for frontend build
     - _Requirements: 1.4, 8.5, 8.6_
 
-- [ ] 2. Implement Keycloak Event Listener SPI
-  - [~] 2.1 Scaffold the `keycloak-event-listener` Maven module
+- [x] 2. Implement Keycloak Event Listener SPI
+  - [x] 2.1 Scaffold the `keycloak-event-listener` Maven module
     - Create `keycloak-event-listener/pom.xml` with Keycloak SPI and Kafka client dependencies (shaded JAR)
     - Create directory structure: `src/main/java/com/zenandops/keycloak/events/`
     - Create `src/main/resources/META-INF/services/org.keycloak.events.EventListenerProviderFactory` service file
     - _Requirements: 6.5_
 
-  - [~] 2.2 Implement `KafkaEventListenerProvider` and `KafkaEventListenerProviderFactory`
+  - [x] 2.2 Implement `KafkaEventListenerProvider` and `KafkaEventListenerProviderFactory`
     - Implement `KafkaEventListenerProviderFactory` with `getId()` returning `"zenandops-kafka-event-listener"`
     - Initialize Kafka producer in `init()` reading `KAFKA_BOOTSTRAP_SERVERS` from environment
     - Implement `KafkaEventListenerProvider.onEvent(Event)` to intercept LOGIN, LOGOUT, REFRESH_TOKEN events
