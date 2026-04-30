@@ -177,19 +177,19 @@ This plan migrates ZenAndOps authentication from a custom auth-service to Keyclo
     - Remove references from README, documentation, and inter-service configuration
     - _Requirements: 5.6_
 
-- [ ] 9. Environment and configuration cleanup
-  - [~] 9.1 Remove old JWT and auth-service variables from `.env` and `.env.example`
+- [x] 9. Environment and configuration cleanup
+  - [x] 9.1 Remove old JWT and auth-service variables from `.env` and `.env.example`
     - Remove `JWT_PUBLIC_KEY`, `JWT_PRIVATE_KEY`, `JWT_ISSUER`, `JWT_ACCESS_TOKEN_EXPIRATION_MINUTES`, `JWT_REFRESH_TOKEN_EXPIRATION_HOURS`
     - Remove `AUTH_SERVICE_PORT`, `AUTH_DB_NAME`, `GATEWAY_AUTH_SERVICE_URL`
     - _Requirements: 8.1, 8.2_
 
-  - [~] 9.2 Clean up Docker Compose environment variables
+  - [x] 9.2 Clean up Docker Compose environment variables
     - Remove all `MP_JWT_VERIFY_PUBLICKEY`, `MP_JWT_VERIFY_ISSUER`, `SMALLRYE_JWT_SIGN_KEY`, `SMALLRYE_JWT_NEW_TOKEN_ISSUER`, `ZENANDOPS_JWT_ISSUER`, `ZENANDOPS_JWT_ACCESS_TOKEN_EXPIRATION_MINUTES`, `ZENANDOPS_JWT_REFRESH_TOKEN_EXPIRATION_HOURS` from all service definitions
     - Add `QUARKUS_OIDC_AUTH_SERVER_URL`, `QUARKUS_OIDC_CLIENT_ID`, `QUARKUS_OIDC_CREDENTIALS_SECRET` to each backend service
     - Add `VITE_KEYCLOAK_URL`, `VITE_KEYCLOAK_REALM`, `VITE_KEYCLOAK_CLIENT_ID` as build args to `frontend-app`
     - _Requirements: 8.3, 8.4, 8.5, 8.6_
 
-  - [~] 9.3 Clean up application.properties for all backend services
+  - [x] 9.3 Clean up application.properties for all backend services
     - Remove all `mp.jwt.verify.*`, `smallrye.jwt.*`, and `zenandops.jwt.*` entries from all services
     - Verify `quarkus.oidc.*` entries are present in all backend services
     - _Requirements: 8.7, 8.8_
