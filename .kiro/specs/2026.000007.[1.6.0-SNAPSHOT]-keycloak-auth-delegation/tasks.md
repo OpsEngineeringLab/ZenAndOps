@@ -161,19 +161,19 @@ This plan migrates ZenAndOps authentication from a custom auth-service to Keyclo
     - Redirect unauthenticated users to Keycloak login page
     - _Requirements: 4.2_
 
-- [ ] 8. Remove auth-service from the codebase
-  - [-] 8.1 Delete the `auth-service/` directory
+- [x] 8. Remove auth-service from the codebase
+  - [x] 8.1 Delete the `auth-service/` directory
     - Remove the entire `auth-service/` directory including all source code, Dockerfile, pom.xml, and test resources
     - _Requirements: 5.1_
 
-  - [~] 8.2 Remove auth-service from Docker Compose
+  - [x] 8.2 Remove auth-service from Docker Compose
     - Remove the `auth-service` service definition from `docker-compose.yml`
     - Remove `AUTH_SERVICE_PORT`, `AUTH_DB_NAME`, `GATEWAY_AUTH_SERVICE_URL` from all service environment blocks
     - Update `gateway-service` depends_on to reference `keycloak` instead of `auth-service`
     - Retain MongoDB service (used by CMDB) but remove `zenandops-auth` database reference if only used by auth-service
     - _Requirements: 5.2, 5.3, 5.5_
 
-  - [~] 8.3 Remove auth-service references from documentation and configuration
+  - [x] 8.3 Remove auth-service references from documentation and configuration
     - Remove references from README, documentation, and inter-service configuration
     - _Requirements: 5.6_
 
