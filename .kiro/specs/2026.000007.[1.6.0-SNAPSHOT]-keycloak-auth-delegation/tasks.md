@@ -162,7 +162,7 @@ This plan migrates ZenAndOps authentication from a custom auth-service to Keyclo
     - _Requirements: 4.2_
 
 - [ ] 8. Remove auth-service from the codebase
-  - [~] 8.1 Delete the `auth-service/` directory
+  - [-] 8.1 Delete the `auth-service/` directory
     - Remove the entire `auth-service/` directory including all source code, Dockerfile, pom.xml, and test resources
     - _Requirements: 5.1_
 
