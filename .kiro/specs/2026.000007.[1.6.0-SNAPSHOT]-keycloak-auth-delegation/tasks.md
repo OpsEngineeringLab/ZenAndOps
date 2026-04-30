@@ -194,7 +194,7 @@ This plan migrates ZenAndOps authentication from a custom auth-service to Keyclo
     - Verify `quarkus.oidc.*` entries are present in all backend services
     - _Requirements: 8.7, 8.8_
 
-- [~] 10. Final checkpoint — Ensure all tests pass and full stack is functional
+- [-] 10. Final checkpoint — Ensure all tests pass and full stack is functional
   - Ensure all tests pass, ask the user if questions arise.
 
 - [~] 11. Version control and release
