@@ -1,5 +1,4 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router";
-import LoginPage from "./pages/AuthPages/LoginPage";
 import NotFound from "./pages/OtherPage/NotFound";
 import TagManagement from "./pages/TagManagement";
 import RoleManagement from "./pages/RoleManagement";
@@ -10,7 +9,6 @@ import { ScrollToTop } from "./components/common/ScrollToTop";
 import Home from "./pages/Dashboard/Home";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import Authorize from "./components/auth/Authorize";
-import { useAuth } from "./context/AuthContext";
 import OrganizationManagement from "./pages/cmdb/OrganizationManagement";
 import ServiceManagement from "./pages/cmdb/ServiceManagement";
 import AssetManagement from "./pages/cmdb/AssetManagement";
@@ -18,20 +16,12 @@ import CIManagement from "./pages/cmdb/CIManagement";
 import ImpactAnalysis from "./pages/cmdb/ImpactAnalysis";
 import FileImport from "./pages/cmdb/FileImport";
 
-function LoginRoute() {
-  const { isAuthenticated } = useAuth();
-  if (isAuthenticated) {
-    return <Navigate to="/" replace />;
-  }
-  return <LoginPage />;
-}
-
 export default function App() {
   return (
     <Router>
       <ScrollToTop />
       <Routes>
-        {/* Protected Dashboard Layout */}
+        {/* Protected Dashboard Layout — keycloak-js with onLoad: 'login-required' ensures authentication before rendering */}
         <Route
           element={
             <ProtectedRoute>
@@ -74,9 +64,6 @@ export default function App() {
           <Route path="/cmdb/impact-analysis" element={<ImpactAnalysis />} />
           <Route path="/cmdb/imports" element={<FileImport />} />
         </Route>
-
-        {/* Public: Login (redirects authenticated users to dashboard) */}
-        <Route path="/login" element={<LoginRoute />} />
 
         {/* Fallback */}
         <Route path="*" element={<NotFound />} />
