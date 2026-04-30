@@ -2,9 +2,7 @@ import axios, {
   AxiosError,
   InternalAxiosRequestConfig,
 } from "axios";
-
-const STORAGE_KEY_ACCESS = "zenandops_access_token";
-const STORAGE_KEY_REFRESH = "zenandops_refresh_token";
+import keycloak from "../lib/keycloak";
 
 const apiClient = axios.create({
   baseURL: import.meta.env.VITE_GATEWAY_URL || "",
@@ -13,37 +11,18 @@ const apiClient = axios.create({
   },
 });
 
-// Request interceptor: attach Bearer token
+// Request interceptor: attach Bearer token from keycloak
 apiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
-    const token = localStorage.getItem(STORAGE_KEY_ACCESS);
-    if (token && config.headers) {
-      config.headers.Authorization = `Bearer ${token}`;
+    if (keycloak.token && config.headers) {
+      config.headers.Authorization = `Bearer ${keycloak.token}`;
     }
     return config;
   },
   (error) => Promise.reject(error)
 );
 
-// Track if a token refresh is already in progress to avoid concurrent refreshes
-let isRefreshing = false;
-let failedQueue: Array<{
-  resolve: (token: string | null) => void;
-  reject: (error: unknown) => void;
-}> = [];
-
-function processQueue(error: unknown, token: string | null = null) {
-  failedQueue.forEach((prom) => {
-    if (error) {
-      prom.reject(error);
-    } else {
-      prom.resolve(token);
-    }
-  });
-  failedQueue = [];
-}
-
-// Response interceptor: handle gateway errors and 401 token refresh
+// Response interceptor: handle 401 with token refresh, 429, 503
 apiClient.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
@@ -63,61 +42,22 @@ apiClient.interceptors.response.use(
       return Promise.reject(error);
     }
 
-    // Only attempt refresh for 401 errors on non-auth endpoints
+    // On 401, attempt token refresh via keycloak
     if (
       error.response?.status === 401 &&
       originalRequest &&
-      !originalRequest._retry &&
-      !originalRequest.url?.includes("/api/v1/auth/login") &&
-      !originalRequest.url?.includes("/api/v1/auth/refresh")
+      !originalRequest._retry
     ) {
-      if (isRefreshing) {
-        // Queue this request until the refresh completes
-        return new Promise((resolve, reject) => {
-          failedQueue.push({
-            resolve: (token: string | null) => {
-              if (token && originalRequest.headers) {
-                originalRequest.headers.Authorization = `Bearer ${token}`;
-              }
-              resolve(apiClient(originalRequest));
-            },
-            reject,
-          });
-        });
-      }
-
       originalRequest._retry = true;
-      isRefreshing = true;
-
       try {
-        const refreshToken = localStorage.getItem(STORAGE_KEY_REFRESH);
-        if (!refreshToken) {
-          throw new Error("No refresh token available");
-        }
-
-        const response = await axios.post("/api/v1/auth/refresh", {
-          refreshToken,
-        });
-
-        const { accessToken, refreshToken: newRefreshToken } = response.data;
-        localStorage.setItem(STORAGE_KEY_ACCESS, accessToken);
-        localStorage.setItem(STORAGE_KEY_REFRESH, newRefreshToken);
-
-        processQueue(null, accessToken);
-
+        await keycloak.updateToken(60);
         if (originalRequest.headers) {
-          originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+          originalRequest.headers.Authorization = `Bearer ${keycloak.token}`;
         }
         return apiClient(originalRequest);
-      } catch (refreshError) {
-        processQueue(refreshError, null);
-        // Clear tokens and let the app redirect to login
-        localStorage.removeItem(STORAGE_KEY_ACCESS);
-        localStorage.removeItem(STORAGE_KEY_REFRESH);
-        window.location.href = "/login";
-        return Promise.reject(refreshError);
-      } finally {
-        isRefreshing = false;
+      } catch {
+        keycloak.login();
+        return Promise.reject(error);
       }
     }
 
