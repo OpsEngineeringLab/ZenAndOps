@@ -26,7 +26,7 @@ function set_service_name(tag, timestamp, record)
     if f then
         local content = f:read("*a")
         f:close()
-        -- Extract Name field: "Name":"/zenandops-auth-service"
+        -- Extract Name field: "Name":"/zenandops-gateway-service"
         local name = content:match('"Name":"/?([^"]+)"')
         if name then
             local service_name = resolve_service_name(name)
@@ -42,7 +42,7 @@ end
 
 function resolve_service_name(container_name)
     local map = {
-        ["zenandops-auth-service"]      = "zenandops-auth",
+        ["zenandops-keycloak"]          = "zenandops-keycloak",
         ["zenandops-dashboard-service"] = "zenandops-dashboard",
         ["zenandops-cmdb-service"]      = "zenandops-cmdb",
         ["zenandops-gateway-service"]   = "zenandops-gateway",
