@@ -6,8 +6,8 @@ This plan migrates ZenAndOps authentication from a custom auth-service to Keyclo
 
 ## Tasks
 
-- [ ] 1. Provision Keycloak infrastructure and realm configuration
-  - [~] 1.1 Add Keycloak service to Docker Compose
+- [x] 1. Provision Keycloak infrastructure and realm configuration
+  - [x] 1.1 Add Keycloak service to Docker Compose
     - Add `keycloak` service using `quay.io/keycloak/keycloak:26.2` image
     - Configure dev mode startup with `--import-realm` flag
     - Expose port via `KEYCLOAK_PORT` env var (default 8180)
@@ -17,7 +17,7 @@ This plan migrates ZenAndOps authentication from a custom auth-service to Keyclo
     - Pass `KAFKA_BOOTSTRAP_SERVERS` environment variable for the Event Listener SPI
     - _Requirements: 1.1, 1.2, 1.3, 1.8_
 
-  - [~] 1.2 Create Keycloak realm JSON with clients, mappers, roles, and seed data
+  - [x] 1.2 Create Keycloak realm JSON with clients, mappers, roles, and seed data
     - Create `keycloak/zenandops-realm.json` defining the `zenandops` realm
     - Register `zenandops-frontend` public client with Authorization Code Flow + PKCE (S256), redirect URIs, and web origins
     - Register `zenandops-backend` confidential client with service account enabled
@@ -28,7 +28,7 @@ This plan migrates ZenAndOps authentication from a custom auth-service to Keyclo
     - Store tag definitions in realm attribute `_zenandops_tags`
     - _Requirements: 1.5, 1.6, 1.7, 2.1, 2.2, 2.3, 2.4, 2.5, 2.6, 2.7, 9.1, 9.2, 9.3, 9.4, 9.5, 9.6, 9.7_
 
-  - [~] 1.3 Add Keycloak environment variables to `.env` and `.env.example`
+  - [x] 1.3 Add Keycloak environment variables to `.env` and `.env.example`
     - Add `KEYCLOAK_PORT`, `KEYCLOAK_ADMIN`, `KEYCLOAK_ADMIN_PASSWORD`, `KEYCLOAK_REALM`, `KEYCLOAK_FRONTEND_CLIENT_ID`, `KEYCLOAK_BACKEND_CLIENT_ID`, `KEYCLOAK_BACKEND_CLIENT_SECRET`, `KEYCLOAK_URL`
     - Add `VITE_KEYCLOAK_URL`, `VITE_KEYCLOAK_REALM`, `VITE_KEYCLOAK_CLIENT_ID` for frontend build
     - _Requirements: 1.4, 8.5, 8.6_

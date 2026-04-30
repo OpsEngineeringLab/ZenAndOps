@@ -1,0 +1,247 @@
+{
+  "realm": "zenandops",
+  "enabled": true,
+  "displayName": "ZenAndOps",
+  "accessTokenLifespan": 900,
+  "ssoSessionMaxLifespan": 28800,
+  "registrationAllowed": false,
+  "resetPasswordAllowed": true,
+  "editUsernameAllowed": false,
+  "bruteForceProtected": true,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "verifyEmail": false,
+  "attributes": {
+    "_zenandops_tags": "[{\"id\":\"a1b2c3d4-0001-4000-8000-000000000001\",\"key\":\"department\",\"value\":\"engineering\",\"description\":\"Engineering department\",\"createdAt\":\"2025-01-15T10:00:00Z\",\"updatedAt\":\"2025-01-15T10:00:00Z\"},{\"id\":\"a1b2c3d4-0002-4000-8000-000000000002\",\"key\":\"department\",\"value\":\"operations\",\"description\":\"Operations department\",\"createdAt\":\"2025-01-15T10:00:00Z\",\"updatedAt\":\"2025-01-15T10:00:00Z\"},{\"id\":\"a1b2c3d4-0003-4000-8000-000000000003\",\"key\":\"location\",\"value\":\"HQ\",\"description\":\"Headquarters location\",\"createdAt\":\"2025-01-15T10:00:00Z\",\"updatedAt\":\"2025-01-15T10:00:00Z\"}]"
+  },
+  "eventsEnabled": true,
+  "eventsListeners": [
+    "jboss-logging",
+    "zenandops-kafka-event-listener"
+  ],
+  "roles": {
+    "realm": [
+      {
+        "name": "ADMIN",
+        "description": "Full system access",
+        "attributes": {
+          "permissions": [
+            "[\"users:read\",\"users:write\",\"roles:read\",\"roles:write\",\"tags:read\",\"tags:write\",\"profile:read\",\"profile:write\",\"dashboard:read\"]"
+          ]
+        }
+      },
+      {
+        "name": "USER",
+        "description": "Standard user access",
+        "attributes": {
+          "permissions": [
+            "[\"profile:read\",\"profile:write\",\"dashboard:read\"]"
+          ]
+        }
+      },
+      {
+        "name": "GUEST",
+        "description": "Read-only guest access",
+        "attributes": {
+          "permissions": [
+            "[\"dashboard:read\"]"
+          ]
+        }
+      }
+    ]
+  },
+
+  "clients": [
+    {
+      "clientId": "zenandops-frontend",
+      "name": "ZenAndOps Frontend",
+      "description": "Public client for the ZenAndOps React SPA",
+      "enabled": true,
+      "publicClient": true,
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": false,
+      "implicitFlowEnabled": false,
+      "serviceAccountsEnabled": false,
+      "redirectUris": [
+        "http://localhost:3000/*"
+      ],
+      "webOrigins": [
+        "http://localhost:3000"
+      ],
+      "attributes": {
+        "pkce.code.challenge.method": "S256"
+      },
+      "protocol": "openid-connect",
+      "fullScopeAllowed": true,
+      "protocolMappers": [
+        {
+          "name": "userId-mapper",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "id",
+            "claim.name": "userId",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "name-mapper",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-full-name-mapper",
+          "consentRequired": false,
+          "config": {
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true"
+          }
+        },
+        {
+          "name": "email-mapper",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-property-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "email",
+            "claim.name": "email",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "roles-mapper",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-realm-role-mapper",
+          "consentRequired": false,
+          "config": {
+            "claim.name": "roles",
+            "multivalued": "true",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "name": "tags-mapper",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "user.attribute": "tags",
+            "claim.name": "tags",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "jsonType.label": "JSON"
+          }
+        },
+        {
+          "name": "permissions-mapper",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-script-based-protocol-mapper",
+          "consentRequired": false,
+          "config": {
+            "claim.name": "permissions",
+            "id.token.claim": "true",
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "multivalued": "true",
+            "jsonType.label": "String",
+            "script": "var ArrayList = Java.type('java.util.ArrayList');\nvar permissions = new ArrayList();\nvar forEach = Array.prototype.forEach;\nvar realmRoles = user.getRealmRoleMappingsStream().toArray();\nforEach.call(realmRoles, function(role) {\n  var attrs = role.getAttributes();\n  if (attrs.containsKey('permissions')) {\n    var perms = attrs.get('permissions');\n    if (perms != null && perms.size() > 0) {\n      var permsJson = perms.get(0);\n      try {\n        var parsed = JSON.parse(permsJson);\n        forEach.call(parsed, function(p) {\n          if (permissions.indexOf(p) === -1) {\n            permissions.add(p);\n          }\n        });\n      } catch(e) {}\n    }\n  }\n});\nexports = permissions;"
+          }
+        }
+      ]
+    },
+
+    {
+      "clientId": "zenandops-backend",
+      "name": "ZenAndOps Backend",
+      "description": "Confidential client for backend service-to-service communication",
+      "enabled": true,
+      "publicClient": false,
+      "standardFlowEnabled": false,
+      "directAccessGrantsEnabled": false,
+      "implicitFlowEnabled": false,
+      "serviceAccountsEnabled": true,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "${KEYCLOAK_BACKEND_CLIENT_SECRET}",
+      "protocol": "openid-connect",
+      "fullScopeAllowed": true
+    }
+  ],
+  "users": [
+    {
+      "username": "admin",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Administrator",
+      "email": "admin@zenandops.com",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "admin",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "ADMIN",
+        "USER"
+      ],
+      "attributes": {
+        "tags": [
+          "[{\"key\":\"department\",\"value\":\"engineering\"},{\"key\":\"location\",\"value\":\"HQ\"}]"
+        ]
+      }
+    },
+    {
+      "username": "user",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Default User",
+      "email": "user@zenandops.com",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "user",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "USER"
+      ],
+      "attributes": {
+        "tags": [
+          "[{\"key\":\"department\",\"value\":\"operations\"}]"
+        ]
+      }
+    },
+    {
+      "username": "guest",
+      "enabled": true,
+      "emailVerified": true,
+      "firstName": "Guest User",
+      "email": "guest@zenandops.com",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "guest",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "GUEST"
+      ],
+      "attributes": {
+        "tags": [
+          "[]"
+        ]
+      }
+    }
+  ]
+}
