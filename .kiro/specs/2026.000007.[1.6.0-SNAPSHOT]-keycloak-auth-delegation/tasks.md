@@ -198,12 +198,12 @@ This plan migrates ZenAndOps authentication from a custom auth-service to Keyclo
   - Ensure all tests pass, ask the user if questions arise.
 
 - [x] 11. Version control and release
-  - [ ] Ensure all previous tasks are complete and tests pass
-  - [ ] Remove SNAPSHOT suffix from all version references in the codebase
-  - [ ] Commit the version bump: "release: 1.6.0 - keycloak-auth-delegation"
-  - [ ] Merge branch into main/master
-  - [ ] Apply Git tag: 1.6.0 (without SNAPSHOT)
-  - [ ] Push branch, merge, and tag to remote
+  - [x] Ensure all previous tasks are complete and tests pass
+  - [x] Remove SNAPSHOT suffix from all version references in the codebase
+  - [x] Commit the version bump: "release: 1.6.0 - keycloak-auth-delegation"
+  - [x] Merge branch into main/master
+  - [x] Apply Git tag: 1.6.0 (without SNAPSHOT)
+  - [x] Push branch, merge, and tag to remote
 
 ## Notes
 
