@@ -56,7 +56,7 @@
 - [-] 12 Version control and release
   - [x] 12.1 Ensure all previous tasks are complete and tests pass
   - [x] 12.2 Remove SNAPSHOT suffix from all version references in the codebase
-  - [-] 12.3 Commit the version bump: "release: 1.7.0 - kong-gateway-migration"
-  - [~] 12.4 Merge branch into main/master
+  - [x] 12.3 Commit the version bump: "release: 1.7.0 - kong-gateway-migration"
+  - [-] 12.4 Merge branch into main/master
   - [~] 12.5 Apply Git tag: 1.7.0 (without SNAPSHOT)
   - [~] 12.6 Push branch, merge, and tag to remote
