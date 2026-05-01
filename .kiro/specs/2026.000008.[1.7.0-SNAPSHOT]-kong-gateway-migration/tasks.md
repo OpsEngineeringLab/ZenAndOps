@@ -47,16 +47,16 @@
   - [x] 9.1 Update `.env.example`: add `ADMIN_API_SERVICE_PORT=8084` with descriptive comment
   - [x] 9.2 Update `.env.example`: remove `GATEWAY_DASHBOARD_SERVICE_URL` and `GATEWAY_CMDB_SERVICE_URL` (no longer needed — Kong uses Docker DNS names in kong.yml)
   - [x] 9.3 Update `.env` file to match `.env.example` changes
-- [-] 10 Remove old gateway-service
-  - [~] 10.1 Delete the entire `gateway-service/` directory
-  - [~] 10.2 Review and update `.gitignore` and `.dockerignore` if they contain gateway-service-specific entries
-- [ ] 11 Verify build and configuration
-  - [~] 11.1 Build the admin-api-service Maven project (`mvn package -DskipTests`) and verify it compiles successfully
-  - [~] 11.2 Verify the `kong/kong.yml` file is valid YAML with correct structure
-- [ ] 12 Version control and release
-  - [~] 12.1 Ensure all previous tasks are complete and tests pass
-  - [~] 12.2 Remove SNAPSHOT suffix from all version references in the codebase
-  - [~] 12.3 Commit the version bump: "release: 1.7.0 - kong-gateway-migration"
+- [x] 10 Remove old gateway-service
+  - [x] 10.1 Delete the entire `gateway-service/` directory
+  - [x] 10.2 Review and update `.gitignore` and `.dockerignore` if they contain gateway-service-specific entries
+- [x] 11 Verify build and configuration
+  - [x] 11.1 Build the admin-api-service Maven project (`mvn package -DskipTests`) and verify it compiles successfully
+  - [x] 11.2 Verify the `kong/kong.yml` file is valid YAML with correct structure
+- [-] 12 Version control and release
+  - [x] 12.1 Ensure all previous tasks are complete and tests pass
+  - [x] 12.2 Remove SNAPSHOT suffix from all version references in the codebase
+  - [-] 12.3 Commit the version bump: "release: 1.7.0 - kong-gateway-migration"
   - [~] 12.4 Merge branch into main/master
   - [~] 12.5 Apply Git tag: 1.7.0 (without SNAPSHOT)
   - [~] 12.6 Push branch, merge, and tag to remote
