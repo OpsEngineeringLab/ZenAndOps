@@ -4,6 +4,18 @@
 # --- Stage 1: Build ---
 FROM node:22-alpine AS build
 
+# Declare build args so docker-compose values are available to Vite
+ARG VITE_GATEWAY_URL
+ARG VITE_KEYCLOAK_URL
+ARG VITE_KEYCLOAK_REALM
+ARG VITE_KEYCLOAK_CLIENT_ID
+
+# Expose build args as environment variables for the Vite build
+ENV VITE_GATEWAY_URL=$VITE_GATEWAY_URL
+ENV VITE_KEYCLOAK_URL=$VITE_KEYCLOAK_URL
+ENV VITE_KEYCLOAK_REALM=$VITE_KEYCLOAK_REALM
+ENV VITE_KEYCLOAK_CLIENT_ID=$VITE_KEYCLOAK_CLIENT_ID
+
 WORKDIR /app
 
 # Copy package files first for dependency caching

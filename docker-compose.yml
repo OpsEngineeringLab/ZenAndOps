@@ -50,7 +50,7 @@ services:
       - zenandops-net
 
   keycloak:
-    image: quay.io/keycloak/keycloak:26.2
+    image: quay.io/keycloak/keycloak:26.6.1
     container_name: zenandops-keycloak
     command: ["start-dev", "--import-realm", "--health-enabled=true"]
     ports:
@@ -88,6 +88,7 @@ services:
       QUARKUS_HTTP_PORT: 8082
       QUARKUS_OIDC_AUTH_SERVER_URL: http://keycloak:8080/realms/zenandops
       QUARKUS_OIDC_CLIENT_ID: ${KEYCLOAK_BACKEND_CLIENT_ID}
+      QUARKUS_OIDC_TOKEN_ISSUER: http://localhost:${KEYCLOAK_PORT:-8180}/realms/zenandops
       OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4317
     depends_on:
       keycloak:
@@ -109,6 +110,7 @@ services:
       QUARKUS_HTTP_PORT: 8083
       QUARKUS_OIDC_AUTH_SERVER_URL: http://keycloak:8080/realms/zenandops
       QUARKUS_OIDC_CLIENT_ID: ${KEYCLOAK_BACKEND_CLIENT_ID}
+      QUARKUS_OIDC_TOKEN_ISSUER: http://localhost:${KEYCLOAK_PORT:-8180}/realms/zenandops
       QUARKUS_MONGODB_CONNECTION_STRING: mongodb://${MONGODB_ROOT_USERNAME}:${MONGODB_ROOT_PASSWORD}@mongodb:27017
       QUARKUS_MONGODB_DATABASE: ${CMDB_DB_NAME:-zenandops-cmdb}
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
@@ -139,11 +141,16 @@ services:
       QUARKUS_OIDC_AUTH_SERVER_URL: http://keycloak:8080/realms/zenandops
       QUARKUS_OIDC_CLIENT_ID: ${KEYCLOAK_BACKEND_CLIENT_ID}
       QUARKUS_OIDC_CREDENTIALS_SECRET: ${KEYCLOAK_BACKEND_CLIENT_SECRET}
+      QUARKUS_OIDC_TOKEN_ISSUER: http://localhost:${KEYCLOAK_PORT:-8180}/realms/zenandops
+      QUARKUS_OIDC_CLIENT_AUTH_SERVER_URL: http://keycloak:8080/realms/zenandops
+      QUARKUS_OIDC_CLIENT_CLIENT_ID: ${KEYCLOAK_BACKEND_CLIENT_ID}
+      QUARKUS_OIDC_CLIENT_CREDENTIALS_SECRET: ${KEYCLOAK_BACKEND_CLIENT_SECRET}
       GATEWAY_KEYCLOAK_ADMIN_URL: http://keycloak:8080/admin/realms/zenandops
       GATEWAY_DASHBOARD_SERVICE_URL: ${GATEWAY_DASHBOARD_SERVICE_URL}
       GATEWAY_CMDB_SERVICE_URL: ${GATEWAY_CMDB_SERVICE_URL}
       GATEWAY_RATE_LIMIT_MAX_REQUESTS: ${GATEWAY_RATE_LIMIT_MAX_REQUESTS}
       GATEWAY_RATE_LIMIT_WINDOW_SECONDS: ${GATEWAY_RATE_LIMIT_WINDOW_SECONDS}
+      GATEWAY_CORS_ORIGINS: http://localhost:${FRONTEND_PORT}
       OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4317
     depends_on:
       keycloak:

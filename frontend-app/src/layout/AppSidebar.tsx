@@ -6,18 +6,15 @@ import {
   ChevronDownIcon,
   GridIcon,
   HorizontaLDots,
-  ListIcon,
   UserIcon,
 } from "../icons";
 import { useSidebar } from "../context/SidebarContext";
 import { useAuth } from "../context/AuthContext";
-import { useHasRole } from "../hooks/useAuthorization";
 
 type NavItem = {
   name: string;
   icon: React.ReactNode;
   path?: string;
-  adminOnly?: boolean;
   subItems?: { name: string; path: string }[];
 };
 
@@ -31,16 +28,6 @@ const navItems: NavItem[] = [
     icon: <UserIcon />,
     name: "Profile",
     path: "/profile",
-  },
-  {
-    icon: <ListIcon />,
-    name: "Management",
-    adminOnly: true,
-    subItems: [
-      { name: "User", path: "/users" },
-      { name: "Role", path: "/roles" },
-      { name: "Tag", path: "/tags" },
-    ],
   },
   {
     icon: <BoxIconLine />,
@@ -59,7 +46,6 @@ const navItems: NavItem[] = [
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const location = useLocation();
-  const isAdmin = useHasRole("ADMIN");
 
   const [openSubmenu, setOpenSubmenu] = useState<number | null>(null);
   const [subMenuHeight, setSubMenuHeight] = useState<Record<number, number>>({});
@@ -105,7 +91,6 @@ const AppSidebar: React.FC = () => {
   const renderMenuItems = (items: NavItem[]) => (
     <ul className="flex flex-col gap-4">
       {items
-        .filter((nav) => !nav.adminOnly || isAdmin)
         .map((nav, index) => (
           <li key={nav.name}>
             {nav.subItems ? (

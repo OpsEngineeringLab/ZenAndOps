@@ -1,14 +1,10 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router";
+import { BrowserRouter as Router, Routes, Route } from "react-router";
 import NotFound from "./pages/OtherPage/NotFound";
-import TagManagement from "./pages/TagManagement";
-import RoleManagement from "./pages/RoleManagement";
-import UserManagement from "./pages/UserManagement";
 import Profile from "./pages/Profile";
 import AppLayout from "./layout/AppLayout";
 import { ScrollToTop } from "./components/common/ScrollToTop";
 import Home from "./pages/Dashboard/Home";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
-import Authorize from "./components/auth/Authorize";
 import OrganizationManagement from "./pages/cmdb/OrganizationManagement";
 import ServiceManagement from "./pages/cmdb/ServiceManagement";
 import AssetManagement from "./pages/cmdb/AssetManagement";
@@ -30,30 +26,6 @@ export default function App() {
           }
         >
           <Route index path="/" element={<Home />} />
-          <Route
-            path="/tags"
-            element={
-              <Authorize roles={["ADMIN"]} fallback={<Navigate to="/" replace />}>
-                <TagManagement />
-              </Authorize>
-            }
-          />
-          <Route
-            path="/roles"
-            element={
-              <Authorize roles={["ADMIN"]} fallback={<Navigate to="/" replace />}>
-                <RoleManagement />
-              </Authorize>
-            }
-          />
-          <Route
-            path="/users"
-            element={
-              <Authorize roles={["ADMIN"]} fallback={<Navigate to="/" replace />}>
-                <UserManagement />
-              </Authorize>
-            }
-          />
           <Route path="/profile" element={<Profile />} />
 
           {/* CMDB Routes */}
