@@ -1,0 +1,62 @@
+# Tasks
+
+- [ ] 1 Create Kong declarative configuration
+  - [ ] 1.1 Create `kong/` directory at the project root
+  - [ ] 1.2 Create `kong/kong.yml` with `_format_version: "3.0"` and `_transform: true`
+  - [ ] 1.3 Define `dashboard-service` Kong service pointing to `http://dashboard-service:8082` with route `/api/v1/dashboard` (strip_path: false, preserve_host: true)
+  - [ ] 1.4 Define `cmdb-service` Kong service pointing to `http://cmdb-service:8083` with route `/api/v1/cmdb` (strip_path: false, preserve_host: true)
+  - [ ] 1.5 Define `admin-api-service` Kong service pointing to `http://admin-api-service:8084` with routes for `/api/v1/users`, `/api/v1/roles`, `/api/v1/tags`, `/api/v1/profile` (strip_path: false, preserve_host: true)
+  - [ ] 1.6 Configure global `rate-limiting` plugin (minute: 100, policy: local, limit_by: ip, fault_tolerant: true, hide_client_headers: false)
+  - [ ] 1.7 Configure global `cors` plugin (origins: http://localhost:3000, methods: GET/POST/PUT/DELETE/PATCH/OPTIONS/HEAD, headers: Authorization/Content-Type/Accept, exposed_headers: X-RateLimit-Remaining/X-RateLimit-Reset, max_age: 86400, credentials: true, preflight_continue: false)
+  - [ ] 1.8 Configure global `prometheus` plugin
+  - [ ] 1.9 Configure global `opentelemetry` plugin (endpoint: http://tempo:4317, resource_attributes: service.name=zenandops-kong-gateway)
+- [ ] 2 Scaffold admin-api-service project
+  - [ ] 2.1 Create `admin-api-service/` directory structure following the design (src/main/java, src/main/resources, src/test/java)
+  - [ ] 2.2 Create `admin-api-service/pom.xml` with Quarkus 3.33.1, Java 25, and required dependencies (quarkus-rest-jackson, quarkus-oidc, quarkus-oidc-client, quarkus-smallrye-health, quarkus-opentelemetry, quarkus-micrometer-registry-prometheus, quarkus-arc, jqwik for tests)
+  - [ ] 2.3 Create `admin-api-service/src/main/resources/application.properties` with OIDC, OIDC client, Keycloak admin URL, OpenTelemetry, Micrometer, and JSON logging configuration (port 8084)
+  - [ ] 2.4 Create `admin-api-service/Dockerfile` using the same multi-stage build pattern (Maven 3.9 + Java 25 build, eclipse-temurin:25-jre runtime, health check utility)
+- [ ] 3 Migrate Keycloak admin client and translators to admin-api-service
+  - [ ] 3.1 Copy `KeycloakAdminClient.java` from gateway-service to `admin-api-service/src/main/java/com/zenandops/admin/infrastructure/adapter/keycloak/`, update package to `com.zenandops.admin`, update config property name from `gateway.keycloak.admin-url` to `admin.keycloak.admin-url`
+  - [ ] 3.2 Copy `KeycloakAdminException.java` to admin-api-service, update package
+  - [ ] 3.3 Copy `UserResponseTranslator.java` to admin-api-service, update package
+  - [ ] 3.4 Copy `RoleResponseTranslator.java` to admin-api-service, update package
+  - [ ] 3.5 Copy `TagResponseTranslator.java` to admin-api-service, update package
+- [ ] 4 Migrate domain exceptions to admin-api-service
+  - [ ] 4.1 Copy `ForbiddenException.java` to `admin-api-service/src/main/java/com/zenandops/admin/domain/exception/`, update package
+  - [ ] 4.2 Copy `UnauthorizedException.java` to admin-api-service, update package
+- [ ] 5 Migrate REST resources to admin-api-service
+  - [ ] 5.1 Copy `UserAdminResource.java` to `admin-api-service/src/main/java/com/zenandops/admin/infrastructure/rest/`, update package and imports
+  - [ ] 5.2 Copy `RoleAdminResource.java` to admin-api-service, update package and imports
+  - [ ] 5.3 Copy `TagAdminResource.java` to admin-api-service, update package and imports
+  - [ ] 5.4 Copy `ProfileResource.java` to admin-api-service, update package and imports
+  - [ ] 5.5 Copy `UserRoleAdminResource.java` to admin-api-service, update package and imports
+  - [ ] 5.6 Copy `UserTagAdminResource.java` to admin-api-service, update package and imports
+  - [ ] 5.7 Copy `GatewayExceptionMapper.java` to admin-api-service as `AdminExceptionMapper.java`, update package, remove gateway-specific exception handling (RouteNotFoundException, RateLimitExceededException, BackendServiceUnavailableException), keep only KeycloakAdminException and ForbiddenException handling
+- [ ] 6 Migrate DTOs to admin-api-service
+  - [ ] 6.1 Copy all DTO records from `gateway-service/src/main/java/.../rest/dto/` to `admin-api-service/src/main/java/com/zenandops/admin/infrastructure/rest/dto/`, update packages: CreateRoleRequest, CreateTagRequest, CreateUserRequest, ErrorResponse, PasswordChangeRequest, RoleAssignmentRequest, RoleResponse, TagAssignment, TagResponse, UpdateRoleRequest, UpdateTagRequest, UpdateUserRequest, UserResponse
+- [ ] 7 Update Docker Compose configuration
+  - [ ] 7.1 Remove the `gateway-service` service definition from `docker-compose.yml`
+  - [ ] 7.2 Add the `kong-gateway` service definition (image: kong:3, port mapping ${GATEWAY_SERVICE_PORT}:8000, DB-less env vars, volume mount ./kong/kong.yml:/kong/kong.yml:ro, depends_on keycloak/dashboard/cmdb/admin-api/tempo, healthcheck using `kong health`)
+  - [ ] 7.3 Add the `admin-api-service` service definition (build context, image tag, port 8084, OIDC env vars, Keycloak admin URL, OTEL endpoint, depends_on keycloak/tempo, healthcheck)
+  - [ ] 7.4 Update `frontend-app` service `depends_on` from `gateway-service` to `kong-gateway`
+- [ ] 8 Update observability configuration
+  - [ ] 8.1 Update `observability/prometheus.yaml`: remove `zenandops-gateway` scrape job targeting `gateway-service:8080`
+  - [ ] 8.2 Add `zenandops-kong-gateway` scrape job targeting `kong-gateway:8100` at `/metrics` path
+  - [ ] 8.3 Add `zenandops-admin-api` scrape job targeting `admin-api-service:8084` at `/q/metrics` path
+- [ ] 9 Update environment configuration
+  - [ ] 9.1 Update `.env.example`: add `ADMIN_API_SERVICE_PORT=8084` with descriptive comment
+  - [ ] 9.2 Update `.env.example`: remove `GATEWAY_DASHBOARD_SERVICE_URL` and `GATEWAY_CMDB_SERVICE_URL` (no longer needed — Kong uses Docker DNS names in kong.yml)
+  - [ ] 9.3 Update `.env` file to match `.env.example` changes
+- [ ] 10 Remove old gateway-service
+  - [ ] 10.1 Delete the entire `gateway-service/` directory
+  - [ ] 10.2 Review and update `.gitignore` and `.dockerignore` if they contain gateway-service-specific entries
+- [ ] 11 Verify build and configuration
+  - [ ] 11.1 Build the admin-api-service Maven project (`mvn package -DskipTests`) and verify it compiles successfully
+  - [ ] 11.2 Verify the `kong/kong.yml` file is valid YAML with correct structure
+- [ ] 12 Version control and release
+  - [ ] 12.1 Ensure all previous tasks are complete and tests pass
+  - [ ] 12.2 Remove SNAPSHOT suffix from all version references in the codebase
+  - [ ] 12.3 Commit the version bump: "release: 1.7.0 - kong-gateway-migration"
+  - [ ] 12.4 Merge branch into main/master
+  - [ ] 12.5 Apply Git tag: 1.7.0 (without SNAPSHOT)
+  - [ ] 12.6 Push branch, merge, and tag to remote
