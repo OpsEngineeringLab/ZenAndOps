@@ -180,7 +180,8 @@
       "username": "admin",
       "enabled": true,
       "emailVerified": true,
-      "firstName": "Administrator",
+      "firstName": "System",
+      "lastName": "Administrator",
       "email": "admin@zenandops.com",
       "credentials": [
         {
@@ -203,7 +204,8 @@
       "username": "user",
       "enabled": true,
       "emailVerified": true,
-      "firstName": "Default User",
+      "firstName": "Default",
+      "lastName": "User",
       "email": "user@zenandops.com",
       "credentials": [
         {
@@ -225,7 +227,8 @@
       "username": "guest",
       "enabled": true,
       "emailVerified": true,
-      "firstName": "Guest User",
+      "firstName": "Guest",
+      "lastName": "User",
       "email": "guest@zenandops.com",
       "credentials": [
         {

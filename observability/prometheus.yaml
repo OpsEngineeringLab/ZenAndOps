@@ -19,6 +19,14 @@ remote_write:
   - url: http://mimir:9009/api/v1/push
 
 scrape_configs:
+  # --- Keycloak ---
+  - job_name: zenandops-keycloak
+    metrics_path: /metrics
+    static_configs:
+      - targets: ["keycloak:9000"]
+        labels:
+          service: zenandops-keycloak
+
   # --- Quarkus microservices ---
   - job_name: zenandops-gateway
     metrics_path: /q/metrics

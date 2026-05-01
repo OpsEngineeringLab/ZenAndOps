@@ -52,13 +52,19 @@ services:
   keycloak:
     image: quay.io/keycloak/keycloak:26.6.1
     container_name: zenandops-keycloak
-    command: ["start-dev", "--import-realm", "--health-enabled=true"]
+    command: ["start-dev", "--import-realm", "--health-enabled=true", "--metrics-enabled=true", "--tracing-enabled=true"]
     ports:
       - "${KEYCLOAK_PORT:-8180}:8080"
     environment:
       KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
       KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      KC_TRACING_ENDPOINT: http://tempo:4317
+      KC_TRACING_PROTOCOL: grpc
+      KC_TRACING_SAMPLER_TYPE: parentbased_traceidratio
+      KC_TRACING_SAMPLER_RATIO: "1.0"
+      KC_TRACING_SERVICE_NAME: zenandops-keycloak
+      KC_TRACING_RESOURCE_ATTRIBUTES: "service.namespace=zenandops"
     volumes:
       - ./keycloak/zenandops-realm.json:/opt/keycloak/data/import/zenandops-realm.json
       - ./keycloak-event-listener/target/keycloak-event-listener-1.6.0.jar:/opt/keycloak/providers/keycloak-event-listener.jar
@@ -71,6 +77,8 @@ services:
     depends_on:
       kafka:
         condition: service_healthy
+      tempo:
+        condition: service_started
     networks:
       - zenandops-net
 
