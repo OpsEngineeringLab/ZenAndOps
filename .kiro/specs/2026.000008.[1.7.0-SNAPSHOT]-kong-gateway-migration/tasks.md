@@ -53,10 +53,10 @@
 - [x] 11 Verify build and configuration
   - [x] 11.1 Build the admin-api-service Maven project (`mvn package -DskipTests`) and verify it compiles successfully
   - [x] 11.2 Verify the `kong/kong.yml` file is valid YAML with correct structure
-- [-] 12 Version control and release
+- [x] 12 Version control and release
   - [x] 12.1 Ensure all previous tasks are complete and tests pass
   - [x] 12.2 Remove SNAPSHOT suffix from all version references in the codebase
   - [x] 12.3 Commit the version bump: "release: 1.7.0 - kong-gateway-migration"
-  - [-] 12.4 Merge branch into main/master
-  - [~] 12.5 Apply Git tag: 1.7.0 (without SNAPSHOT)
-  - [~] 12.6 Push branch, merge, and tag to remote
+  - [x] 12.4 Merge branch into main/master
+  - [x] 12.5 Apply Git tag: 1.7.0 (without SNAPSHOT)
+  - [x] 12.6 Push branch, merge, and tag to remote
