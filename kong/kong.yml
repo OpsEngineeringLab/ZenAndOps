@@ -1,0 +1,85 @@
+_format_version: "3.0"
+_transform: true
+
+services:
+  - name: dashboard-service
+    url: http://dashboard-service:8082
+    routes:
+      - name: dashboard-route
+        paths:
+          - /api/v1/dashboard
+        strip_path: false
+        preserve_host: true
+
+  - name: cmdb-service
+    url: http://cmdb-service:8083
+    routes:
+      - name: cmdb-route
+        paths:
+          - /api/v1/cmdb
+        strip_path: false
+        preserve_host: true
+
+  - name: admin-api-service
+    url: http://admin-api-service:8084
+    routes:
+      - name: admin-users-route
+        paths:
+          - /api/v1/users
+        strip_path: false
+        preserve_host: true
+      - name: admin-roles-route
+        paths:
+          - /api/v1/roles
+        strip_path: false
+        preserve_host: true
+      - name: admin-tags-route
+        paths:
+          - /api/v1/tags
+        strip_path: false
+        preserve_host: true
+      - name: admin-profile-route
+        paths:
+          - /api/v1/profile
+        strip_path: false
+        preserve_host: true
+
+plugins:
+  - name: rate-limiting
+    config:
+      minute: 100
+      policy: local
+      limit_by: ip
+      fault_tolerant: true
+      hide_client_headers: false
+
+  - name: cors
+    config:
+      origins:
+        - http://localhost:3000
+      methods:
+        - GET
+        - POST
+        - PUT
+        - DELETE
+        - PATCH
+        - OPTIONS
+        - HEAD
+      headers:
+        - Authorization
+        - Content-Type
+        - Accept
+      exposed_headers:
+        - X-RateLimit-Remaining
+        - X-RateLimit-Reset
+      max_age: 86400
+      credentials: true
+      preflight_continue: false
+
+  - name: prometheus
+
+  - name: opentelemetry
+    config:
+      endpoint: http://tempo:4317
+      resource_attributes:
+        service.name: zenandops-kong-gateway
