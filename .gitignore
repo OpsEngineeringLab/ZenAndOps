@@ -60,9 +60,6 @@ target/
 frontend-app/node_modules/
 frontend-app/dist/
 
-# Gateway
-gateway-service/target/
-
 # Load test results
 load-test/results/
 
