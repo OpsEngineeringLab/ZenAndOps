@@ -48,6 +48,14 @@ export interface CostSummaryEntry {
   totalCost: number;
 }
 
+interface PaginatedResponse<T> {
+  items: T[];
+  page: number;
+  size: number;
+  totalItems: number;
+  totalPages: number;
+}
+
 export function useAssetApi() {
   const create = useCallback(async (data: CreateAssetRequest): Promise<AssetResponse> => {
     const response = await apiClient.post<AssetResponse>("/api/v1/cmdb/assets", data);
@@ -69,10 +77,10 @@ export function useAssetApi() {
   }, []);
 
   const list = useCallback(async (filters?: AssetFilters): Promise<AssetResponse[]> => {
-    const response = await apiClient.get<AssetResponse[]>("/api/v1/cmdb/assets", {
-      params: filters,
+    const response = await apiClient.get<PaginatedResponse<AssetResponse>>("/api/v1/cmdb/assets", {
+      params: { ...filters, page: 0, size: 200 },
     });
-    return response.data;
+    return response.data.items;
   }, []);
 
   const getCostSummary = useCallback(async (): Promise<CostSummaryEntry[]> => {

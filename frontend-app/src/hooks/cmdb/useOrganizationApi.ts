@@ -26,6 +26,14 @@ export interface UpdateOrganizationRequest {
   costCenter: string;
 }
 
+interface PaginatedResponse<T> {
+  items: T[];
+  page: number;
+  size: number;
+  totalItems: number;
+  totalPages: number;
+}
+
 export function useOrganizationApi() {
   const create = useCallback(async (data: CreateOrganizationRequest): Promise<OrganizationResponse> => {
     const response = await apiClient.post<OrganizationResponse>("/api/v1/cmdb/organizations", data);
@@ -47,8 +55,10 @@ export function useOrganizationApi() {
   }, []);
 
   const list = useCallback(async (): Promise<OrganizationResponse[]> => {
-    const response = await apiClient.get<OrganizationResponse[]>("/api/v1/cmdb/organizations");
-    return response.data;
+    const response = await apiClient.get<PaginatedResponse<OrganizationResponse>>("/api/v1/cmdb/organizations", {
+      params: { page: 0, size: 200 },
+    });
+    return response.data.items;
   }, []);
 
   const getTree = useCallback(async (): Promise<OrganizationResponse[]> => {

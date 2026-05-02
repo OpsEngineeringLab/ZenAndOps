@@ -15,6 +15,14 @@ export interface CreateCIRelationshipRequest {
   relationshipType: string;
 }
 
+interface PaginatedResponse<T> {
+  items: T[];
+  page: number;
+  size: number;
+  totalItems: number;
+  totalPages: number;
+}
+
 export function useCIRelationshipApi() {
   const create = useCallback(async (data: CreateCIRelationshipRequest): Promise<CIRelationshipResponse> => {
     const response = await apiClient.post<CIRelationshipResponse>("/api/v1/cmdb/ci-relationships", data);
@@ -26,10 +34,10 @@ export function useCIRelationshipApi() {
   }, []);
 
   const listByCI = useCallback(async (ciId: string): Promise<CIRelationshipResponse[]> => {
-    const response = await apiClient.get<CIRelationshipResponse[]>("/api/v1/cmdb/ci-relationships", {
-      params: { ciId },
+    const response = await apiClient.get<PaginatedResponse<CIRelationshipResponse>>("/api/v1/cmdb/ci-relationships", {
+      params: { ciId, page: 0, size: 200 },
     });
-    return response.data;
+    return response.data.items;
   }, []);
 
   return { create, remove, listByCI };

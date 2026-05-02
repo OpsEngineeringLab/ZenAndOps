@@ -44,6 +44,14 @@ export interface ServiceFilters {
   status?: string;
 }
 
+interface PaginatedResponse<T> {
+  items: T[];
+  page: number;
+  size: number;
+  totalItems: number;
+  totalPages: number;
+}
+
 export function useServiceApi() {
   const create = useCallback(async (data: CreateServiceRequest): Promise<ServiceResponse> => {
     const response = await apiClient.post<ServiceResponse>("/api/v1/cmdb/services", data);
@@ -65,10 +73,10 @@ export function useServiceApi() {
   }, []);
 
   const list = useCallback(async (filters?: ServiceFilters): Promise<ServiceResponse[]> => {
-    const response = await apiClient.get<ServiceResponse[]>("/api/v1/cmdb/services", {
-      params: filters,
+    const response = await apiClient.get<PaginatedResponse<ServiceResponse>>("/api/v1/cmdb/services", {
+      params: { ...filters, page: 0, size: 200 },
     });
-    return response.data;
+    return response.data.items;
   }, []);
 
   const getTree = useCallback(async (): Promise<ServiceResponse[]> => {

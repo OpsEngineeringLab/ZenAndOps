@@ -15,6 +15,14 @@ export interface CreateServiceDependencyRequest {
   dependencyType: string;
 }
 
+interface PaginatedResponse<T> {
+  items: T[];
+  page: number;
+  size: number;
+  totalItems: number;
+  totalPages: number;
+}
+
 export function useServiceDependencyApi() {
   const create = useCallback(async (data: CreateServiceDependencyRequest): Promise<ServiceDependencyResponse> => {
     const response = await apiClient.post<ServiceDependencyResponse>("/api/v1/cmdb/service-dependencies", data);
@@ -26,10 +34,10 @@ export function useServiceDependencyApi() {
   }, []);
 
   const listByService = useCallback(async (serviceId: string): Promise<ServiceDependencyResponse[]> => {
-    const response = await apiClient.get<ServiceDependencyResponse[]>("/api/v1/cmdb/service-dependencies", {
-      params: { serviceId },
+    const response = await apiClient.get<PaginatedResponse<ServiceDependencyResponse>>("/api/v1/cmdb/service-dependencies", {
+      params: { serviceId, page: 0, size: 200 },
     });
-    return response.data;
+    return response.data.items;
   }, []);
 
   return { create, remove, listByService };

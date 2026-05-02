@@ -35,6 +35,14 @@ export interface CIFilters {
   assetId?: string;
 }
 
+interface PaginatedResponse<T> {
+  items: T[];
+  page: number;
+  size: number;
+  totalItems: number;
+  totalPages: number;
+}
+
 export function useCIApi() {
   const create = useCallback(async (data: CreateCIRequest): Promise<CIResponse> => {
     const response = await apiClient.post<CIResponse>("/api/v1/cmdb/cis", data);
@@ -56,10 +64,10 @@ export function useCIApi() {
   }, []);
 
   const list = useCallback(async (filters?: CIFilters): Promise<CIResponse[]> => {
-    const response = await apiClient.get<CIResponse[]>("/api/v1/cmdb/cis", {
-      params: filters,
+    const response = await apiClient.get<PaginatedResponse<CIResponse>>("/api/v1/cmdb/cis", {
+      params: { ...filters, page: 0, size: 200 },
     });
-    return response.data;
+    return response.data.items;
   }, []);
 
   return { create, get, update, remove, list };

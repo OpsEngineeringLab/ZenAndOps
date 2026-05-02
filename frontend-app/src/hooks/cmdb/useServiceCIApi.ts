@@ -13,6 +13,14 @@ export interface CreateServiceCIRequest {
   ciId: string;
 }
 
+interface PaginatedResponse<T> {
+  items: T[];
+  page: number;
+  size: number;
+  totalItems: number;
+  totalPages: number;
+}
+
 export function useServiceCIApi() {
   const create = useCallback(async (data: CreateServiceCIRequest): Promise<ServiceCIResponse> => {
     const response = await apiClient.post<ServiceCIResponse>("/api/v1/cmdb/service-cis", data);
@@ -24,17 +32,17 @@ export function useServiceCIApi() {
   }, []);
 
   const listByService = useCallback(async (serviceId: string): Promise<ServiceCIResponse[]> => {
-    const response = await apiClient.get<ServiceCIResponse[]>("/api/v1/cmdb/service-cis", {
-      params: { serviceId },
+    const response = await apiClient.get<PaginatedResponse<ServiceCIResponse>>("/api/v1/cmdb/service-cis", {
+      params: { serviceId, page: 0, size: 200 },
     });
-    return response.data;
+    return response.data.items;
   }, []);
 
   const listByCI = useCallback(async (ciId: string): Promise<ServiceCIResponse[]> => {
-    const response = await apiClient.get<ServiceCIResponse[]>("/api/v1/cmdb/service-cis", {
-      params: { ciId },
+    const response = await apiClient.get<PaginatedResponse<ServiceCIResponse>>("/api/v1/cmdb/service-cis", {
+      params: { ciId, page: 0, size: 200 },
     });
-    return response.data;
+    return response.data.items;
   }, []);
 
   return { create, remove, listByService, listByCI };
