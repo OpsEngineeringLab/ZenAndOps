@@ -3,6 +3,7 @@ package com.zenandops.cmdb.infrastructure.adapter.persistence;
 import com.zenandops.cmdb.application.port.CIRelationshipRepository;
 import com.zenandops.cmdb.domain.entity.CIRelationship;
 import com.zenandops.cmdb.domain.vo.RelationshipType;
+import io.quarkus.panache.common.Page;
 import io.quarkus.runtime.Startup;
 import jakarta.enterprise.context.ApplicationScoped;
 
@@ -72,6 +73,20 @@ public class MongoCIRelationshipRepository implements CIRelationshipRepository {
 
     @Override
     public long countBySourceCIIdOrTargetCIId(String ciId) {
+        return CIRelationshipPanacheEntity.count(
+                "sourceCIId = ?1 or targetCIId = ?1", ciId);
+    }
+
+    @Override
+    public List<CIRelationship> findWithFilters(String ciId, int page, int size) {
+        return CIRelationshipPanacheEntity.<CIRelationshipPanacheEntity>find(
+                        "sourceCIId = ?1 or targetCIId = ?1", ciId)
+                .page(Page.of(page, size)).list()
+                .stream().map(this::toDomain).toList();
+    }
+
+    @Override
+    public long countWithFilters(String ciId) {
         return CIRelationshipPanacheEntity.count(
                 "sourceCIId = ?1 or targetCIId = ?1", ciId);
     }

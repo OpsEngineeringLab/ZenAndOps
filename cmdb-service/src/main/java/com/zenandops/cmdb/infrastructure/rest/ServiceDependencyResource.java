@@ -6,11 +6,13 @@ import com.zenandops.cmdb.application.usecase.ListServiceDependenciesUseCase;
 import com.zenandops.cmdb.domain.entity.ServiceDependency;
 import com.zenandops.cmdb.infrastructure.rest.dto.CreateServiceDependencyRequest;
 import com.zenandops.cmdb.infrastructure.rest.dto.ErrorResponse;
+import com.zenandops.cmdb.infrastructure.rest.dto.PaginatedResponse;
 import com.zenandops.cmdb.infrastructure.rest.dto.ServiceDependencyResponse;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
@@ -28,7 +30,9 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 
+import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 
 /**
  * REST resource exposing ServiceDependency CRUD endpoints.
@@ -86,13 +90,24 @@ public class ServiceDependencyResource {
                     content = @Content(schema = @Schema(implementation = ServiceDependencyResponse[].class)))
     })
     public Response listDependencies(
+            @Parameter(description = "Page number (zero-based)")
+            @QueryParam("page") @DefaultValue("0") int page,
+            @Parameter(description = "Page size")
+            @QueryParam("size") @DefaultValue("50") int size,
             @Parameter(description = "Service ID to list dependencies for", required = true)
             @QueryParam("serviceId") String serviceId) {
-        List<ServiceDependencyResponse> items = listServiceDependenciesUseCase.execute(serviceId)
-                .stream()
+        if (page < 0 || size < 1 || size > 200) {
+            return Response.status(400)
+                    .entity(Map.of("error", new ErrorResponse("CMDB_VALIDATION_ERROR",
+                            "page must be >= 0, size must be between 1 and 200",
+                            Instant.now())))
+                    .build();
+        }
+        var result = listServiceDependenciesUseCase.execute(serviceId, page, size);
+        List<ServiceDependencyResponse> items = result.items().stream()
                 .map(this::toResponse)
                 .toList();
-        return Response.ok(items).build();
+        return Response.ok(PaginatedResponse.of(items, page, size, result.totalItems())).build();
     }
 
     @DELETE

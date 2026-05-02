@@ -5,6 +5,7 @@ import com.zenandops.cmdb.domain.entity.Asset;
 import com.zenandops.cmdb.domain.vo.AssetStatus;
 import com.zenandops.cmdb.domain.vo.AssetType;
 import com.zenandops.cmdb.domain.vo.CostType;
+import io.quarkus.panache.common.Page;
 import io.quarkus.runtime.Startup;
 import jakarta.enterprise.context.ApplicationScoped;
 
@@ -111,6 +112,80 @@ public class MongoAssetRepository implements AssetRepository {
         query.append(String.join(" and ", conditions));
         return AssetPanacheEntity.<AssetPanacheEntity>list(query.toString(), params)
                 .stream().map(this::toDomain).toList();
+    }
+
+    @Override
+    public List<Asset> findWithFilters(String organizationId, AssetType type, CostType costType,
+                                        AssetStatus status, String supplier, int page, int size) {
+        Map<String, Object> params = new HashMap<>();
+        List<String> conditions = new ArrayList<>();
+
+        if (organizationId != null) {
+            conditions.add("organizationId = :organizationId");
+            params.put("organizationId", organizationId);
+        }
+        if (type != null) {
+            conditions.add("type = :type");
+            params.put("type", type);
+        }
+        if (costType != null) {
+            conditions.add("costType = :costType");
+            params.put("costType", costType);
+        }
+        if (status != null) {
+            conditions.add("status = :status");
+            params.put("status", status);
+        }
+        if (supplier != null) {
+            conditions.add("supplier = :supplier");
+            params.put("supplier", supplier);
+        }
+
+        if (conditions.isEmpty()) {
+            return AssetPanacheEntity.<AssetPanacheEntity>findAll()
+                    .page(Page.of(page, size)).list()
+                    .stream().map(this::toDomain).toList();
+        }
+
+        String query = String.join(" and ", conditions);
+        return AssetPanacheEntity.<AssetPanacheEntity>find(query, params)
+                .page(Page.of(page, size)).list()
+                .stream().map(this::toDomain).toList();
+    }
+
+    @Override
+    public long countWithFilters(String organizationId, AssetType type, CostType costType,
+                                  AssetStatus status, String supplier) {
+        Map<String, Object> params = new HashMap<>();
+        List<String> conditions = new ArrayList<>();
+
+        if (organizationId != null) {
+            conditions.add("organizationId = :organizationId");
+            params.put("organizationId", organizationId);
+        }
+        if (type != null) {
+            conditions.add("type = :type");
+            params.put("type", type);
+        }
+        if (costType != null) {
+            conditions.add("costType = :costType");
+            params.put("costType", costType);
+        }
+        if (status != null) {
+            conditions.add("status = :status");
+            params.put("status", status);
+        }
+        if (supplier != null) {
+            conditions.add("supplier = :supplier");
+            params.put("supplier", supplier);
+        }
+
+        if (conditions.isEmpty()) {
+            return AssetPanacheEntity.count();
+        }
+
+        String query = String.join(" and ", conditions);
+        return AssetPanacheEntity.count(query, params);
     }
 
     @Override

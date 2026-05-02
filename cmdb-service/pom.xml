@@ -78,6 +78,18 @@
             <artifactId>quarkus-opentelemetry</artifactId>
         </dependency>
 
+        <!-- SmallRye Fault Tolerance (Circuit Breaker, Retry, Timeout, Bulkhead, Fallback) -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-smallrye-fault-tolerance</artifactId>
+        </dependency>
+
+        <!-- SmallRye Health (exposes /q/health, /q/health/live, /q/health/ready endpoints) -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-smallrye-health</artifactId>
+        </dependency>
+
         <!-- Micrometer Prometheus registry (exposes /q/metrics for Prometheus scraping) -->
         <dependency>
             <groupId>io.quarkus</groupId>

@@ -25,4 +25,8 @@ public interface ServiceCIRepository {
     long countByCiId(String ciId);
 
     long countByServiceId(String serviceId);
+
+    List<ServiceCI> findWithFilters(String serviceId, String ciId, int page, int size);
+
+    long countWithFilters(String serviceId, String ciId);
 }

@@ -6,6 +6,8 @@ import com.zenandops.admin.infrastructure.rest.dto.ErrorResponse;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.ext.ExceptionMapper;
 import jakarta.ws.rs.ext.Provider;
+import org.eclipse.microprofile.faulttolerance.exceptions.BulkheadException;
+import org.eclipse.microprofile.faulttolerance.exceptions.CircuitBreakerOpenException;
 
 import java.time.Instant;
 import java.util.Map;
@@ -19,6 +21,18 @@ public class AdminExceptionMapper implements ExceptionMapper<RuntimeException> {
 
     @Override
     public Response toResponse(RuntimeException exception) {
+        if (exception instanceof CircuitBreakerOpenException) {
+            return Response.status(Response.Status.SERVICE_UNAVAILABLE)
+                    .entity(buildEnvelope("ADMIN_SERVICE_UNAVAILABLE",
+                            "Service temporarily unavailable due to circuit breaker"))
+                    .build();
+        }
+        if (exception instanceof BulkheadException) {
+            return Response.status(Response.Status.SERVICE_UNAVAILABLE)
+                    .entity(buildEnvelope("ADMIN_SERVICE_UNAVAILABLE",
+                            "Service temporarily unavailable due to capacity limits"))
+                    .build();
+        }
         if (exception instanceof ForbiddenException) {
             return Response.status(Response.Status.FORBIDDEN)
                     .entity(buildEnvelope("FORBIDDEN", exception.getMessage()))

@@ -1,5 +1,6 @@
 package com.zenandops.cmdb.application.usecase;
 
+import com.zenandops.cmdb.application.dto.PaginatedResult;
 import com.zenandops.cmdb.application.port.CIRepository;
 import com.zenandops.cmdb.domain.entity.CI;
 import com.zenandops.cmdb.domain.vo.CIStatus;
@@ -11,6 +12,7 @@ import java.util.List;
 
 /**
  * Use case for listing CIs with optional filtering by organizationId, type, status, and assetId.
+ * Supports pagination via page and size parameters.
  */
 @ApplicationScoped
 public class ListCIsUseCase {
@@ -23,15 +25,20 @@ public class ListCIsUseCase {
     }
 
     /**
-     * List CIs with optional filters. Pass null for any filter to skip it.
+     * List CIs with optional filters and pagination.
      *
      * @param organizationId optional organization filter
      * @param type           optional CI type filter
      * @param status         optional status filter
      * @param assetId        optional asset filter
-     * @return filtered list of CIs
+     * @param page           zero-based page number
+     * @param size           number of items per page
+     * @return paginated result containing items and total count
      */
-    public List<CI> execute(String organizationId, CIType type, CIStatus status, String assetId) {
-        return ciRepository.findWithFilters(organizationId, type, status, assetId);
+    public PaginatedResult<CI> execute(String organizationId, CIType type, CIStatus status,
+                                       String assetId, int page, int size) {
+        List<CI> items = ciRepository.findWithFilters(organizationId, type, status, assetId, page, size);
+        long totalItems = ciRepository.countWithFilters(organizationId, type, status, assetId);
+        return new PaginatedResult<>(items, totalItems);
     }
 }

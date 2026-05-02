@@ -2,6 +2,7 @@ package com.zenandops.cmdb.infrastructure.adapter.persistence;
 
 import com.zenandops.cmdb.application.port.ServiceCIRepository;
 import com.zenandops.cmdb.domain.entity.ServiceCI;
+import io.quarkus.panache.common.Page;
 import io.quarkus.runtime.Startup;
 import jakarta.enterprise.context.ApplicationScoped;
 
@@ -74,6 +75,34 @@ public class MongoServiceCIRepository implements ServiceCIRepository {
     @Override
     public long countByServiceId(String serviceId) {
         return ServiceCIPanacheEntity.count("serviceId", serviceId);
+    }
+
+    @Override
+    public List<ServiceCI> findWithFilters(String serviceId, String ciId, int page, int size) {
+        if (serviceId != null && !serviceId.isBlank()) {
+            return ServiceCIPanacheEntity.<ServiceCIPanacheEntity>find("serviceId", serviceId)
+                    .page(Page.of(page, size)).list()
+                    .stream().map(this::toDomain).toList();
+        } else if (ciId != null && !ciId.isBlank()) {
+            return ServiceCIPanacheEntity.<ServiceCIPanacheEntity>find("ciId", ciId)
+                    .page(Page.of(page, size)).list()
+                    .stream().map(this::toDomain).toList();
+        } else {
+            return ServiceCIPanacheEntity.<ServiceCIPanacheEntity>findAll()
+                    .page(Page.of(page, size)).list()
+                    .stream().map(this::toDomain).toList();
+        }
+    }
+
+    @Override
+    public long countWithFilters(String serviceId, String ciId) {
+        if (serviceId != null && !serviceId.isBlank()) {
+            return ServiceCIPanacheEntity.count("serviceId", serviceId);
+        } else if (ciId != null && !ciId.isBlank()) {
+            return ServiceCIPanacheEntity.count("ciId", ciId);
+        } else {
+            return ServiceCIPanacheEntity.count();
+        }
     }
 
     private ServiceCI toDomain(ServiceCIPanacheEntity entity) {

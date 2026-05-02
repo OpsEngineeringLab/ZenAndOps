@@ -7,11 +7,13 @@ import com.zenandops.cmdb.application.usecase.ListServicesByCIUseCase;
 import com.zenandops.cmdb.domain.entity.ServiceCI;
 import com.zenandops.cmdb.infrastructure.rest.dto.CreateServiceCIRequest;
 import com.zenandops.cmdb.infrastructure.rest.dto.ErrorResponse;
+import com.zenandops.cmdb.infrastructure.rest.dto.PaginatedResponse;
 import com.zenandops.cmdb.infrastructure.rest.dto.ServiceCIResponse;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.Path;
@@ -29,7 +31,9 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 
+import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 
 /**
  * REST resource exposing ServiceCI association endpoints.
@@ -88,22 +92,36 @@ public class ServiceCIResource {
                     content = @Content(schema = @Schema(implementation = ServiceCIResponse[].class)))
     })
     public Response listAssociations(
+            @Parameter(description = "Page number (zero-based)")
+            @QueryParam("page") @DefaultValue("0") int page,
+            @Parameter(description = "Page size")
+            @QueryParam("size") @DefaultValue("50") int size,
             @Parameter(description = "Filter by service ID")
             @QueryParam("serviceId") String serviceId,
             @Parameter(description = "Filter by CI ID")
             @QueryParam("ciId") String ciId) {
-        List<ServiceCI> results;
-        if (serviceId != null && !serviceId.isBlank()) {
-            results = listCIsByServiceUseCase.execute(serviceId);
-        } else if (ciId != null && !ciId.isBlank()) {
-            results = listServicesByCIUseCase.execute(ciId);
-        } else {
-            results = List.of();
+        if (page < 0 || size < 1 || size > 200) {
+            return Response.status(400)
+                    .entity(Map.of("error", new ErrorResponse("CMDB_VALIDATION_ERROR",
+                            "page must be >= 0, size must be between 1 and 200",
+                            Instant.now())))
+                    .build();
         }
-        List<ServiceCIResponse> items = results.stream()
-                .map(this::toResponse)
-                .toList();
-        return Response.ok(items).build();
+        if (serviceId != null && !serviceId.isBlank()) {
+            var result = listCIsByServiceUseCase.execute(serviceId, page, size);
+            List<ServiceCIResponse> items = result.items().stream()
+                    .map(this::toResponse)
+                    .toList();
+            return Response.ok(PaginatedResponse.of(items, page, size, result.totalItems())).build();
+        } else if (ciId != null && !ciId.isBlank()) {
+            var result = listServicesByCIUseCase.execute(ciId, page, size);
+            List<ServiceCIResponse> items = result.items().stream()
+                    .map(this::toResponse)
+                    .toList();
+            return Response.ok(PaginatedResponse.of(items, page, size, result.totalItems())).build();
+        } else {
+            return Response.ok(PaginatedResponse.of(List.of(), page, size, 0L)).build();
+        }
     }
 
     @DELETE

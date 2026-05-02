@@ -14,10 +14,16 @@ RUN mvn dependency:go-offline -B
 COPY src ./src
 RUN mvn package -DskipTests -B
 
+# Compile a tiny health-check class (no external deps)
+RUN printf 'import java.net.*;\npublic class HealthCheck {\n  public static void main(String[] a) throws Exception {\n    var c=(HttpURLConnection)URI.create(a[0]).toURL().openConnection();\n    c.setConnectTimeout(3000);c.setReadTimeout(3000);\n    System.exit(c.getResponseCode()==200?0:1);\n  }\n}\n' > /tmp/HealthCheck.java && javac /tmp/HealthCheck.java -d /tmp/healthcheck
+
 # --- Stage 2: Runtime ---
 FROM eclipse-temurin:25-jre
 
 WORKDIR /app
+
+# Copy health check utility
+COPY --from=build /tmp/healthcheck/HealthCheck.class /app/healthcheck/
 
 # Copy the built artifact
 COPY --from=build /app/target/quarkus-app /app/quarkus-app

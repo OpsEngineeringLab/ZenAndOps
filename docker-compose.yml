@@ -104,6 +104,12 @@ services:
         condition: service_healthy
       tempo:
         condition: service_started
+    healthcheck:
+      test: ["CMD", "java", "-cp", "/app/healthcheck", "HealthCheck", "http://localhost:8082/q/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     networks:
       - zenandops-net
 
@@ -134,6 +140,12 @@ services:
         condition: service_healthy
       tempo:
         condition: service_started
+    healthcheck:
+      test: ["CMD", "java", "-cp", "/app/healthcheck", "HealthCheck", "http://localhost:8083/q/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     networks:
       - zenandops-net
 
@@ -191,11 +203,11 @@ services:
       keycloak:
         condition: service_healthy
       dashboard-service:
-        condition: service_started
+        condition: service_healthy
       cmdb-service:
-        condition: service_started
+        condition: service_healthy
       admin-api-service:
-        condition: service_started
+        condition: service_healthy
       tempo:
         condition: service_started
     healthcheck:

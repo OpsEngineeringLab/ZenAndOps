@@ -31,4 +31,9 @@ public interface CIRepository {
     long countByAssetId(String assetId);
 
     List<CI> findWithFilters(String organizationId, CIType type, CIStatus status, String assetId);
+
+    List<CI> findWithFilters(String organizationId, CIType type, CIStatus status, String assetId,
+                             int page, int size);
+
+    long countWithFilters(String organizationId, CIType type, CIStatus status, String assetId);
 }

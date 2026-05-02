@@ -2,6 +2,7 @@ package com.zenandops.cmdb.infrastructure.adapter.persistence;
 
 import com.zenandops.cmdb.application.port.ServiceDependencyRepository;
 import com.zenandops.cmdb.domain.entity.ServiceDependency;
+import io.quarkus.panache.common.Page;
 import io.quarkus.runtime.Startup;
 import jakarta.enterprise.context.ApplicationScoped;
 
@@ -68,6 +69,20 @@ public class MongoServiceDependencyRepository implements ServiceDependencyReposi
 
     @Override
     public long countBySourceServiceIdOrTargetServiceId(String serviceId) {
+        return ServiceDependencyPanacheEntity.count(
+                "sourceServiceId = ?1 or targetServiceId = ?1", serviceId);
+    }
+
+    @Override
+    public List<ServiceDependency> findWithFilters(String serviceId, int page, int size) {
+        return ServiceDependencyPanacheEntity.<ServiceDependencyPanacheEntity>find(
+                        "sourceServiceId = ?1 or targetServiceId = ?1", serviceId)
+                .page(Page.of(page, size)).list()
+                .stream().map(this::toDomain).toList();
+    }
+
+    @Override
+    public long countWithFilters(String serviceId) {
         return ServiceDependencyPanacheEntity.count(
                 "sourceServiceId = ?1 or targetServiceId = ?1", serviceId);
     }

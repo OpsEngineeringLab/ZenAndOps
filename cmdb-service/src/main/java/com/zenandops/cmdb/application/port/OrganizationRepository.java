@@ -28,4 +28,8 @@ public interface OrganizationRepository {
     boolean existsByParentIdAndName(String parentId, String name);
 
     long countByType(OrganizationType type);
+
+    List<Organization> findAll(int page, int size);
+
+    long countAll();
 }

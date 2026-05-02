@@ -13,12 +13,14 @@ import com.zenandops.cmdb.domain.vo.ServiceStatus;
 import com.zenandops.cmdb.domain.vo.ServiceType;
 import com.zenandops.cmdb.infrastructure.rest.dto.CreateServiceRequest;
 import com.zenandops.cmdb.infrastructure.rest.dto.ErrorResponse;
+import com.zenandops.cmdb.infrastructure.rest.dto.PaginatedResponse;
 import com.zenandops.cmdb.infrastructure.rest.dto.ServiceResponse;
 import com.zenandops.cmdb.infrastructure.rest.dto.UpdateServiceRequest;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.PUT;
@@ -39,7 +41,9 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 
+import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 
 /**
  * REST resource exposing Service CRUD, filtering, and tree endpoints.
@@ -110,6 +114,10 @@ public class ServiceResource {
                     content = @Content(schema = @Schema(implementation = ServiceResponse[].class)))
     })
     public Response listServices(
+            @Parameter(description = "Page number (zero-based)")
+            @QueryParam("page") @DefaultValue("0") int page,
+            @Parameter(description = "Page size")
+            @QueryParam("size") @DefaultValue("50") int size,
             @Parameter(description = "Filter by organization ID")
             @QueryParam("organizationId") String organizationId,
             @Parameter(description = "Filter by service type")
@@ -118,11 +126,19 @@ public class ServiceResource {
             @QueryParam("criticality") CriticalityLevel criticality,
             @Parameter(description = "Filter by service status")
             @QueryParam("status") ServiceStatus status) {
-        List<ServiceResponse> items = listServicesUseCase.execute(
-                organizationId, type, criticality, status).stream()
+        if (page < 0 || size < 1 || size > 200) {
+            return Response.status(400)
+                    .entity(Map.of("error", new ErrorResponse("CMDB_VALIDATION_ERROR",
+                            "page must be >= 0, size must be between 1 and 200",
+                            Instant.now())))
+                    .build();
+        }
+        var result = listServicesUseCase.execute(
+                organizationId, type, criticality, status, page, size);
+        List<ServiceResponse> items = result.items().stream()
                 .map(this::toResponse)
                 .toList();
-        return Response.ok(items).build();
+        return Response.ok(PaginatedResponse.of(items, page, size, result.totalItems())).build();
     }
 
     @GET

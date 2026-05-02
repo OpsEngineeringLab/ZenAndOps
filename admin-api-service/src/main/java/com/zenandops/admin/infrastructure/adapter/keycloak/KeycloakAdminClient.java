@@ -2,13 +2,27 @@ package com.zenandops.admin.infrastructure.adapter.keycloak;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.zenandops.admin.application.port.ProfileManagementPort;
+import com.zenandops.admin.application.port.RoleManagementPort;
+import com.zenandops.admin.application.port.TagManagementPort;
+import com.zenandops.admin.application.port.UserManagementPort;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.quarkus.oidc.client.OidcClient;
 import io.quarkus.oidc.client.Tokens;
 import jakarta.annotation.PostConstruct;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
+import org.eclipse.microprofile.faulttolerance.Bulkhead;
+import org.eclipse.microprofile.faulttolerance.CircuitBreaker;
+import org.eclipse.microprofile.faulttolerance.Retry;
+import org.eclipse.microprofile.faulttolerance.Timeout;
 import org.jboss.logging.Logger;
+
+import java.time.Duration;
+import java.time.temporal.ChronoUnit;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -26,7 +40,26 @@ import java.util.Map;
  * mapper can translate them to appropriate client-facing HTTP status codes.
  */
 @ApplicationScoped
-public class KeycloakAdminClient {
+@CircuitBreaker(
+        requestVolumeThreshold = 5,
+        failureRatio = 1.0,
+        delay = 5000,
+        delayUnit = ChronoUnit.MILLIS,
+        successThreshold = 1
+)
+@Retry(
+        maxRetries = 3,
+        delay = 200,
+        delayUnit = ChronoUnit.MILLIS,
+        jitter = 100,
+        jitterDelayUnit = ChronoUnit.MILLIS,
+        retryOn = Exception.class,
+        abortOn = KeycloakAdminException.class
+)
+@Timeout(value = 10, unit = ChronoUnit.SECONDS)
+@Bulkhead(value = 10, waitingTaskQueue = 10)
+public class KeycloakAdminClient implements UserManagementPort, RoleManagementPort,
+                                            TagManagementPort, ProfileManagementPort {
 
     private static final Logger LOG = Logger.getLogger(KeycloakAdminClient.class);
 
@@ -39,6 +72,9 @@ public class KeycloakAdminClient {
     @Inject
     ObjectMapper objectMapper;
 
+    @Inject
+    OpenTelemetry openTelemetry;
+
     @ConfigProperty(name = "admin.keycloak.admin-url")
     String adminUrl;
 
@@ -47,6 +83,7 @@ public class KeycloakAdminClient {
     @PostConstruct
     void init() {
         this.httpClient = HttpClient.newBuilder()
+                .connectTimeout(Duration.ofSeconds(5))
                 .followRedirects(HttpClient.Redirect.NEVER)
                 .build();
     }
@@ -60,6 +97,7 @@ public class KeycloakAdminClient {
      * @param max   maximum number of results (nullable)
      * @return list of Keycloak user representations
      */
+    @Override
     public List<Map<String, Object>> listUsers(Integer first, Integer max) {
         var uriBuilder = new StringBuilder(adminUrl).append("/users");
         var separator = '?';
@@ -76,6 +114,7 @@ public class KeycloakAdminClient {
     /**
      * Get a single user by ID.
      */
+    @Override
     public Map<String, Object> getUser(String userId) {
         return executeMap(buildGet(adminUrl + "/users/" + userId));
     }
@@ -83,6 +122,7 @@ public class KeycloakAdminClient {
     /**
      * Create a new user. Returns the user ID extracted from the Location header.
      */
+    @Override
     public String createUser(Map<String, Object> userRepresentation) {
         HttpRequest request = buildPost(adminUrl + "/users", userRepresentation);
         HttpResponse<String> response = send(request);
@@ -99,6 +139,7 @@ public class KeycloakAdminClient {
     /**
      * Update an existing user.
      */
+    @Override
     public void updateUser(String userId, Map<String, Object> userRepresentation) {
         handleStatus(send(buildPut(adminUrl + "/users/" + userId, userRepresentation)), 204);
     }
@@ -106,6 +147,7 @@ public class KeycloakAdminClient {
     /**
      * Delete a user.
      */
+    @Override
     public void deleteUser(String userId) {
         handleStatus(send(buildDelete(adminUrl + "/users/" + userId)), 204);
     }
@@ -115,6 +157,7 @@ public class KeycloakAdminClient {
     /**
      * Get realm-level role mappings for a user.
      */
+    @Override
     public List<Map<String, Object>> getUserRealmRoles(String userId) {
         return executeList(buildGet(adminUrl + "/users/" + userId + "/role-mappings/realm"));
     }
@@ -122,6 +165,7 @@ public class KeycloakAdminClient {
     /**
      * Assign realm-level roles to a user.
      */
+    @Override
     public void assignRealmRoles(String userId, List<Map<String, Object>> roles) {
         handleStatus(send(buildPostList(adminUrl + "/users/" + userId + "/role-mappings/realm", roles)), 204);
     }
@@ -129,6 +173,7 @@ public class KeycloakAdminClient {
     /**
      * Remove realm-level roles from a user.
      */
+    @Override
     public void removeRealmRoles(String userId, List<Map<String, Object>> roles) {
         handleStatus(send(buildDeleteWithBody(adminUrl + "/users/" + userId + "/role-mappings/realm", roles)), 204);
     }
@@ -138,6 +183,7 @@ public class KeycloakAdminClient {
     /**
      * List all realm roles.
      */
+    @Override
     public List<Map<String, Object>> listRealmRoles() {
         return executeList(buildGet(adminUrl + "/roles"));
     }
@@ -145,6 +191,7 @@ public class KeycloakAdminClient {
     /**
      * Get a realm role by name.
      */
+    @Override
     public Map<String, Object> getRealmRoleByName(String roleName) {
         return executeMap(buildGet(adminUrl + "/roles/" + roleName));
     }
@@ -152,6 +199,7 @@ public class KeycloakAdminClient {
     /**
      * Get a realm role by ID.
      */
+    @Override
     public Map<String, Object> getRealmRoleById(String roleId) {
         return executeMap(buildGet(adminUrl + "/roles-by-id/" + roleId));
     }
@@ -159,6 +207,7 @@ public class KeycloakAdminClient {
     /**
      * Create a new realm role.
      */
+    @Override
     public void createRealmRole(Map<String, Object> roleRepresentation) {
         handleStatus(send(buildPost(adminUrl + "/roles", roleRepresentation)), 201);
     }
@@ -166,6 +215,7 @@ public class KeycloakAdminClient {
     /**
      * Update a realm role by ID.
      */
+    @Override
     public void updateRealmRole(String roleId, Map<String, Object> roleRepresentation) {
         handleStatus(send(buildPut(adminUrl + "/roles-by-id/" + roleId, roleRepresentation)), 204);
     }
@@ -173,6 +223,7 @@ public class KeycloakAdminClient {
     /**
      * Delete a realm role by ID.
      */
+    @Override
     public void deleteRealmRole(String roleId) {
         handleStatus(send(buildDelete(adminUrl + "/roles-by-id/" + roleId)), 204);
     }
@@ -182,6 +233,7 @@ public class KeycloakAdminClient {
     /**
      * Get the full realm representation (used to read realm attributes such as tag definitions).
      */
+    @Override
     public Map<String, Object> getRealmRepresentation() {
         return executeMap(buildGet(adminUrl));
     }
@@ -189,6 +241,7 @@ public class KeycloakAdminClient {
     /**
      * Update the realm representation (used to write realm attributes such as tag definitions).
      */
+    @Override
     public void updateRealmRepresentation(Map<String, Object> realmRepresentation) {
         handleStatus(send(buildPut(adminUrl, realmRepresentation)), 204);
     }
@@ -202,6 +255,7 @@ public class KeycloakAdminClient {
      * @param newPassword the new password
      * @param temporary   if true, the user must change the password on next login
      */
+    @Override
     public void resetPassword(String userId, String newPassword, boolean temporary) {
         Map<String, Object> credential = Map.of(
                 "type", "password",
@@ -212,6 +266,20 @@ public class KeycloakAdminClient {
     }
 
     // ── Internal helpers ────────────────────────────────────────────────
+
+    /**
+     * Injects W3C Trace Context headers ({@code traceparent}, {@code tracestate})
+     * into the outbound HTTP request using the OpenTelemetry propagation API.
+     * When no active span context exists, the propagator is a no-op and no headers are added.
+     */
+    private void injectTraceContext(HttpRequest.Builder builder) {
+        TextMapPropagator propagator = openTelemetry.getPropagators().getTextMapPropagator();
+        propagator.inject(Context.current(), builder, (carrier, key, value) -> {
+            if (carrier != null) {
+                carrier.header(key, value);
+            }
+        });
+    }
 
     private String getAccessToken() {
         try {
@@ -224,61 +292,73 @@ public class KeycloakAdminClient {
     }
 
     private HttpRequest buildGet(String url) {
-        return HttpRequest.newBuilder()
+        HttpRequest.Builder builder = HttpRequest.newBuilder()
                 .uri(URI.create(url))
+                .timeout(Duration.ofSeconds(10))
                 .header("Authorization", "Bearer " + getAccessToken())
                 .header("Accept", "application/json")
-                .GET()
-                .build();
+                .GET();
+        injectTraceContext(builder);
+        return builder.build();
     }
 
     private HttpRequest buildPost(String url, Map<String, Object> body) {
-        return HttpRequest.newBuilder()
+        HttpRequest.Builder builder = HttpRequest.newBuilder()
                 .uri(URI.create(url))
+                .timeout(Duration.ofSeconds(10))
                 .header("Authorization", "Bearer " + getAccessToken())
                 .header("Content-Type", "application/json")
                 .header("Accept", "application/json")
-                .POST(bodyPublisher(body))
-                .build();
+                .POST(bodyPublisher(body));
+        injectTraceContext(builder);
+        return builder.build();
     }
 
     private HttpRequest buildPostList(String url, List<Map<String, Object>> body) {
-        return HttpRequest.newBuilder()
+        HttpRequest.Builder builder = HttpRequest.newBuilder()
                 .uri(URI.create(url))
+                .timeout(Duration.ofSeconds(10))
                 .header("Authorization", "Bearer " + getAccessToken())
                 .header("Content-Type", "application/json")
                 .header("Accept", "application/json")
-                .POST(bodyPublisherList(body))
-                .build();
+                .POST(bodyPublisherList(body));
+        injectTraceContext(builder);
+        return builder.build();
     }
 
     private HttpRequest buildPut(String url, Object body) {
-        return HttpRequest.newBuilder()
+        HttpRequest.Builder builder = HttpRequest.newBuilder()
                 .uri(URI.create(url))
+                .timeout(Duration.ofSeconds(10))
                 .header("Authorization", "Bearer " + getAccessToken())
                 .header("Content-Type", "application/json")
                 .header("Accept", "application/json")
-                .PUT(bodyPublisherObject(body))
-                .build();
+                .PUT(bodyPublisherObject(body));
+        injectTraceContext(builder);
+        return builder.build();
     }
 
     private HttpRequest buildDelete(String url) {
-        return HttpRequest.newBuilder()
+        HttpRequest.Builder builder = HttpRequest.newBuilder()
                 .uri(URI.create(url))
+                .timeout(Duration.ofSeconds(10))
                 .header("Authorization", "Bearer " + getAccessToken())
                 .header("Accept", "application/json")
-                .DELETE()
-                .build();
+                .DELETE();
+        injectTraceContext(builder);
+        return builder.build();
     }
 
     private HttpRequest buildDeleteWithBody(String url, List<Map<String, Object>> body) {
-        return HttpRequest.newBuilder()
+        HttpRequest.Builder builder = HttpRequest.newBuilder()
                 .uri(URI.create(url))
+                .timeout(Duration.ofSeconds(10))
                 .header("Authorization", "Bearer " + getAccessToken())
                 .header("Content-Type", "application/json")
                 .header("Accept", "application/json")
-                .method("DELETE", bodyPublisherList(body))
-                .build();
+                .method("DELETE", bodyPublisherList(body));
+        injectTraceContext(builder);
+        return builder.build();
     }
 
     private HttpRequest.BodyPublisher bodyPublisher(Map<String, Object> body) {
