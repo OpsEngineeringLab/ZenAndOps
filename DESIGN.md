@@ -1,6 +1,6 @@
 # ZenAndOps — Architecture Design Document
 
-> **Version:** 1.7.0
+> **Version:** 1.8.0
 > **Last updated:** 2026-05-01
 
 ---
@@ -238,6 +238,7 @@ ZenAndOps is designed for **incremental, spec-driven growth**. Each new capabili
 | 1.5.0 | `2026.000006` | CMDB — asset and CI management; observability stack migration |
 | 1.6.0 | `2026.000007` | Keycloak auth delegation (replaced custom auth service) |
 | 1.7.0 | `2026.000008` | Kong Gateway migration (replaced custom gateway service) |
+| 1.8.0 | `2026.000009` | Architecture resilience compliance |
 
 ### 5.2 How to Add a New Service
 

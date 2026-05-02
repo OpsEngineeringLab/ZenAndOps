@@ -6,7 +6,7 @@
 
     <groupId>com.zenandops</groupId>
     <artifactId>admin-api-service</artifactId>
-    <version>1.7.0</version>
+    <version>1.8.0</version>
     <packaging>jar</packaging>
 
     <name>ZenAndOps Admin API Service</name>
