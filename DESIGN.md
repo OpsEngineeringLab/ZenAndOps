@@ -1,6 +1,6 @@
 # ZenAndOps — Architecture Design Document
 
-> **Version:** 1.8.1-SNAPSHOT
+> **Version:** 1.8.1
 > **Last updated:** 2026-05-01
 
 ---
