@@ -4,7 +4,7 @@
   <groupId>com.zenandops</groupId>
   <artifactId>keycloak-event-listener</artifactId>
   <name>ZenAndOps Keycloak Event Listener</name>
-  <version>1.8.0</version>
+  <version>1.8.1-SNAPSHOT</version>
   <description>Keycloak Event Listener SPI that publishes auth events (login, logout, token refresh) to Kafka</description>
   <build>
     <plugins>

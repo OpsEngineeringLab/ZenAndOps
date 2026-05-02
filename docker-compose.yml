@@ -67,7 +67,7 @@ services:
       KC_TRACING_RESOURCE_ATTRIBUTES: "service.namespace=zenandops"
     volumes:
       - ./keycloak/zenandops-realm.json:/opt/keycloak/data/import/zenandops-realm.json
-      - ./keycloak-event-listener/target/keycloak-event-listener-1.8.0.jar:/opt/keycloak/providers/keycloak-event-listener.jar
+      - ./keycloak-event-listener/target/keycloak-event-listener-1.8.1-SNAPSHOT.jar:/opt/keycloak/providers/keycloak-event-listener.jar
       - ./keycloak/themes/zenandops:/opt/keycloak/themes/zenandops
     healthcheck:
       test: ["CMD-SHELL", "exec 3<>/dev/tcp/localhost/9000 && echo -e 'GET /health/ready HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n' >&3 && cat <&3 | grep -q '200 OK'"]
