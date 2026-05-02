@@ -1,7 +1,10 @@
 package com.zenandops.admin.infrastructure.rest;
 
+import com.zenandops.admin.application.usecase.GetProfileUseCase;
+import com.zenandops.admin.application.usecase.GetUserRolesUseCase;
+import com.zenandops.admin.application.usecase.ResetPasswordUseCase;
+import com.zenandops.admin.application.usecase.UpdateProfileUseCase;
 import com.zenandops.admin.domain.exception.ForbiddenException;
-import com.zenandops.admin.infrastructure.adapter.keycloak.KeycloakAdminClient;
 import com.zenandops.admin.infrastructure.adapter.keycloak.UserResponseTranslator;
 import com.zenandops.admin.infrastructure.rest.dto.PasswordChangeRequest;
 import com.zenandops.admin.infrastructure.rest.dto.UpdateUserRequest;
@@ -25,6 +28,8 @@ import java.util.Set;
 /**
  * Resource for the authenticated user's own profile management.
  * Uses the {@code sub} claim from the JWT to identify the current user.
+ * Delegates to application-layer use cases which orchestrate calls through
+ * port interfaces, keeping this resource decoupled from infrastructure adapters.
  */
 @Path("/api/v1/profile")
 @Produces(MediaType.APPLICATION_JSON)
@@ -33,7 +38,16 @@ import java.util.Set;
 public class ProfileResource {
 
     @Inject
-    KeycloakAdminClient keycloakAdminClient;
+    GetProfileUseCase getProfileUseCase;
+
+    @Inject
+    UpdateProfileUseCase updateProfileUseCase;
+
+    @Inject
+    ResetPasswordUseCase resetPasswordUseCase;
+
+    @Inject
+    GetUserRolesUseCase getUserRolesUseCase;
 
     @Inject
     JsonWebToken jwt;
@@ -42,9 +56,9 @@ public class ProfileResource {
     public UserResponse getProfile() {
         requirePermission("profile:read");
         String userId = getCurrentUserId();
-        Map<String, Object> user = keycloakAdminClient.getUser(userId);
+        Map<String, Object> user = getProfileUseCase.execute(userId);
 
-        List<Map<String, Object>> roles = keycloakAdminClient.getUserRealmRoles(userId);
+        List<Map<String, Object>> roles = getUserRolesUseCase.execute(userId);
         List<String> roleNames = roles.stream()
                 .map(r -> String.valueOf(r.get("name")))
                 .toList();
@@ -57,7 +71,7 @@ public class ProfileResource {
         requirePermission("profile:write");
         String userId = getCurrentUserId();
         Map<String, Object> keycloakUpdate = UserResponseTranslator.toKeycloakUserUpdate(request);
-        keycloakAdminClient.updateUser(userId, keycloakUpdate);
+        updateProfileUseCase.execute(userId, keycloakUpdate);
         return Response.noContent().build();
     }
 
@@ -66,7 +80,7 @@ public class ProfileResource {
     public Response changePassword(PasswordChangeRequest request) {
         requirePermission("profile:write");
         String userId = getCurrentUserId();
-        keycloakAdminClient.resetPassword(userId, request.newPassword(), false);
+        resetPasswordUseCase.execute(userId, request.newPassword(), false);
         return Response.noContent().build();
     }
 
