@@ -25,4 +25,8 @@ public interface CIRelationshipRepository {
                                                                 RelationshipType relationshipType);
 
     long countBySourceCIIdOrTargetCIId(String ciId);
+
+    List<CIRelationship> findWithFilters(String ciId, int page, int size);
+
+    long countWithFilters(String ciId);
 }

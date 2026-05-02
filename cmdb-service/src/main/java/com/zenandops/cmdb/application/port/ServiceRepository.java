@@ -33,4 +33,11 @@ public interface ServiceRepository {
 
     List<Service> findWithFilters(String organizationId, ServiceType type,
                                   CriticalityLevel criticality, ServiceStatus status);
+
+    List<Service> findWithFilters(String organizationId, ServiceType type,
+                                  CriticalityLevel criticality, ServiceStatus status,
+                                  int page, int size);
+
+    long countWithFilters(String organizationId, ServiceType type,
+                          CriticalityLevel criticality, ServiceStatus status);
 }

@@ -23,4 +23,8 @@ public interface ServiceDependencyRepository {
     boolean existsBySourceServiceIdAndTargetServiceId(String sourceServiceId, String targetServiceId);
 
     long countBySourceServiceIdOrTargetServiceId(String serviceId);
+
+    List<ServiceDependency> findWithFilters(String serviceId, int page, int size);
+
+    long countWithFilters(String serviceId);
 }

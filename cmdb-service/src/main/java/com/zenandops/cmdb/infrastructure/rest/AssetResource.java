@@ -14,11 +14,13 @@ import com.zenandops.cmdb.domain.vo.CostType;
 import com.zenandops.cmdb.infrastructure.rest.dto.AssetResponse;
 import com.zenandops.cmdb.infrastructure.rest.dto.CreateAssetRequest;
 import com.zenandops.cmdb.infrastructure.rest.dto.ErrorResponse;
+import com.zenandops.cmdb.infrastructure.rest.dto.PaginatedResponse;
 import com.zenandops.cmdb.infrastructure.rest.dto.UpdateAssetRequest;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.Consumes;
 import jakarta.ws.rs.DELETE;
+import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
 import jakarta.ws.rs.POST;
 import jakarta.ws.rs.PUT;
@@ -39,7 +41,9 @@ import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.eclipse.microprofile.openapi.annotations.security.SecurityRequirement;
 
+import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 
 /**
  * REST resource exposing Asset CRUD, filtering, and cost summary endpoints.
@@ -108,6 +112,10 @@ public class AssetResource {
                     content = @Content(schema = @Schema(implementation = AssetResponse[].class)))
     })
     public Response listAssets(
+            @Parameter(description = "Page number (zero-based)")
+            @QueryParam("page") @DefaultValue("0") int page,
+            @Parameter(description = "Page size")
+            @QueryParam("size") @DefaultValue("50") int size,
             @Parameter(description = "Filter by organization ID")
             @QueryParam("organizationId") String organizationId,
             @Parameter(description = "Filter by asset type")
@@ -118,11 +126,19 @@ public class AssetResource {
             @QueryParam("status") AssetStatus status,
             @Parameter(description = "Filter by supplier")
             @QueryParam("supplier") String supplier) {
-        List<AssetResponse> items = listAssetsUseCase.execute(
-                organizationId, type, costType, status, supplier).stream()
+        if (page < 0 || size < 1 || size > 200) {
+            return Response.status(400)
+                    .entity(Map.of("error", new ErrorResponse("CMDB_VALIDATION_ERROR",
+                            "page must be >= 0, size must be between 1 and 200",
+                            Instant.now())))
+                    .build();
+        }
+        var result = listAssetsUseCase.execute(
+                organizationId, type, costType, status, supplier, page, size);
+        List<AssetResponse> items = result.items().stream()
                 .map(this::toResponse)
                 .toList();
-        return Response.ok(items).build();
+        return Response.ok(PaginatedResponse.of(items, page, size, result.totalItems())).build();
     }
 
     @GET

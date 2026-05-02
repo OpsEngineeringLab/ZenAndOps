@@ -6,7 +6,7 @@
 
     <groupId>com.zenandops</groupId>
     <artifactId>admin-api-service</artifactId>
-    <version>1.7.0</version>
+    <version>1.8.0</version>
     <packaging>jar</packaging>
 
     <name>ZenAndOps Admin API Service</name>
@@ -58,6 +58,12 @@
         <dependency>
             <groupId>io.quarkus</groupId>
             <artifactId>quarkus-smallrye-health</artifactId>
+        </dependency>
+
+        <!-- Fault tolerance (CircuitBreaker, Retry, Timeout, Bulkhead, Fallback) -->
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-smallrye-fault-tolerance</artifactId>
         </dependency>
 
         <!-- OpenTelemetry -->

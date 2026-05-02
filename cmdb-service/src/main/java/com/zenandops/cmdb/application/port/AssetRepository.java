@@ -31,5 +31,11 @@ public interface AssetRepository {
     List<Asset> findWithFilters(String organizationId, AssetType type, CostType costType,
                                 AssetStatus status, String supplier);
 
+    List<Asset> findWithFilters(String organizationId, AssetType type, CostType costType,
+                                AssetStatus status, String supplier, int page, int size);
+
+    long countWithFilters(String organizationId, AssetType type, CostType costType,
+                          AssetStatus status, String supplier);
+
     List<Asset> getCostSummary();
 }

@@ -1,7 +1,12 @@
 package com.zenandops.admin.infrastructure.rest;
 
+import com.zenandops.admin.application.usecase.CreateUserUseCase;
+import com.zenandops.admin.application.usecase.DeleteUserUseCase;
+import com.zenandops.admin.application.usecase.GetUserRolesUseCase;
+import com.zenandops.admin.application.usecase.GetUserUseCase;
+import com.zenandops.admin.application.usecase.ListUsersUseCase;
+import com.zenandops.admin.application.usecase.UpdateUserUseCase;
 import com.zenandops.admin.domain.exception.ForbiddenException;
-import com.zenandops.admin.infrastructure.adapter.keycloak.KeycloakAdminClient;
 import com.zenandops.admin.infrastructure.adapter.keycloak.UserResponseTranslator;
 import com.zenandops.admin.infrastructure.rest.dto.CreateUserRequest;
 import com.zenandops.admin.infrastructure.rest.dto.UpdateUserRequest;
@@ -27,8 +32,8 @@ import java.util.Set;
 
 /**
  * Admin proxy resource for user management.
- * Proxies requests to the Keycloak Admin REST API and translates responses
- * to the ZenAndOps API contract.
+ * Delegates to application-layer use cases which orchestrate calls through
+ * port interfaces, keeping this resource decoupled from infrastructure adapters.
  */
 @Path("/api/v1/users")
 @Produces(MediaType.APPLICATION_JSON)
@@ -37,7 +42,22 @@ import java.util.Set;
 public class UserAdminResource {
 
     @Inject
-    KeycloakAdminClient keycloakAdminClient;
+    ListUsersUseCase listUsersUseCase;
+
+    @Inject
+    GetUserUseCase getUserUseCase;
+
+    @Inject
+    CreateUserUseCase createUserUseCase;
+
+    @Inject
+    UpdateUserUseCase updateUserUseCase;
+
+    @Inject
+    DeleteUserUseCase deleteUserUseCase;
+
+    @Inject
+    GetUserRolesUseCase getUserRolesUseCase;
 
     @Inject
     JsonWebToken jwt;
@@ -46,7 +66,7 @@ public class UserAdminResource {
     public List<UserResponse> listUsers(@QueryParam("first") Integer first,
                                         @QueryParam("max") Integer max) {
         requirePermission("users:read");
-        List<Map<String, Object>> keycloakUsers = keycloakAdminClient.listUsers(first, max);
+        List<Map<String, Object>> keycloakUsers = listUsersUseCase.execute(first, max);
         return keycloakUsers.stream()
                 .map(this::translateUser)
                 .toList();
@@ -56,10 +76,10 @@ public class UserAdminResource {
     public Response createUser(CreateUserRequest request) {
         requirePermission("users:write");
         Map<String, Object> keycloakUser = UserResponseTranslator.toKeycloakUser(request);
-        String userId = keycloakAdminClient.createUser(keycloakUser);
+        String userId = createUserUseCase.execute(keycloakUser);
 
-        Map<String, Object> createdUser = keycloakAdminClient.getUser(userId);
-        List<Map<String, Object>> roles = keycloakAdminClient.getUserRealmRoles(userId);
+        Map<String, Object> createdUser = getUserUseCase.execute(userId);
+        List<Map<String, Object>> roles = getUserRolesUseCase.execute(userId);
         List<String> roleNames = roles.stream()
                 .map(r -> String.valueOf(r.get("name")))
                 .toList();
@@ -72,7 +92,7 @@ public class UserAdminResource {
     @Path("/{id}")
     public UserResponse getUser(@PathParam("id") String id) {
         requirePermission("users:read");
-        return translateUser(keycloakAdminClient.getUser(id));
+        return translateUser(getUserUseCase.execute(id));
     }
 
     @PUT
@@ -80,7 +100,7 @@ public class UserAdminResource {
     public Response updateUser(@PathParam("id") String id, UpdateUserRequest request) {
         requirePermission("users:write");
         Map<String, Object> keycloakUpdate = UserResponseTranslator.toKeycloakUserUpdate(request);
-        keycloakAdminClient.updateUser(id, keycloakUpdate);
+        updateUserUseCase.execute(id, keycloakUpdate);
         return Response.noContent().build();
     }
 
@@ -88,7 +108,7 @@ public class UserAdminResource {
     @Path("/{id}")
     public Response deleteUser(@PathParam("id") String id) {
         requirePermission("users:write");
-        keycloakAdminClient.deleteUser(id);
+        deleteUserUseCase.execute(id);
         return Response.noContent().build();
     }
 
@@ -96,7 +116,7 @@ public class UserAdminResource {
 
     private UserResponse translateUser(Map<String, Object> keycloakUser) {
         String userId = String.valueOf(keycloakUser.get("id"));
-        List<Map<String, Object>> roles = keycloakAdminClient.getUserRealmRoles(userId);
+        List<Map<String, Object>> roles = getUserRolesUseCase.execute(userId);
         List<String> roleNames = roles.stream()
                 .map(r -> String.valueOf(r.get("name")))
                 .toList();

@@ -4,6 +4,7 @@ import com.zenandops.cmdb.application.port.CIRepository;
 import com.zenandops.cmdb.domain.entity.CI;
 import com.zenandops.cmdb.domain.vo.CIStatus;
 import com.zenandops.cmdb.domain.vo.CIType;
+import io.quarkus.panache.common.Page;
 import io.quarkus.runtime.Startup;
 import jakarta.enterprise.context.ApplicationScoped;
 
@@ -114,6 +115,71 @@ public class MongoCIRepository implements CIRepository {
         String query = String.join(" and ", conditions);
         return CIPanacheEntity.<CIPanacheEntity>list(query, params)
                 .stream().map(this::toDomain).toList();
+    }
+
+    @Override
+    public List<CI> findWithFilters(String organizationId, CIType type, CIStatus status, String assetId,
+                                     int page, int size) {
+        Map<String, Object> params = new HashMap<>();
+        List<String> conditions = new ArrayList<>();
+
+        if (organizationId != null) {
+            conditions.add("organizationId = :organizationId");
+            params.put("organizationId", organizationId);
+        }
+        if (type != null) {
+            conditions.add("type = :type");
+            params.put("type", type);
+        }
+        if (status != null) {
+            conditions.add("status = :status");
+            params.put("status", status);
+        }
+        if (assetId != null) {
+            conditions.add("assetId = :assetId");
+            params.put("assetId", assetId);
+        }
+
+        if (conditions.isEmpty()) {
+            return CIPanacheEntity.<CIPanacheEntity>findAll()
+                    .page(Page.of(page, size)).list()
+                    .stream().map(this::toDomain).toList();
+        }
+
+        String query = String.join(" and ", conditions);
+        return CIPanacheEntity.<CIPanacheEntity>find(query, params)
+                .page(Page.of(page, size)).list()
+                .stream().map(this::toDomain).toList();
+    }
+
+    @Override
+    public long countWithFilters(String organizationId, CIType type, CIStatus status, String assetId) {
+        Map<String, Object> params = new HashMap<>();
+        List<String> conditions = new ArrayList<>();
+
+        if (organizationId != null) {
+            conditions.add("organizationId = :organizationId");
+            params.put("organizationId", organizationId);
+        }
+        if (type != null) {
+            conditions.add("type = :type");
+            params.put("type", type);
+        }
+        if (status != null) {
+            conditions.add("status = :status");
+            params.put("status", status);
+        }
+        if (assetId != null) {
+            conditions.add("assetId = :assetId");
+            params.put("assetId", assetId);
+        }
+
+        if (conditions.isEmpty()) {
+            return CIPanacheEntity.count();
+        }
+
+        String query = String.join(" and ", conditions);
+        return CIPanacheEntity.count(query, params);
     }
 
     private CI toDomain(CIPanacheEntity entity) {

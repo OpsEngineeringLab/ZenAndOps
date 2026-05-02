@@ -74,6 +74,8 @@ The **last task** in every `tasks.md` must be a version control and release task
   - [ ] Merge branch into main/master
   - [ ] Apply Git tag: {version} (without SNAPSHOT)
   - [ ] Push branch, merge, and tag to remote
+  - [ ] Prepare next development cycle: bump all version references to {major}.{minor}.{patch+1}-SNAPSHOT and commit with message "chore: prepare next development cycle ({next-snapshot-version})"
+  - [ ] Push the development cycle commit to main
 ```
 
 Do not omit, reorder, or rename this task.
@@ -104,6 +106,33 @@ git push origin main --tags
 - `{short-description}`: kebab-case summary matching the spec directory name
 - Always use `--no-ff` to preserve merge history
 
+## 7. Prepare Next Development Cycle (Immediately After Tag)
+
+After the tag is pushed, the repository must be prepared for the next development cycle. This ensures `main` is always in a SNAPSHOT state, ready for hotfixes or minor adjustments.
+
+Bump the **patch** version of the just-released version and add the `-SNAPSHOT` suffix:
+- Released `1.0.0` → next development version `1.0.1-SNAPSHOT`
+- Released `1.1.0` → next development version `1.1.1-SNAPSHOT`
+- Released `1.0.1` → next development version `1.0.2-SNAPSHOT`
+
+Search the entire codebase and replace **all** version references with the new SNAPSHOT version. Common files (non-exhaustive): `composer.json`, `package.json`, `pom.xml`, `build.gradle`, `build.gradle.kts`, `version.php`, `VERSION`, `.env`, any config or manifest file containing the version string.
+
+Commit and push:
+```
+git add -A
+git commit -m "chore: prepare next development cycle ({next-snapshot-version})"
+git push origin main
+```
+
+Example — after releasing `1.1.0`:
+```
+git add -A
+git commit -m "chore: prepare next development cycle (1.1.1-SNAPSHOT)"
+git push origin main
+```
+
+**Important**: This commit happens **after** the tag. The tag points to the clean release version; the subsequent commit moves `main` into the next SNAPSHOT state.
+
 ## Rules Summary
 
 | Rule | Detail |
@@ -115,3 +144,4 @@ git push origin main --tags
 | Tag matches release version | Tag must be the clean version (no SNAPSHOT) |
 | Version control task is mandatory | Must be the last task in every `tasks.md` |
 | Merge uses `--no-ff` | Preserve branch history in the merge commit |
+| Next dev cycle is mandatory | After tagging, main must be bumped to the next patch SNAPSHOT version |

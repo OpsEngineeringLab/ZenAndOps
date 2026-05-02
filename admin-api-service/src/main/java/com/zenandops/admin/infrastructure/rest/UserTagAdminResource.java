@@ -1,7 +1,8 @@
 package com.zenandops.admin.infrastructure.rest;
 
+import com.zenandops.admin.application.usecase.GetUserUseCase;
+import com.zenandops.admin.application.usecase.UpdateUserUseCase;
 import com.zenandops.admin.domain.exception.ForbiddenException;
-import com.zenandops.admin.infrastructure.adapter.keycloak.KeycloakAdminClient;
 import com.zenandops.admin.infrastructure.adapter.keycloak.TagResponseTranslator;
 import com.zenandops.admin.infrastructure.rest.dto.TagAssignment;
 import io.quarkus.security.Authenticated;
@@ -27,6 +28,8 @@ import java.util.Set;
 /**
  * Admin proxy resource for user tag assignments.
  * Manages the {@code tags} user attribute in Keycloak.
+ * Delegates to application-layer use cases which orchestrate calls through
+ * port interfaces, keeping this resource decoupled from infrastructure adapters.
  */
 @Path("/api/v1/users/{userId}/tags")
 @Produces(MediaType.APPLICATION_JSON)
@@ -35,7 +38,10 @@ import java.util.Set;
 public class UserTagAdminResource {
 
     @Inject
-    KeycloakAdminClient keycloakAdminClient;
+    GetUserUseCase getUserUseCase;
+
+    @Inject
+    UpdateUserUseCase updateUserUseCase;
 
     @Inject
     JsonWebToken jwt;
@@ -43,14 +49,14 @@ public class UserTagAdminResource {
     @GET
     public List<TagAssignment> getUserTags(@PathParam("userId") String userId) {
         requirePermission("users:read");
-        Map<String, Object> user = keycloakAdminClient.getUser(userId);
+        Map<String, Object> user = getUserUseCase.execute(userId);
         return TagResponseTranslator.parseUserTags(user);
     }
 
     @POST
     public Response addUserTag(@PathParam("userId") String userId, TagAssignment tag) {
         requirePermission("users:write");
-        Map<String, Object> user = keycloakAdminClient.getUser(userId);
+        Map<String, Object> user = getUserUseCase.execute(userId);
         List<TagAssignment> currentTags = new ArrayList<>(TagResponseTranslator.parseUserTags(user));
         currentTags.add(tag);
 
@@ -63,7 +69,7 @@ public class UserTagAdminResource {
                                   @QueryParam("key") String key,
                                   @QueryParam("value") String value) {
         requirePermission("users:write");
-        Map<String, Object> user = keycloakAdminClient.getUser(userId);
+        Map<String, Object> user = getUserUseCase.execute(userId);
         List<TagAssignment> currentTags = new ArrayList<>(TagResponseTranslator.parseUserTags(user));
         currentTags.removeIf(t -> t.key().equals(key) && t.value().equals(value));
 
@@ -88,7 +94,7 @@ public class UserTagAdminResource {
         attributes.put("tags", List.of(tagsJson));
 
         Map<String, Object> update = Map.of("attributes", attributes);
-        keycloakAdminClient.updateUser(userId, update);
+        updateUserUseCase.execute(userId, update);
     }
 
     @SuppressWarnings("unchecked")

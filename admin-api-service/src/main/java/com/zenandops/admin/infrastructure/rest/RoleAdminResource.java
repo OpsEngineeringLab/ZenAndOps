@@ -1,7 +1,11 @@
 package com.zenandops.admin.infrastructure.rest;
 
+import com.zenandops.admin.application.usecase.CreateRoleUseCase;
+import com.zenandops.admin.application.usecase.DeleteRoleUseCase;
+import com.zenandops.admin.application.usecase.GetRoleUseCase;
+import com.zenandops.admin.application.usecase.ListRolesUseCase;
+import com.zenandops.admin.application.usecase.UpdateRoleUseCase;
 import com.zenandops.admin.domain.exception.ForbiddenException;
-import com.zenandops.admin.infrastructure.adapter.keycloak.KeycloakAdminClient;
 import com.zenandops.admin.infrastructure.adapter.keycloak.RoleResponseTranslator;
 import com.zenandops.admin.infrastructure.rest.dto.CreateRoleRequest;
 import com.zenandops.admin.infrastructure.rest.dto.RoleResponse;
@@ -26,8 +30,8 @@ import java.util.Set;
 
 /**
  * Admin proxy resource for role management.
- * Proxies requests to the Keycloak Admin REST API and translates responses
- * to the ZenAndOps API contract.
+ * Delegates to application-layer use cases which orchestrate calls through
+ * port interfaces, keeping this resource decoupled from infrastructure adapters.
  */
 @Path("/api/v1/roles")
 @Produces(MediaType.APPLICATION_JSON)
@@ -36,7 +40,19 @@ import java.util.Set;
 public class RoleAdminResource {
 
     @Inject
-    KeycloakAdminClient keycloakAdminClient;
+    ListRolesUseCase listRolesUseCase;
+
+    @Inject
+    GetRoleUseCase getRoleUseCase;
+
+    @Inject
+    CreateRoleUseCase createRoleUseCase;
+
+    @Inject
+    UpdateRoleUseCase updateRoleUseCase;
+
+    @Inject
+    DeleteRoleUseCase deleteRoleUseCase;
 
     @Inject
     JsonWebToken jwt;
@@ -44,7 +60,7 @@ public class RoleAdminResource {
     @GET
     public List<RoleResponse> listRoles() {
         requirePermission("roles:read");
-        List<Map<String, Object>> keycloakRoles = keycloakAdminClient.listRealmRoles();
+        List<Map<String, Object>> keycloakRoles = listRolesUseCase.execute();
         return keycloakRoles.stream()
                 .map(RoleResponseTranslator::toRoleResponse)
                 .toList();
@@ -54,10 +70,10 @@ public class RoleAdminResource {
     public Response createRole(CreateRoleRequest request) {
         requirePermission("roles:write");
         Map<String, Object> keycloakRole = RoleResponseTranslator.toKeycloakRole(request);
-        keycloakAdminClient.createRealmRole(keycloakRole);
+        createRoleUseCase.execute(keycloakRole);
 
         // Fetch the created role by name to return the full representation
-        Map<String, Object> createdRole = keycloakAdminClient.getRealmRoleByName(request.name());
+        Map<String, Object> createdRole = getRoleUseCase.executeByName(request.name());
         RoleResponse response = RoleResponseTranslator.toRoleResponse(createdRole);
         return Response.status(Response.Status.CREATED).entity(response).build();
     }
@@ -66,7 +82,7 @@ public class RoleAdminResource {
     @Path("/{id}")
     public RoleResponse getRole(@PathParam("id") String id) {
         requirePermission("roles:read");
-        Map<String, Object> keycloakRole = keycloakAdminClient.getRealmRoleById(id);
+        Map<String, Object> keycloakRole = getRoleUseCase.executeById(id);
         return RoleResponseTranslator.toRoleResponse(keycloakRole);
     }
 
@@ -75,7 +91,7 @@ public class RoleAdminResource {
     public Response updateRole(@PathParam("id") String id, UpdateRoleRequest request) {
         requirePermission("roles:write");
         Map<String, Object> keycloakUpdate = RoleResponseTranslator.toKeycloakRoleUpdate(request);
-        keycloakAdminClient.updateRealmRole(id, keycloakUpdate);
+        updateRoleUseCase.execute(id, keycloakUpdate);
         return Response.noContent().build();
     }
 
@@ -83,7 +99,7 @@ public class RoleAdminResource {
     @Path("/{id}")
     public Response deleteRole(@PathParam("id") String id) {
         requirePermission("roles:write");
-        keycloakAdminClient.deleteRealmRole(id);
+        deleteRoleUseCase.execute(id);
         return Response.noContent().build();
     }
 

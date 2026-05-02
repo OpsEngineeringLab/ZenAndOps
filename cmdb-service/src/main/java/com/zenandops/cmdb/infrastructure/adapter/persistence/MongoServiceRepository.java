@@ -5,7 +5,7 @@ import com.zenandops.cmdb.domain.entity.Service;
 import com.zenandops.cmdb.domain.vo.CriticalityLevel;
 import com.zenandops.cmdb.domain.vo.ServiceStatus;
 import com.zenandops.cmdb.domain.vo.ServiceType;
-import io.quarkus.mongodb.panache.PanacheQuery;
+import io.quarkus.panache.common.Page;
 import io.quarkus.runtime.Startup;
 import jakarta.enterprise.context.ApplicationScoped;
 
@@ -119,6 +119,73 @@ public class MongoServiceRepository implements ServiceRepository {
         query.append(String.join(" and ", conditions));
         return ServicePanacheEntity.<ServicePanacheEntity>list(query.toString(), params)
                 .stream().map(this::toDomain).toList();
+    }
+
+    @Override
+    public List<Service> findWithFilters(String organizationId, ServiceType type,
+                                          CriticalityLevel criticality, ServiceStatus status,
+                                          int page, int size) {
+        Map<String, Object> params = new HashMap<>();
+        List<String> conditions = new ArrayList<>();
+
+        if (organizationId != null) {
+            conditions.add("organizationId = :organizationId");
+            params.put("organizationId", organizationId);
+        }
+        if (type != null) {
+            conditions.add("type = :type");
+            params.put("type", type);
+        }
+        if (criticality != null) {
+            conditions.add("criticality = :criticality");
+            params.put("criticality", criticality);
+        }
+        if (status != null) {
+            conditions.add("status = :status");
+            params.put("status", status);
+        }
+
+        if (conditions.isEmpty()) {
+            return ServicePanacheEntity.<ServicePanacheEntity>findAll()
+                    .page(Page.of(page, size)).list()
+                    .stream().map(this::toDomain).toList();
+        }
+
+        String query = String.join(" and ", conditions);
+        return ServicePanacheEntity.<ServicePanacheEntity>find(query, params)
+                .page(Page.of(page, size)).list()
+                .stream().map(this::toDomain).toList();
+    }
+
+    @Override
+    public long countWithFilters(String organizationId, ServiceType type,
+                                  CriticalityLevel criticality, ServiceStatus status) {
+        Map<String, Object> params = new HashMap<>();
+        List<String> conditions = new ArrayList<>();
+
+        if (organizationId != null) {
+            conditions.add("organizationId = :organizationId");
+            params.put("organizationId", organizationId);
+        }
+        if (type != null) {
+            conditions.add("type = :type");
+            params.put("type", type);
+        }
+        if (criticality != null) {
+            conditions.add("criticality = :criticality");
+            params.put("criticality", criticality);
+        }
+        if (status != null) {
+            conditions.add("status = :status");
+            params.put("status", status);
+        }
+
+        if (conditions.isEmpty()) {
+            return ServicePanacheEntity.count();
+        }
+
+        String query = String.join(" and ", conditions);
+        return ServicePanacheEntity.count(query, params);
     }
 
     private Service toDomain(ServicePanacheEntity entity) {

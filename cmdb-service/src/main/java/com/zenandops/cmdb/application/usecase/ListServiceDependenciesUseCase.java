@@ -1,19 +1,16 @@
 package com.zenandops.cmdb.application.usecase;
 
+import com.zenandops.cmdb.application.dto.PaginatedResult;
 import com.zenandops.cmdb.application.port.ServiceDependencyRepository;
 import com.zenandops.cmdb.domain.entity.ServiceDependency;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
- * Use case for listing all dependencies for a given service.
- * Returns both upstream (where service is target) and downstream (where service is source)
- * dependencies, combining results from findBySourceServiceId and findByTargetServiceId.
+ * Use case for listing all dependencies for a given service with pagination support.
+ * Uses the paginated repository method that combines both upstream and downstream dependencies.
  */
 @ApplicationScoped
 public class ListServiceDependenciesUseCase {
@@ -26,31 +23,16 @@ public class ListServiceDependenciesUseCase {
     }
 
     /**
-     * List all dependencies for a service (both upstream and downstream).
+     * List all dependencies for a service with pagination.
      *
      * @param serviceId the service identifier
-     * @return combined list of upstream and downstream dependencies
+     * @param page      zero-based page number
+     * @param size      number of items per page
+     * @return paginated result containing items and total count
      */
-    public List<ServiceDependency> execute(String serviceId) {
-        List<ServiceDependency> downstream = serviceDependencyRepository
-                .findBySourceServiceId(serviceId);
-        List<ServiceDependency> upstream = serviceDependencyRepository
-                .findByTargetServiceId(serviceId);
-
-        Set<String> seenIds = new LinkedHashSet<>();
-        List<ServiceDependency> combined = new ArrayList<>();
-
-        for (ServiceDependency dep : downstream) {
-            if (seenIds.add(dep.getId())) {
-                combined.add(dep);
-            }
-        }
-        for (ServiceDependency dep : upstream) {
-            if (seenIds.add(dep.getId())) {
-                combined.add(dep);
-            }
-        }
-
-        return combined;
+    public PaginatedResult<ServiceDependency> execute(String serviceId, int page, int size) {
+        List<ServiceDependency> items = serviceDependencyRepository.findWithFilters(serviceId, page, size);
+        long totalItems = serviceDependencyRepository.countWithFilters(serviceId);
+        return new PaginatedResult<>(items, totalItems);
     }
 }

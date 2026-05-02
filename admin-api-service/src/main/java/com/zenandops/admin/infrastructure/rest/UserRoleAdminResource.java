@@ -1,7 +1,9 @@
 package com.zenandops.admin.infrastructure.rest;
 
+import com.zenandops.admin.application.usecase.AssignUserRolesUseCase;
+import com.zenandops.admin.application.usecase.GetRoleUseCase;
+import com.zenandops.admin.application.usecase.RemoveUserRolesUseCase;
 import com.zenandops.admin.domain.exception.ForbiddenException;
-import com.zenandops.admin.infrastructure.adapter.keycloak.KeycloakAdminClient;
 import com.zenandops.admin.infrastructure.rest.dto.RoleAssignmentRequest;
 import io.quarkus.security.Authenticated;
 import jakarta.inject.Inject;
@@ -21,7 +23,8 @@ import java.util.Set;
 
 /**
  * Admin proxy resource for user role assignments.
- * Proxies role assignment/removal requests to the Keycloak Admin REST API.
+ * Delegates to application-layer use cases which orchestrate calls through
+ * port interfaces, keeping this resource decoupled from infrastructure adapters.
  */
 @Path("/api/v1/users/{userId}/roles")
 @Produces(MediaType.APPLICATION_JSON)
@@ -30,7 +33,13 @@ import java.util.Set;
 public class UserRoleAdminResource {
 
     @Inject
-    KeycloakAdminClient keycloakAdminClient;
+    GetRoleUseCase getRoleUseCase;
+
+    @Inject
+    AssignUserRolesUseCase assignUserRolesUseCase;
+
+    @Inject
+    RemoveUserRolesUseCase removeUserRolesUseCase;
 
     @Inject
     JsonWebToken jwt;
@@ -40,7 +49,7 @@ public class UserRoleAdminResource {
                                 RoleAssignmentRequest request) {
         requirePermission("users:write");
         List<Map<String, Object>> roleRepresentations = resolveRoles(request.roles());
-        keycloakAdminClient.assignRealmRoles(userId, roleRepresentations);
+        assignUserRolesUseCase.execute(userId, roleRepresentations);
         return Response.noContent().build();
     }
 
@@ -49,7 +58,7 @@ public class UserRoleAdminResource {
                                 RoleAssignmentRequest request) {
         requirePermission("users:write");
         List<Map<String, Object>> roleRepresentations = resolveRoles(request.roles());
-        keycloakAdminClient.removeRealmRoles(userId, roleRepresentations);
+        removeUserRolesUseCase.execute(userId, roleRepresentations);
         return Response.noContent().build();
     }
 
@@ -60,7 +69,7 @@ public class UserRoleAdminResource {
      */
     private List<Map<String, Object>> resolveRoles(List<String> roleNames) {
         return roleNames.stream()
-                .map(keycloakAdminClient::getRealmRoleByName)
+                .map(getRoleUseCase::executeByName)
                 .toList();
     }
 

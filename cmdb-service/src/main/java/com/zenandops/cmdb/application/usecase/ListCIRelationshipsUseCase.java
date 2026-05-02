@@ -1,19 +1,16 @@
 package com.zenandops.cmdb.application.usecase;
 
+import com.zenandops.cmdb.application.dto.PaginatedResult;
 import com.zenandops.cmdb.application.port.CIRelationshipRepository;
 import com.zenandops.cmdb.domain.entity.CIRelationship;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
- * Use case for listing all relationships for a given CI.
- * Returns both upstream (where CI is target) and downstream (where CI is source)
- * relationships, combining results from findBySourceCIId and findByTargetCIId.
+ * Use case for listing all relationships for a given CI with pagination support.
+ * Uses the paginated repository method that combines both upstream and downstream relationships.
  */
 @ApplicationScoped
 public class ListCIRelationshipsUseCase {
@@ -26,29 +23,16 @@ public class ListCIRelationshipsUseCase {
     }
 
     /**
-     * List all relationships for a CI (both upstream and downstream).
+     * List all relationships for a CI with pagination.
      *
      * @param ciId the CI identifier
-     * @return combined list of upstream and downstream relationships
+     * @param page zero-based page number
+     * @param size number of items per page
+     * @return paginated result containing items and total count
      */
-    public List<CIRelationship> execute(String ciId) {
-        List<CIRelationship> downstream = ciRelationshipRepository.findBySourceCIId(ciId);
-        List<CIRelationship> upstream = ciRelationshipRepository.findByTargetCIId(ciId);
-
-        Set<String> seenIds = new LinkedHashSet<>();
-        List<CIRelationship> combined = new ArrayList<>();
-
-        for (CIRelationship rel : downstream) {
-            if (seenIds.add(rel.getId())) {
-                combined.add(rel);
-            }
-        }
-        for (CIRelationship rel : upstream) {
-            if (seenIds.add(rel.getId())) {
-                combined.add(rel);
-            }
-        }
-
-        return combined;
+    public PaginatedResult<CIRelationship> execute(String ciId, int page, int size) {
+        List<CIRelationship> items = ciRelationshipRepository.findWithFilters(ciId, page, size);
+        long totalItems = ciRelationshipRepository.countWithFilters(ciId);
+        return new PaginatedResult<>(items, totalItems);
     }
 }

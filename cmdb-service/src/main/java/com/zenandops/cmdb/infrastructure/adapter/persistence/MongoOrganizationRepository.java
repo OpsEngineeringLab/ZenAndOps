@@ -3,6 +3,7 @@ package com.zenandops.cmdb.infrastructure.adapter.persistence;
 import com.zenandops.cmdb.application.port.OrganizationRepository;
 import com.zenandops.cmdb.domain.entity.Organization;
 import com.zenandops.cmdb.domain.vo.OrganizationType;
+import io.quarkus.panache.common.Page;
 import io.quarkus.runtime.Startup;
 import jakarta.enterprise.context.ApplicationScoped;
 
@@ -82,6 +83,18 @@ public class MongoOrganizationRepository implements OrganizationRepository {
     @Override
     public long countByType(OrganizationType type) {
         return OrganizationPanacheEntity.count("type", type);
+    }
+
+    @Override
+    public List<Organization> findAll(int page, int size) {
+        return OrganizationPanacheEntity.<OrganizationPanacheEntity>findAll()
+                .page(Page.of(page, size)).list()
+                .stream().map(this::toDomain).toList();
+    }
+
+    @Override
+    public long countAll() {
+        return OrganizationPanacheEntity.count();
     }
 
     private Organization toDomain(OrganizationPanacheEntity entity) {
