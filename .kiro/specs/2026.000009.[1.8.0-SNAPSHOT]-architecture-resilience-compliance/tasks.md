@@ -161,15 +161,15 @@ Tasks are ordered to respect dependency chains: fault tolerance dependencies fir
 - [x] 11. Final checkpoint — Ensure all tests pass
   - Ensure all tests pass, ask the user if questions arise.
 
-- [-] 12. Version control and release
-  - [ ] Ensure all previous tasks are complete and tests pass
-  - [ ] Remove SNAPSHOT suffix from all version references in the codebase
-  - [ ] Commit the version bump: "release: 1.8.0 - architecture-resilience-compliance"
-  - [ ] Merge branch into main/master
-  - [ ] Apply Git tag: 1.8.0 (without SNAPSHOT)
-  - [ ] Push branch, merge, and tag to remote
-  - [ ] Prepare next development cycle: bump all version references to 1.8.1-SNAPSHOT and commit with message "chore: prepare next development cycle (1.8.1-SNAPSHOT)"
-  - [ ] Push the development cycle commit to main
+- [x] 12. Version control and release
+  - [x] Ensure all previous tasks are complete and tests pass
+  - [x] Remove SNAPSHOT suffix from all version references in the codebase
+  - [x] Commit the version bump: "release: 1.8.0 - architecture-resilience-compliance"
+  - [x] Merge branch into main/master
+  - [x] Apply Git tag: 1.8.0 (without SNAPSHOT)
+  - [x] Push branch, merge, and tag to remote
+  - [x] Prepare next development cycle: bump all version references to 1.8.1-SNAPSHOT and commit with message "chore: prepare next development cycle (1.8.1-SNAPSHOT)"
+  - [x] Push the development cycle commit to main
 
 ## Notes
 
